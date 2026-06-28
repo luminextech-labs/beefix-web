@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://beefix-e1j1zmtd5-luminexlabs-projects.vercel.app'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 class ApiClient {
   private token: string | null = null
