@@ -7,26 +7,35 @@ export default function Navbar() {
   const { user, logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">🔧</span>
-          <span className="font-bold text-xl text-yellow-600">Beefix</span>
+    <header className="sticky top-0 z-50 w-full bg-white border-b shadow-sm">
+      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-1.5">
+          <span className="text-2xl">🍖</span>
+          <span className="font-bold text-lg text-yellow-500">Beefix</span>
         </Link>
 
-        <nav className="flex items-center gap-3">
+        {/* Right side */}
+        <div className="flex items-center gap-2">
           {user ? (
             <>
               <Link href="/orders">
-                <Button variant="ghost" size="sm">ออร์เดอร์ของฉัน</Button>
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                  ออร์เดอร์
+                </Button>
               </Link>
               <Link href="/booking">
-                <Button size="sm">จองช่าง</Button>
+                <Button size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-black">
+                  + จองช่าง
+                </Button>
               </Link>
-              <div className="flex items-center gap-2 ml-2">
-                <span className="text-sm text-muted-foreground">{user.fullName}</span>
-                <Button variant="outline" size="sm" onClick={logout}>ออก</Button>
-              </div>
+              <button
+                onClick={logout}
+                className="text-sm text-gray-400 hover:text-gray-600 ml-1"
+              >
+                ออก
+              </button>
             </>
           ) : (
             <>
@@ -34,11 +43,13 @@ export default function Navbar() {
                 <Button variant="ghost" size="sm">เข้าสู่ระบบ</Button>
               </Link>
               <Link href="/auth/register">
-                <Button size="sm">สมัครสมาชิก</Button>
+                <Button size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-black">
+                  สมัครสมาชิก
+                </Button>
               </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   )

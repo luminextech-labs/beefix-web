@@ -6,8 +6,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -31,104 +29,119 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold text-yellow-600">สมัครสมาชิก</CardTitle>
-          <CardDescription>สร้างบัญชีใหม่เพื่อใช้งาน Beefix</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">{error}</div>
-            )}
+    <main className="min-h-screen bg-gradient-to-b from-yellow-50 to-white flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-sm">
 
-            {/* Role selector */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, role: 'customer' })}
-                className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
-                  form.role === 'customer'
-                    ? 'bg-yellow-500 text-white border-yellow-500'
-                    : 'bg-white border-gray-200 hover:border-yellow-300'
-                }`}
-              >
-                👤 ลูกค้า
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, role: 'technician' })}
-                className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
-                  form.role === 'technician'
-                    ? 'bg-yellow-500 text-white border-yellow-500'
-                    : 'bg-white border-gray-200 hover:border-yellow-300'
-                }`}
-              >
-                🔧 ช่าง
-              </button>
-            </div>
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <span className="text-4xl">🍖</span>
+            <span className="font-bold text-3xl text-yellow-500">Beefix</span>
+          </Link>
+          <p className="text-gray-500 mt-2 text-sm">สร้างบัญชีใหม่เพื่อใช้งาน</p>
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="fullName">ชื่อ-นามสกุล</Label>
-              <Input
-                id="fullName"
-                placeholder="สมชาย มากมาย"
-                value={form.fullName}
-                onChange={e => setForm({ ...form, fullName: e.target.value })}
-                required
-              />
-            </div>
+        {/* Form */}
+        <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+          {error && (
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">{error}</div>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">อีเมล</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">เบอร์โทรศัพท์</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="081-234-5678"
-                value={form.phone}
-                onChange={e => setForm({ ...form, phone: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">รหัสผ่าน</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={form.password}
-                onChange={e => setForm({ ...form, password: e.target.value })}
-                required
-                minLength={6}
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'กำลังสมัคร…' : 'สมัครสมาชิก'}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            มีบัญชีอยู่แล้ว?{' '}
-            <Link href="/auth/login" className="text-yellow-600 hover:underline font-medium">
-              เข้าสู่ระบบ
-            </Link>
+          {/* Role selector */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, role: 'customer' })}
+              className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                form.role === 'customer'
+                  ? 'bg-yellow-500 text-white border-yellow-500 shadow-sm'
+                  : 'bg-white border-gray-200 hover:border-yellow-300'
+              }`}
+            >
+              👤 ลูกค้า
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, role: 'technician' })}
+              className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                form.role === 'technician'
+                  ? 'bg-yellow-500 text-white border-yellow-500 shadow-sm'
+                  : 'bg-white border-gray-200 hover:border-yellow-300'
+              }`}
+            >
+              🔧 ช่าง
+            </button>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="fullName" className="text-sm font-medium">ชื่อ-นามสกุล</Label>
+            <Input
+              id="fullName"
+              placeholder="สมชาย ใจดี"
+              className="h-11"
+              value={form.fullName}
+              onChange={e => setForm({ ...form, fullName: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm font-medium">อีเมล</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="your@email.com"
+              className="h-11"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="phone" className="text-sm font-medium">เบอร์โทรศัพท์</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="081-234-5678"
+              className="h-11"
+              value={form.phone}
+              onChange={e => setForm({ ...form, phone: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-sm font-medium">รหัสผ่าน</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              className="h-11"
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            className="w-full h-11 bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+            disabled={loading}
+          >
+            {loading ? 'กำลังสมัคร…' : 'สมัครสมาชิก'}
+          </Button>
+        </div>
+
+        <p className="text-center text-sm text-gray-500 mt-4">
+          มีบัญชีอยู่แล้ว?{' '}
+          <Link href="/auth/login" className="text-yellow-600 hover:underline font-medium">
+            เข้าสู่ระบบ
+          </Link>
+        </p>
+      </div>
     </main>
   )
 }
