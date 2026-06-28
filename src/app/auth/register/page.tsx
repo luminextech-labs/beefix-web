@@ -3,9 +3,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -29,95 +26,92 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-yellow-50 to-white flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-sm">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ width: '100%', maxWidth: 380 }}>
 
         {/* Logo */}
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <span className="text-4xl">🍖</span>
-            <span className="font-bold text-3xl text-yellow-500">Beefix</span>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 48 }}>🍖</span>
+            <span style={{ fontSize: 32, fontWeight: 700, color: 'var(--primary)' }}>Beefix</span>
           </Link>
-          <p className="text-gray-500 mt-2 text-sm">สร้างบัญชีใหม่เพื่อใช้งาน</p>
+          <p style={{ color: 'var(--text-light)', marginTop: 8, fontSize: 14 }}>สร้างบัญชีใหม่เพื่อใช้งาน</p>
         </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+        {/* Form card */}
+        <div style={{ background: 'white', borderRadius: 20, padding: '24px' }}>
+
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">{error}</div>
+            <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '12px 16px', borderRadius: 10, fontSize: 14, marginBottom: 16 }}>
+              {error}
+            </div>
           )}
 
           {/* Role selector */}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setForm({ ...form, role: 'customer' })}
-              className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                form.role === 'customer'
-                  ? 'bg-yellow-500 text-white border-yellow-500 shadow-sm'
-                  : 'bg-white border-gray-200 hover:border-yellow-300'
-              }`}
-            >
-              👤 ลูกค้า
-            </button>
-            <button
-              type="button"
-              onClick={() => setForm({ ...form, role: 'technician' })}
-              className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                form.role === 'technician'
-                  ? 'bg-yellow-500 text-white border-yellow-500 shadow-sm'
-                  : 'bg-white border-gray-200 hover:border-yellow-300'
-              }`}
-            >
-              🔧 ช่าง
-            </button>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+            {[
+              { val: 'customer', label: '👤 ลูกค้า' },
+              { val: 'technician', label: '🔧 ช่าง' },
+            ].map(r => (
+              <button
+                key={r.val}
+                type="button"
+                onClick={() => setForm({ ...form, role: r.val })}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 12, border: `2px solid ${form.role === r.val ? 'var(--primary)' : '#E5E7EB'}`,
+                  background: form.role === r.val ? 'var(--primary)' : 'white',
+                  color: form.role === r.val ? '#3D2C00' : '#9CA3AF',
+                  fontSize: 14, fontWeight: 700, fontFamily: 'Prompt, sans-serif',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              >
+                {r.label}
+              </button>
+            ))}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="fullName" className="text-sm font-medium">ชื่อ-นามสกุล</Label>
-            <Input
-              id="fullName"
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>ชื่อ-นามสกุล</label>
+            <input
+              type="text"
+              className="form-input"
               placeholder="สมชาย ใจดี"
-              className="h-11"
               value={form.fullName}
               onChange={e => setForm({ ...form, fullName: e.target.value })}
               required
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-medium">อีเมล</Label>
-            <Input
-              id="email"
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>อีเมล</label>
+            <input
               type="email"
+              className="form-input"
               placeholder="your@email.com"
-              className="h-11"
               value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
               required
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-sm font-medium">เบอร์โทรศัพท์</Label>
-            <Input
-              id="phone"
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>เบอร์โทรศัพท์</label>
+            <input
               type="tel"
+              className="form-input"
               placeholder="081-234-5678"
-              className="h-11"
               value={form.phone}
               onChange={e => setForm({ ...form, phone: e.target.value })}
               required
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-sm font-medium">รหัสผ่าน</Label>
-            <Input
-              id="password"
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>รหัสผ่าน</label>
+            <input
               type="password"
+              className="form-input"
               placeholder="••••••••"
-              className="h-11"
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
               required
@@ -125,23 +119,20 @@ export default function RegisterPage() {
             />
           </div>
 
-          <Button
-            type="submit"
+          <button
+            className="btn-primary"
             onClick={handleSubmit}
-            className="w-full h-11 bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
             disabled={loading}
           >
             {loading ? 'กำลังสมัคร…' : 'สมัครสมาชิก'}
-          </Button>
+          </button>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: 'var(--text-light)' }}>
           มีบัญชีอยู่แล้ว?{' '}
-          <Link href="/auth/login" className="text-yellow-600 hover:underline font-medium">
-            เข้าสู่ระบบ
-          </Link>
+          <Link href="/auth/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>เข้าสู่ระบบ</Link>
         </p>
       </div>
-    </main>
+    </div>
   )
 }
