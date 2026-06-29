@@ -139,19 +139,21 @@ function BookingPageInner() {
             {selectedCategory && (
               <div>
                 <h3 className="font-semibold mb-3">เลือกประเภทงานย่อย</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-3 gap-3">
                   {selectedCategory.subCategories.map((sub: any) => (
-                    <Badge
+                    <div
                       key={sub.id}
-                      className={`cursor-pointer px-3 py-1 ${
+                      className={`flex flex-col items-center gap-2 p-3 rounded-2xl cursor-pointer transition-all ${
                         selectedSubCategory?.id === sub.id
-                          ? 'bg-yellow-500 text-black'
-                          : 'bg-gray-100 hover:bg-gray-200 cursor-pointer'
+                          ? 'bg-yellow-50 border-2 border-yellow-500'
+                          : 'bg-white border-2 border-transparent hover:border-yellow-200'
                       }`}
+                      style={{ boxShadow: '0 2px 12px rgba(180,130,0,0.10)' }}
                       onClick={() => setSelectedSubCategory(sub)}
                     >
-                      {sub.icon || ''} {sub.name}
-                    </Badge>
+                      <div className="cat-icon-box">{sub.icon || '🔧'}</div>
+                      <span className="text-xs font-medium text-center leading-tight">{sub.name}</span>
+                    </div>
                   ))}
                 </div>
               </div>
