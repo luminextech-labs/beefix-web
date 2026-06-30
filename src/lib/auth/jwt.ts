@@ -13,6 +13,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
 export interface JwtPayload {
   userId: string
   role: 'customer' | 'technician' | 'admin'
+  fullName?: string
 }
 
 export interface AuthResult {

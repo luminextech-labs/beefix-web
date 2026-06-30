@@ -202,7 +202,7 @@ export default function ChatRoomPage() {
                     </div>
                   )}
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 2, paddingHorizontal: 8 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 2, paddingLeft: 8, paddingRight: 8 }}>
                   {new Date(msg.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
