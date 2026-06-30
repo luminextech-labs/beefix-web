@@ -58,6 +58,7 @@ enum WithdrawalStatus {
 
 enum NotificationType {
   new_order
+  new_message
   order_confirmed
   payment_received
   review_received
