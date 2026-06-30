@@ -6,5 +6,5 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export function getPublicUrl(path: string) {
-  return `${supabaseUrl}/storage/v1/object/public/${path}`
+  return `${supabaseUrl}/storage/v1/object/public/chat-images/${path}`
 }
