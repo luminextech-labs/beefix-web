@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คู่มือใช้งาน Beefix</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
+.container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.header { background: #FFB800; padding: 24px; color: #3D2C00; text-align: center; }
+.header h1 { font-size: 24px; margin-bottom: 4px; }
+.header p { font-size: 13px; opacity: 0.8; }
+.tab-bar { display: flex; background: #FFF8E7; }
+.tab { flex: 1; padding: 12px; text-align: center; font-weight: 600; cursor: pointer; font-size: 14px; border-bottom: 3px solid transparent; }
+.tab.active { border-color: #FFB800; background: #FFF; color: #3D2C00; }
+.content { display: none; padding: 20px; }
+.content.active { display: block; }
+.section { margin-bottom: 28px; }
+.section h2 { font-size: 16px; color: #FFB800; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #FFF8E7; }
+.step { display: flex; gap: 12px; margin-bottom: 14px; }
+.step-num { width: 28px; height: 28px; background: #FFB800; color: #3D2C00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.step-text { font-size: 14px; }
+.step-text strong { color: #3D2C00; }
+.note { background: #FFF8E7; padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; }
+.note.red { background: #FFF0F0; border-left: 3px solid #FF4D4F; }
+.feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.feature { background: #fafafa; padding: 12px; border-radius: 10px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.feature span { font-size: 20px; }
+.footer { text-align: center; padding: 20px; background: #fafafa; font-size: 12px; color: #999; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🐂 Beefix</h1>
+    <p>แพลตฟอร์มรับจ้างบริการ ที่เชื่อมช่างกับลูกค้า</p>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="showTab('customer')">👤 ผู้ใช้ (ลูกค้า)</div>
+    <div class="tab" onclick="showTab('tech')">🔧 ช่าง (ผู้ให้บริการ)</div>
+  </div>
+
+  <!-- คู่มือลูกค้า -->
+  <div id="customer" class="content active">
+    <div class="section">
+      <h2>🔑 วิธีเข้าใช้งาน</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>เปิดเว็บ</strong> → <a href="https://beefix-web.vercel.app" style="color:#FFB800">beefix-web.vercel.app</a></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Login</strong> หรือ <strong>สมัครสมาชิก</strong> (ใช้ email + รหัสผ่าน)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">เข้าสู่ระบบแล้วจะเห็นเมนูด้านล่าง: <strong>หน้าแรก / คำสั่งซื้อ / แชท / กระเป๋า / โปรไฟล์</strong></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📋 วิธีจองช่าง</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">กด <strong>จองบริการ</strong> ที่หน้าแรก หรือกดปุ่ม <strong>+</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">เลือก <strong>หมวดหมู่</strong> เช่น ซ่อมไฟฟ้า, ประปา, แอร์, IT ฯลฯ</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">เลือก <strong>ช่างที่ต้องการ</strong> ดูจากคะแนนรีวิว + ราคา</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">กด <strong>ยืนยันการจอง</strong> → โอนเงิน (ชำระล่วงหน้าหรือหลังงานเสร็จ)</div>
+      </div>
+      <div class="note">💡 ถ้าชำระล่วงหน้า จะได้รับ <strong>ส่วนลด 10%</strong> จากค่าบริการ</div>
+    </div>
+
+    <div class="section">
+      <h2>💬 วิธีแชทกับช่าง</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เข้าเมนู <strong>แชท</strong> ด้านล่าง</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">เลือกห้องแชทที่ต้องการ (ระบบจะสร้างอัตโนมัติเมื่อช่างยืนยันงาน)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">พิมพ์ข้อความหรือ <strong>กด 📷 เพื่อส่งรูป</strong> ได้เลย</div>
+      </div>
+      <div class="note">📷 <strong>ส่งรูปได้!</strong> — รองรับ JPEG, PNG, GIF, WebP ขนาดสูงสุด 5MB</div>
+    </div>
+
+    <div class="section">
+      <h2>📦 ติดตามงาน</h2>
+      <div class="feature-grid">
+        <div class="feature"><span>⏳</span>รอยืนยัน</div>
+        <div class="feature"><span>✅</span>ยืนยันแล้ว</div>
+        <div class="feature"><span>🔧</span>กำลังทำงาน</div>
+        <div class="feature"><span>🎉</span>เสร็จสิ้น</div>
+      </div>
+      <div style="font-size:13px; margin-top:10px; color:#666;">ดูสถานะได้ที่เมนู <strong>คำสั่งซื้อ</strong> → เลือกงานที่ต้องการ</div>
+    </div>
+
+    <div class="section">
+      <h2>💳 กระเป๋าเงิน (Wallet)</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เข้าเมนู <strong>กระเป๋าเงิน</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">กด <strong>เติมเงิน</strong> → ใส่จำนวน → โอนเงินตาม PromptPay QR ที่แสดง</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">เงินเข้ากระเป๋าทันที หลังยืนยันการโอน</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⭐ วิธีรีวิวช่าง</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เมื่องาน<strong>เสร็จสิ้น</strong> จะมีแบบฟอร์มให้รีวิว</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">ให้คะแนน <strong>1-5 ดาว</strong> + เขียนความคิดเห็น</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="note red">
+        <strong>⚠️ ข้อควรระวัง:</strong><br>
+        • ชำระเงินผ่านระบบเท่านั้น (อย่าโอนตรง)<br>
+        • ถ่ายรูปงานก่อน-หลัง เพื่อเป็นหลักฐาน<br>
+        • ถ้าช่างไม่ติดต่อกลับ แจ้งทีมงานได้เลย
+      </div>
+    </div>
+  </div>
+
+  <!-- คู่มือช่าง -->
+  <div id="tech" class="content">
+    <div class="section">
+      <h2>🔑 วิธีเข้าใช้งาน</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เปิด <strong>แอปช่าง</strong> → <a href="https://beefix-technician-luminexlabs-projects.vercel.app" style="color:#FFB800">beefix-technician.vercel.app</a></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Login</strong> ด้วย email + รหัสผ่านที่ได้รับจากทีมงาน</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">เมนูด้านล่าง: <strong>หน้าแรก / งาน / แชท / กระเป๋า / โปรไฟล์</strong></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📋 วิธีรับงาน</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เมื่อมีงานใหม่ จะเห็นที่ <strong>หน้าแรก (Dashboard)</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">เปิดรายละเอียดงาน → ดูที่อยู่, เวลา, ราคา</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">กด <strong>✅ ยืนยันรับงาน</strong> → ระบบจะสร้างห้องแชทให้อัตโนมัติ</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔧 สถานะงาน</h2>
+      <div class="step">
+        <div class="step-num">✅</div>
+        <div class="step-text"><strong>ยืนยันแล้ว</strong> → ตกลงรายละเอียดกับลูกค้าแล้ว</div>
+      </div>
+      <div class="step">
+        <div class="step-num">🔧</div>
+        <div class="step-text"><strong>กำลังทำ</strong> → ถึงหน้างานแล้ว ดำเนินการซ่อน/ติดตั้ง</div>
+      </div>
+      <div class="step">
+        <div class="step-num">🎉</div>
+        <div class="step-text"><strong>เสร็จสิ้น</strong> → กดปุ่มเมื่อทำงานเสร็จ แจ้งลูกค้ารีวิว</div>
+      </div>
+      <div class="note">💡 อย่าลืมอัปเดตสถานะทุกขั้นตอน เพื่อให้ลูกค้าติดตามได้!</div>
+    </div>
+
+    <div class="section">
+      <h2>💬 วิธีแชทกับลูกค้า</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เข้าเมนู <strong>แชท 💬</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">เลือกห้องแชทที่ต้องการ</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">พิมพ์ข้อความหรือ <strong>กด 📷 เพื่อส่งรูป</strong></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💰 กระเป๋าเงินและการถอน</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">ดูยอดเงินที่ <strong>กระเป๋าเงิน 💳</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">กด <strong>🏧 ถอนเงิน</strong> → ใส่จำนวนที่ต้องการ</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">เงินจะเข้าบัญชีภายใน <strong>1-3 วันทำการ</strong></div>
+      </div>
+      <div class="note">📊 ค่าธรรมเนียม: ระบบหัก <strong>10%</strong> จากค่าบริการ (ค่าใช้จ่ายแพลตฟอร์ม)</div>
+    </div>
+
+    <div class="section">
+      <h2>⭐ วิธีตอบรีวิว</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">เมื่อลูกค้ารีวิว → แจ้งเตือนจะเข้ามา</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">เข้า <strong>โปรไฟล์ → ดูรีวิว</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">กด <strong>ตอบกลับรีวิว</strong> → ตอบขอบคุณหรือชี้แจง</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="note">
+        <strong>📱 App ช่าง:</strong><br>
+        • หน้าแรก → สถิติวันนี้ + งานที่รอดำเนินการ<br>
+        • งาน → ดูรายการทั้งหมด (กรองตามสถานะได้)<br>
+        • โปรไฟล์ → แก้ไขข้อมูลส่วนตัว, เพิ่มบริการ
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>🐂 Beefix — แพลตฟอร์มรับจ้างบริการ</p>
+    <p>หากมีปัญหา ติดต่อทีมงานได้เลย</p>
+  </div>
+</div>
+
+<script>
+function showTab(tab) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.includes(tab === 'customer' ? 'ลูกค้า' : 'ช่าง')) t.classList.add('active');
+  });
+}
+</script>
+</body>
+</html>
