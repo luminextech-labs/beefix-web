@@ -122,17 +122,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
-    // Create notification for the other party
+    // Create notification for the other party (non-blocking)
     const recipientId = room.customerId === auth.user.userId ? room.technicianId : room.customerId
-    await prisma.notification.create({
-      data: {
-        userId: recipientId,
-        type: 'new_order',
-        title: 'ข้อความใหม่',
-        body: `${auth.user.fullName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 50)}`,
-        data: { roomId, messageId: chatMessage.id },
-      },
-    })
+    const senderName = auth.user.fullName || 'ลูกค้า'
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: recipientId,
+          type: 'new_message',
+          title: 'ข้อความใหม่',
+          body: `${senderName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 50)}`,
+          data: { roomId, messageId: chatMessage.id },
+        },
+      })
+    } catch (notifErr) {
+      console.error('Notification create error:', notifErr)
+    }
 
     return NextResponse.json({ success: true, message: chatMessage }, { status: 201 })
   } catch (error) {
