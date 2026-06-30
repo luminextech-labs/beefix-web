@@ -20,18 +20,21 @@ export default function WalletPage() {
   const [topupAmount, setTopupAmount] = useState('')
   const [topupLoading, setTopupLoading] = useState(false)
 
-  useEffect(() => {
+  const loadWallet = () => {
     walletsApi.get()
       .then(res => {
-        setBalance(res.wallet?.balance ?? 0)
+        setBalance(Number(res.wallet?.balance ?? 0))
         setTransactions(res.transactions ?? [])
       })
       .catch(() => {
-        // Fallback mock data
-        setBalance(1247.5)
-        setTransactions(MOCK_TRANSACTIONS)
+        setBalance(0)
+        setTransactions([])
       })
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadWallet()
   }, [])
 
   const handleTopup = async () => {
@@ -40,8 +43,8 @@ export default function WalletPage() {
     setTopupLoading(true)
     try {
       await walletsApi.topup(amount)
-      setBalance(b => (b ?? 0) + amount)
       setTopupAmount('')
+      loadWallet() // reload full wallet + transactions
     } catch {
       alert('เติมเงินไม่สำเร็จ กรุณาลองใหม่')
     } finally {
@@ -157,16 +160,16 @@ export default function WalletPage() {
                     {tx.amount > 0 ? '↑' : '↓'}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{tx.desc}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{tx.description || tx.desc}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-light)' }}>
-                      {new Date(tx.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(tx.createdAt || tx.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>
                   </div>
                   <div style={{
                     fontSize: 14, fontWeight: 700,
-                    color: tx.amount > 0 ? 'var(--green)' : 'var(--text)',
+                    color: Number(tx.amount) > 0 ? 'var(--green)' : 'var(--text)',
                   }}>
-                    {tx.amount > 0 ? '+' : ''}฿{Math.abs(tx.amount).toLocaleString()}
+                    {Number(tx.amount) > 0 ? '+' : ''}฿{Math.abs(Number(tx.amount)).toLocaleString()}
                   </div>
                 </div>
               ))}

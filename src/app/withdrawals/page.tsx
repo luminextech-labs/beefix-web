@@ -222,7 +222,7 @@ export default function WithdrawalsPage() {
                     </div>
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-light)' }}>
-                    {new Date(w.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(w.createdAt || w.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </div>
                 </div>
               ))}

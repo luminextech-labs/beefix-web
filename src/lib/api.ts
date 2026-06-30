@@ -99,3 +99,42 @@ export const walletsApi = {
   get: () => api.get<{ success: boolean; wallet: any; transactions: any[] }>('/api/wallets'),
   topup: (amount: number) => api.post<{ success: boolean }>('/api/wallets', { amount }),
 }
+
+// Chat
+export const chatApi = {
+  getRooms: () => api.get<{ success: boolean; rooms: any[] }>('/api/chat/rooms'),
+  createRoom: (orderId: string) => api.post<{ success: boolean; room: any }>('/api/chat/rooms', { orderId }),
+  getMessages: (roomId: string, page = 1) =>
+    api.get<{ success: boolean; messages: any[]; pagination: any }>(`/api/chat/rooms/${roomId}/messages?page=${page}`),
+  sendMessage: (roomId: string, message: string, messageType = 'text') =>
+    api.post<{ success: boolean; message: any }>(`/api/chat/rooms/${roomId}/messages`, { message, messageType }),
+}
+
+// Notifications
+export const notificationsApi = {
+  get: () => api.get<{ success: boolean; notifications: any[]; unreadCount: number }>('/api/notifications'),
+  markRead: (id: string) => api.patch<{ success: boolean }>('/api/notifications', { id }),
+  markAllRead: () => api.patch<{ success: boolean }>('/api/notifications', { markAllRead: true }),
+}
+
+// Upload (multipart/form-data, no JSON)
+export const uploadApi = {
+  upload: async (file: File, folder = 'chat'): Promise<{ success: boolean; url: string }> => {
+    const token = api.getToken()
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', folder)
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: formData,
+    })
+    return res.json()
+  },
+}
+
+// Profile
+export const profileApi = {
+  update: (data: { fullName?: string; phone?: string; avatarUrl?: string }) =>
+    api.patch<{ success: boolean; user: any }>('/api/profile', data),
+}
