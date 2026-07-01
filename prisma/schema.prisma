@@ -78,6 +78,11 @@ enum CouponDiscountType {
   amount
 }
 
+enum UserPaymentMethodType {
+  promptpay
+  card
+}
+
 // =============================================
 // USERS
 // =============================================
@@ -107,6 +112,7 @@ model User {
   chatRooms             ChatRoom[]
   couponUsages          CouponUsage[]
   walletTransactions    WalletTransaction[]     @relation("UserWalletTransactions")
+  paymentMethods        UserPaymentMethod[]
 
   @@map("users")
 }
@@ -579,4 +585,30 @@ model ServicePackage {
   subCategory SubCategory? @relation(fields: [subCategoryId], references: [id])
 
   @@map("service_packages")
+}
+
+// =============================================
+// USER PAYMENT METHODS
+// =============================================
+
+model UserPaymentMethod {
+  id          String               @id @default(uuid())
+  userId      String               @map("user_id")
+  type        UserPaymentMethodType
+  label       String
+  // PromptPay
+  promptpayNumber  String?         @map("promptpay_number")
+  // Card
+  cardLast4       String?         @map("card_last4")
+  cardBrand       String?         @map("card_brand")
+  cardExpMonth    Int?            @map("card_exp_month")
+  cardExpYear     Int?            @map("card_exp_year")
+  // Default
+  isDefault        Boolean        @default(false) @map("is_default")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_payment_methods")
 }

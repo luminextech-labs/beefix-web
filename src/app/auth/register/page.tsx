@@ -17,7 +17,11 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await register(form)
-      router.push('/')
+      if (form.role === 'technician') {
+        router.push('/technician/onboarding')
+      } else {
+        router.push('/')
+      }
     } catch (err: any) {
       setError(err.message || 'สมัครสมาชิกไม่สำเร็จ')
     } finally {

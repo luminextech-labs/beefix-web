@@ -92,6 +92,15 @@ export const ordersApi = {
 export const addressesApi = {
   getAll: () => api.get<{ success: boolean; addresses: any[] }>('/api/addresses'),
   create: (data: any) => api.post<{ success: boolean; address: any }>('/api/addresses', data),
+  update: (id: string, data: any) => api.patch<{ success: boolean; address: any }>(`/api/addresses`, { id, ...data }),
+  delete: (id: string) => api.delete<{ success: boolean }>(`/api/addresses?id=${id}`),
+}
+
+// Payment Methods
+export const paymentMethodsApi = {
+  getAll: () => api.get<{ success: boolean; methods: any[] }>('/api/payment-methods'),
+  create: (data: any) => api.post<{ success: boolean; method: any }>('/api/payment-methods', data),
+  delete: (id: string) => api.delete<{ success: boolean }>(`/api/payment-methods?id=${id}`),
 }
 
 // Wallets
