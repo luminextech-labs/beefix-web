@@ -83,6 +83,13 @@ enum UserPaymentMethodType {
   card
 }
 
+enum QuotationStatus {
+  pending
+  accepted
+  rejected
+  expired
+}
+
 // =============================================
 // USERS
 // =============================================
@@ -305,6 +312,36 @@ model Order {
   @@index([jobDate])
   @@index([status])
   @@map("orders")
+}
+
+// =============================================
+// QUOTATIONS
+// =============================================
+
+model Quotation {
+  id              String          @id @default(uuid())
+  orderId         String?         @unique @map("order_id")
+  customerId      String          @map("customer_id")
+  technicianId    String          @map("technician_id")
+  packageId       String?         @map("package_id")
+  title           String
+  description     String?
+  price           Decimal         @map("price") @db.Decimal(10, 2)
+  status          QuotationStatus @default(pending) @map("status")
+  validUntil      DateTime?       @map("valid_until")
+  customerNote    String?         @map("customer_note")
+  technicianNote  String?         @map("technician_note")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  order       Order?         @relation(fields: [orderId], references: [id])
+  customer    User           @relation(fields: [customerId], references: [id])
+  technician  Technician      @relation(fields: [technicianId], references: [id])
+  package     ServicePackage? @relation(fields: [packageId], references: [id])
+
+  @@index([technicianId, status])
+  @@index([customerId])
+  @@map("quotations")
 }
 
 // =============================================

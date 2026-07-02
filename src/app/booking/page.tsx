@@ -88,8 +88,9 @@ function BookingPageInner() {
     }
   }
 
-  const platformFee = (selectedTech?.services?.[0]?.basePrice || 0) * 0.10
-  const total = (selectedTech?.services?.[0]?.basePrice || 0) + platformFee
+  const basePriceNum = Number(selectedTech?.services?.[0]?.basePrice || 0)
+  const platformFee = basePriceNum * 0.10
+  const total = basePriceNum + platformFee
 
   const handleBookNow = () => {
     if (!user) { router.push('/auth/login'); return }
@@ -111,7 +112,7 @@ function BookingPageInner() {
         jobTime: form.jobTime || '09:00',
         addressId: selectedAddress?.id,
         addressText: !selectedAddress ? (selectedAddress as any)?.addressText : undefined,
-        laborCost: selectedTech?.services?.[0]?.basePrice || 0,
+        laborCost: Number(selectedTech?.services?.[0]?.basePrice || 0),
         travelCost: 0,
       })
       if (res.success) {
@@ -407,7 +408,7 @@ function BookingPageInner() {
                 {technicians.map(tech => {
                   const isSelected = selectedTech?.id === tech.id
                   const isAvailable = tech.isAvailable !== false
-                  const basePrice = tech.services?.[0]?.basePrice
+                  const basePrice = Number(tech.services?.[0]?.basePrice || 0)
 
                   return (
                     <div
