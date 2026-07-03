@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { authGuard } from '@/lib/auth/guard'
 import { z } from 'zod'
+import { sendPushToUser } from '@/lib/push'
 
 const sendMessageSchema = z.object({
   message: z.string().min(1).max(2000),
@@ -122,7 +123,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
-    // Create notification for the other party (non-blocking)
+    // Create notification for the other party
     const recipientId = room.customerId === auth.user.userId ? room.technicianId : room.customerId
     const senderName = auth.user.fullName || 'ลูกค้า'
     try {
@@ -138,6 +139,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     } catch (notifErr) {
       console.error('Notification create error:', notifErr)
     }
+
+    // Push notification (non-blocking)
+    sendPushToUser(recipientId, {
+      title: 'ข้อความใหม่',
+      body: `${senderName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 80)}`,
+      data: { type: 'new_message', roomId, messageId: chatMessage.id, link: `/chat/${roomId}` },
+    }, prisma).catch(() => {})
 
     return NextResponse.json({ success: true, message: chatMessage }, { status: 201 })
   } catch (error) {

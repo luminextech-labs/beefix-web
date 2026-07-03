@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import ReviewModal from '@/components/ReviewModal'
+import RevisionRequestModal from '@/components/RevisionRequestModal'
+import DisputeModal from '@/components/DisputeModal'
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -34,6 +37,9 @@ function OrderDetailInner() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [showRevisionModal, setShowRevisionModal] = useState(false)
+  const [showDisputeModal, setShowDisputeModal] = useState(false)
 
   useEffect(() => {
     if (orderId) {
@@ -75,6 +81,9 @@ function OrderDetailInner() {
   const canStart = isTech && order.status === 'confirmed'
   const canComplete = isTech && order.status === 'in_progress'
   const canReview = isCustomer && order.status === 'completed'
+  const canRequestRevision = (isCustomer || isTech) && !['completed', 'cancelled'].includes(order.status)
+  const canOpenDispute = (isCustomer || isTech) && ['in_progress', 'completed'].includes(order.status) && !order.disputes?.some((d: any) => d.status === 'open')
+  const openDispute = order.disputes?.find((d: any) => d.status === 'open')
 
   return (
     <>
@@ -217,16 +226,165 @@ function OrderDetailInner() {
             {actionLoading ? '…' : '✅ งานเสร็จสิ้น'}
           </Button>
         )}
+        {canReview && !order.review && (
+          <Button
+            className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+            onClick={() => setShowReviewModal(true)}
+          >
+            ⭐ รีวิวช่าง
+          </Button>
+        )}
+        {canReview && order.review && (
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-medium text-green-700">คุณได้รีวิวแล้ว</span>
+                <span className="text-yellow-500">{'★'.repeat(order.review.rating)}</span>
+              </div>
+              {order.review.comment && (
+                <p className="text-sm text-gray-600">{order.review.comment}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
         {canCancel && (
           <Button variant="outline" className="w-full text-red-500 border-red-200 hover:bg-red-50" onClick={() => handleAction('cancelled', 'ลูกค้ายกเลิก')} disabled={actionLoading}>
             {actionLoading ? '…' : '❌ ยกเลิกออร์เดอร์'}
           </Button>
         )}
 
+        {/* Revision & Dispute actions */}
+        <div className="flex gap-2 mt-2">
+          {canRequestRevision && (
+            <Button variant="outline" className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => setShowRevisionModal(true)}>
+              📝 ขอแก้ไขงาน
+            </Button>
+          )}
+          {canOpenDispute && (
+            <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50" onClick={() => setShowDisputeModal(true)}>
+              ⚖️ เปิดข้อพิพาท
+            </Button>
+          )}
+        </div>
+
+        {/* Open dispute alert */}
+        {openDispute && (
+          <Card className="mt-2 border-red-200 bg-red-50">
+            <CardContent className="p-4 text-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">⚖️</span>
+                <span className="font-semibold text-red-700">มีข้อพิพาทที่เปิดอยู่</span>
+              </div>
+              <p className="text-gray-600"><strong>เหตุผล:</strong> {openDispute.reason}</p>
+              {openDispute.description && <p className="text-gray-500 mt-1">{openDispute.description}</p>}
+              <p className="text-xs text-gray-400 mt-1">เปิดเมื่อ {new Date(openDispute.createdAt).toLocaleDateString('th-TH')}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Revision history */}
+        {order.revisions && order.revisions.length > 0 && (
+          <Card className="mt-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">📝 ประวัติการแก้ไขงาน</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {order.revisions.map((rev: any) => (
+                <div key={rev.id} className={`p-3 rounded-lg text-sm ${rev.status === 'approved' ? 'bg-green-50 border border-green-200' : rev.status === 'rejected' ? 'bg-red-50 border border-red-200' : 'bg-gray-50 border border-gray-200'}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium">
+                      {rev.requestedBy === order.customerId ? order.customer?.fullName : order.technician?.user?.fullName}
+                    </span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      rev.status === 'approved' ? 'bg-green-100 text-green-700' : rev.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {rev.status === 'approved' ? '✅ อนุมัติ' : rev.status === 'rejected' ? '❌ ปฏิเสธ' : '⏳ รอตรวจสอบ'}
+                    </span>
+                  </div>
+                  {rev.title && <p className="text-gray-700">ชื่องาน: {rev.title}</p>}
+                  {rev.jobDate && <p className="text-gray-600 text-xs">วันที่: {new Date(rev.jobDate).toLocaleDateString('th-TH')}</p>}
+                  {(rev.laborCost != null || rev.travelCost != null || rev.materialCost != null) && (
+                    <p className="text-gray-600 text-xs">
+                      ราคาใหม่: ฿{((rev.laborCost || 0) + (rev.travelCost || 0) + (rev.materialCost || 0)).toLocaleString()}
+                    </p>
+                  )}
+                  {rev.note && <p className="text-gray-500 text-xs mt-1 italic">หมายเหตุ: {rev.note}</p>}
+                  <p className="text-xs text-gray-400 mt-1">{new Date(rev.createdAt).toLocaleDateString('th-TH')}</p>
+
+                  {/* Approve/Reject buttons for pending revisions (other party) */}
+                  {rev.status === 'pending' && ((isCustomer && rev.requestedBy !== order.customerId) || (isTech && rev.requestedBy !== order.technician?.userId)) && (
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs"
+                        onClick={async () => {
+                          const { revisionsApi } = await import('@/lib/api')
+                          await revisionsApi.approve(order.id, rev.id)
+                          ordersApi.getOne(orderId).then(r => { if (r.success) setOrder(r.order) })
+                        }}
+                      >✅ อนุมัติ</Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-red-500 text-xs"
+                        onClick={async () => {
+                          const { revisionsApi } = await import('@/lib/api')
+                          await revisionsApi.reject(order.id, rev.id)
+                          ordersApi.getOne(orderId).then(r => { if (r.success) setOrder(r.order) })
+                        }}
+                      >❌ ปฏิเสธ</Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Back */}
         <Button variant="ghost" className="w-full mt-4" onClick={() => router.push('/orders')}>
           ← กลับไปรายการออร์เดอร์
         </Button>
+
+        {/* Review modal */}
+        {showReviewModal && (
+          <ReviewModal
+            orderId={order.id}
+            technicianName={order.technician?.user?.fullName || 'ช่าง'}
+            onSuccess={() => {
+              setShowReviewModal(false)
+              setMessage('ส่งรีวิวแล้ว ขอบคุณที่รีวิว!')
+              // Reload order to show review
+              ordersApi.getOne(orderId).then(r => { if (r.success) setOrder(r.order) })
+            }}
+            onClose={() => setShowReviewModal(false)}
+          />
+        )}
+
+        {/* Revision modal */}
+        {showRevisionModal && (
+          <RevisionRequestModal
+            orderId={order.id}
+            currentOrder={order}
+            onSuccess={() => {
+              setShowRevisionModal(false)
+              ordersApi.getOne(orderId).then(r => { if (r.success) setOrder(r.order) })
+            }}
+            onClose={() => setShowRevisionModal(false)}
+          />
+        )}
+
+        {/* Dispute modal */}
+        {showDisputeModal && (
+          <DisputeModal
+            orderId={order.id}
+            onSuccess={() => {
+              setShowDisputeModal(false)
+              ordersApi.getOne(orderId).then(r => { if (r.success) setOrder(r.order) })
+            }}
+            onClose={() => setShowDisputeModal(false)}
+          />
+        )}
       </main>
     </>
   )

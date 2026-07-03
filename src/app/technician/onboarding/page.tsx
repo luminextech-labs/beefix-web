@@ -159,7 +159,12 @@ export default function TechnicianOnboardingPage() {
       }
 
       await refreshUser()
-      router.push('/')
+      // Set technician app token in cookie for cross-domain auth
+      const token = localStorage.getItem('token')
+      if (token) {
+        document.cookie = `tech_token=${token}; path=/; max-age=${60*60*24*7}; SameSite=Lax`
+      }
+      window.location.href = 'https://beefix-technician-nvkwid5gr-luminexlabs-projects.vercel.app'
     } catch (e: any) {
       setError(e.message || 'เกิดข้อผิดพลาด')
     } finally {

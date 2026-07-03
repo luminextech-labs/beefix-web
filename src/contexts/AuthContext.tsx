@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { api, authApi } from '@/lib/api'
+import { registerFCM } from '@/hooks/useFCM'
 
 interface User {
   id: string
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.success) throw new Error(res.user as any || 'Login failed')
     api.setToken(res.token)
     setUser(res.user)
+    registerFCM()
   }
 
   const register = async (data: { email: string; phone: string; password: string; fullName: string; role?: string }) => {
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.success) throw new Error('Registration failed')
     api.setToken(res.token)
     setUser(res.user)
+    registerFCM()
   }
 
   const logout = () => {

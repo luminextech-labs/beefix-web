@@ -4,9 +4,13 @@ import prisma from '@/lib/prisma'
 import { authGuard } from '@/lib/auth/guard'
 
 const serviceSchema = z.object({
-  subCategoryId: z.string().uuid(),
+  subCategoryId: z.string().uuid().optional(),
+  customCategoryId: z.string().uuid().optional(),
   description: z.string().optional(),
   basePrice: z.number().min(0).optional(),
+  images: z.array(z.string()).optional(),
+}).refine(data => data.subCategoryId || data.customCategoryId, {
+  message: 'ต้องระบุ subCategoryId หรือ customCategoryId',
 })
 
 // GET - list technician's services
@@ -30,13 +34,18 @@ export async function GET(req: NextRequest) {
     const services = await prisma.technicianService.findMany({
       where: { technicianId: technician.id },
       include: {
-        subCategory: {
-          include: { category: true },
-        },
+        subCategory: { include: { category: true } },
+        customCategory: true,
       },
     })
 
-    return NextResponse.json({ success: true, services })
+    // Also get custom categories for the frontend
+    const customCategories = await prisma.customCategory.findMany({
+      where: { technicianId: technician.id },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    return NextResponse.json({ success: true, services, customCategories })
   } catch (error) {
     console.error('Technician services GET error:', error)
     return NextResponse.json({ success: false, message: 'เกิดข้อผิดพลาด' }, { status: 500 })
@@ -70,34 +79,33 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check if service already exists
-    const existing = await prisma.technicianService.findUnique({
-      where: {
-        technicianId_subCategoryId: {
-          technicianId: technician.id,
-          subCategoryId: result.data.subCategoryId,
-        },
-      },
-    })
+    const { subCategoryId, customCategoryId, description, basePrice, images } = result.data
 
-    if (existing) {
-      return NextResponse.json(
-        { success: false, message: 'บริการนี้มีอยู่แล้ว' },
-        { status: 400 }
-      )
+    // For system service: check duplicate
+    if (subCategoryId) {
+      const existing = await prisma.technicianService.findFirst({
+        where: { technicianId: technician.id, subCategoryId },
+      })
+      if (existing) {
+        return NextResponse.json(
+          { success: false, message: 'บริการนี้มีอยู่แล้ว' },
+          { status: 400 }
+        )
+      }
     }
 
     const service = await prisma.technicianService.create({
       data: {
         technicianId: technician.id,
-        subCategoryId: result.data.subCategoryId,
-        description: result.data.description,
-        basePrice: result.data.basePrice,
+        subCategoryId: subCategoryId || null,
+        customCategoryId: customCategoryId || null,
+        description,
+        basePrice,
+        images: images || [],
       },
       include: {
-        subCategory: {
-          include: { category: true },
-        },
+        subCategory: { include: { category: true } },
+        customCategory: true,
       },
     })
 

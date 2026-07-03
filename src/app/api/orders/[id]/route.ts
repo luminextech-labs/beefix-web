@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/prisma'
 import { authGuard } from '@/lib/auth/guard'
+import { sendPushToUser } from '@/lib/push'
 
 const updateOrderSchema = z.object({
   status: z.enum(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']).optional(),
@@ -40,6 +41,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         review: true,
         chatRoom: true,
         statusHistory: {
+          orderBy: { createdAt: 'desc' },
+        },
+        revisions: {
+          orderBy: { createdAt: 'desc' },
+        },
+        disputes: {
           orderBy: { createdAt: 'desc' },
         },
       },
@@ -94,6 +101,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       where: { id },
       include: {
         technician: { include: { user: true } },
+        customer: { select: { id: true, fullName: true } },
       },
     })
 
@@ -124,6 +132,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             note: data.cancelReason || 'ลูกค้ายกเลิก',
           },
         })
+        // Push to technician
+        sendPushToUser(order.technician.userId, {
+          title: 'ออร์เดอร์ถูกยกเลิก',
+          body: `ลูกค้ายกเลิกออร์เดอร์ ${order.orderNo}`,
+          data: { type: 'order_cancelled', orderId: id, link: `/orders?id=${id}` },
+        }, prisma).catch(() => {})
         return NextResponse.json({ success: true, message: 'ยกเลิกออร์เดอร์แล้ว' })
       }
       return NextResponse.json(
@@ -152,19 +166,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           updateData.startedAt = new Date()
         } else if (data.status === 'completed') {
           updateData.completedAt = new Date()
-          // If payment is unpaid, this would need payment flow
         } else if (data.status === 'cancelled') {
           updateData.cancelledAt = new Date()
           updateData.cancelReason = data.cancelReason || 'ช่างยกเลิก'
         }
       }
 
-      // Update pricing if provided
       if (data.laborCost !== undefined) updateData.laborCost = data.laborCost
       if (data.travelCost !== undefined) updateData.travelCost = data.travelCost
       if (data.materialCost !== undefined) updateData.materialCost = data.materialCost
 
-      // Recalculate total if pricing changed
       if (data.laborCost !== undefined || data.travelCost !== undefined || data.materialCost !== undefined) {
         const labor = data.laborCost ?? Number(order.laborCost)
         const travel = data.travelCost ?? Number(order.travelCost)
@@ -186,6 +197,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             note: `อัปเดตโดยช่าง: ${data.status}`,
           },
         })
+
+        // Push status change to customer
+        const statusLabels: Record<string, string> = {
+          confirmed: 'ยืนยันแล้ว',
+          in_progress: 'กำลังดำเนินงาน',
+          completed: 'เสร็จสิ้น',
+          cancelled: 'ยกเลิก',
+        }
+        const label = statusLabels[data.status] || data.status
+        sendPushToUser(order.customerId, {
+          title: `สถานะออร์เดอร์: ${label}`,
+          body: `ออร์เดอร์ "${order.title}" ได้รับการอัปเดต`,
+          data: { type: 'order_updated', orderId: id, link: `/orders?id=${id}` },
+        }, prisma).catch(() => {})
       }
 
       return NextResponse.json({ success: true, order: updated })

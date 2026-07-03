@@ -31,6 +31,8 @@ function BookingPageInner() {
   const [selectedTech, setSelectedTech] = useState<any>(null)
   const [addresses, setAddresses] = useState<any[]>([])
   const [selectedAddress, setSelectedAddress] = useState<any>(null)
+  const [maxKm, setMaxKm] = useState(10)
+  const [showDistanceFilter, setShowDistanceFilter] = useState(false)
   const [showAddressModal, setShowAddressModal] = useState(false)
   const [showConfirmSheet, setShowConfirmSheet] = useState(false)
   const [form, setForm] = useState({
@@ -72,7 +74,14 @@ function BookingPageInner() {
       setTechnicians([])
       setSelectedTech(null)
       setBookingStep('tech')
-      techniciansApi.getAll({ subCategoryId: selectedSubCategory.id })
+      const addr = selectedAddress
+      const params: any = { subCategoryId: selectedSubCategory.id }
+      if (addr?.latitude && addr?.longitude) {
+        params.lat = Number(addr.latitude)
+        params.lng = Number(addr.longitude)
+        params.maxKm = maxKm
+      }
+      techniciansApi.getAll(params)
         .then(r => setTechnicians(r.technicians || []))
         .catch(() => setTechnicians([]))
     }
@@ -117,7 +126,7 @@ function BookingPageInner() {
       })
       if (res.success) {
         setShowConfirmSheet(false)
-        router.push(`/orders?id=${res.order.id}`)
+        router.push(`/orders/${res.order.id}`)
       } else {
         setError((res as any).message || 'ไม่สำเร็จ')
         setShowConfirmSheet(false)
@@ -379,10 +388,23 @@ function BookingPageInner() {
         {/* STEP 3: Technician list — GRAB driver cards */}
         {bookingStep === 'tech' && (
           <SlideUp show={true}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
               <div style={{ fontSize: 13, color: 'var(--text-light)' }}>
                 {technicians.length} ช่างว่าง
               </div>
+              {selectedAddress?.latitude && (
+                <button
+                  onClick={() => setShowDistanceFilter(!showDistanceFilter)}
+                  style={{
+                    fontSize: 11, fontWeight: 700,
+                    background: showDistanceFilter ? 'var(--primary)' : '#F3F4F6',
+                    color: showDistanceFilter ? '#3D2C00' : '#6B7280',
+                    padding: '4px 10px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  📍 {maxKm === 0 ? 'ทั่วประเทศ' : `ระยะ ${maxKm} กม.`}
+                </button>
+              )}
               <div style={{ display: 'flex', gap: 6 }}>
                 <span style={{
                   fontSize: 11, fontWeight: 700,
@@ -396,6 +418,51 @@ function BookingPageInner() {
                 }}>● ไม่ว่าง</span>
               </div>
             </div>
+
+            {/* Distance filter dropdown */}
+            {showDistanceFilter && (
+              <div style={{
+                background: 'white',
+                borderRadius: 16,
+                padding: '12px 16px',
+                marginBottom: 12,
+                border: '1.5px solid var(--border)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+              }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>📍 กรองตามระยะทาง</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[{ km: 3, label: '3 กม.' }, { km: 5, label: '5 กม.' }, { km: 10, label: '10 กม.' }, { km: 20, label: '20 กม.' }, { km: 50, label: '50 กม.' }, { km: 0, label: 'ทั่วประเทศ' }].map(opt => (
+                    <button
+                      key={opt.km}
+                      onClick={() => {
+                        setMaxKm(opt.km)
+                        setShowDistanceFilter(false)
+                        const addr = selectedAddress
+                        const params: any = { subCategoryId: selectedSubCategory?.id }
+                        if (addr?.latitude && addr?.longitude) {
+                          params.lat = Number(addr.latitude)
+                          params.lng = Number(addr.longitude)
+                          if (opt.km > 0) params.maxKm = opt.km
+                        }
+                        setTechnicians([])
+                        techniciansApi.getAll(params).then(r => setTechnicians(r.technicians || [])).catch(() => {})
+                      }}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: 20,
+                        border: maxKm === opt.km ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+                        background: maxKm === opt.km ? 'var(--primary-light)' : 'white',
+                        fontSize: 12, fontWeight: 700,
+                        color: maxKm === opt.km ? '#92400E' : 'var(--text)',
+                        cursor: 'pointer', fontFamily: 'Prompt, sans-serif',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {technicians.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 0' }}>
@@ -473,6 +540,11 @@ function BookingPageInner() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <span style={{ fontSize: 14, color: '#F59E0B', fontWeight: 800 }}>⭐ {Number(tech.ratingAvg || 0).toFixed(1)}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-light)' }}>({tech.ratingCount || 0} รีวิว)</span>
+                            {tech.distanceKm != null && (
+                              <span style={{ fontSize: 12, color: '#059669', fontWeight: 700 }}>
+                                📍 {tech.distanceKm} กม.
+                              </span>
+                            )}
                             <span style={{
                               fontSize: 10, fontWeight: 700,
                               background: isAvailable ? '#D1FAE5' : '#F3F4F6',
@@ -485,7 +557,7 @@ function BookingPageInner() {
 
                       {/* Tags */}
                       {tech.services?.length > 0 && (
-                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: isSelected ? 12 : 0 }}>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
                           {tech.services.slice(0, 3).map((s: any) => (
                             <span key={s.id} style={{
                               background: 'var(--primary-light)',
@@ -499,13 +571,63 @@ function BookingPageInner() {
                         </div>
                       )}
 
-                      {/* Bottom row: Price + CTA */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      {/* Profile button */}
+                      <div style={{ display: 'flex', gap: 8, marginBottom: isSelected ? 0 : 0 }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            router.push(`/profile/public?techId=${tech.id}`)
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '7px 0',
+                            borderRadius: 12,
+                            border: '1.5px solid var(--border)',
+                            background: 'white',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: 'var(--text)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 4,
+                          }}
+                        >
+                          👁 ดูโปรไฟล์ช่าง
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (isAvailable) setSelectedTech(isSelected ? null : tech)
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '7px 0',
+                            borderRadius: 12,
+                            border: isSelected ? '2px solid var(--primary)' : 'none',
+                            background: isSelected ? 'var(--primary)' : isAvailable ? 'var(--primary)' : '#E5E7EB',
+                            color: isSelected ? '#3D2C00' : isAvailable ? '#3D2C00' : '#9CA3AF',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            cursor: isAvailable ? 'pointer' : 'not-allowed',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 4,
+                          }}
+                        >
+                          {isSelected ? '✓ ยกเลิกเลือก' : isAvailable ? '✅ เลือกช่างนี้' : 'ไม่ว่าง'}
+                        </button>
+                      </div>
+
+                      {/* Price */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
                         <div>
                           {basePrice ? (
                             <>
                               <span style={{ fontSize: 11, color: 'var(--text-light)' }}>เริ่มต้น </span>
-                              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)', fontFamily: 'monospace' }}>
+                              <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary)', fontFamily: 'monospace' }}>
                                 ฿{Number(basePrice).toLocaleString()}
                               </span>
                               <span style={{ fontSize: 11, color: 'var(--text-light)' }}> บาท</span>
@@ -514,31 +636,6 @@ function BookingPageInner() {
                             <span style={{ fontSize: 13, color: 'var(--text-light)' }}>ราคาตามงาน</span>
                           )}
                         </div>
-
-                        {isAvailable && (
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            {isSelected ? (
-                              <div style={{
-                                background: 'var(--primary)', color: '#3D2C00',
-                                padding: '8px 18px', borderRadius: 25,
-                                fontSize: 13, fontWeight: 800,
-                                display: 'flex', alignItems: 'center', gap: 4,
-                              }}>
-                                ✓ เลือกแล้ว
-                              </div>
-                            ) : (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedTech(tech) }}
-                                style={{
-                                  background: '#3D2C00', color: 'white',
-                                  padding: '8px 18px', borderRadius: 25,
-                                  border: 'none', fontSize: 13, fontWeight: 700,
-                                  cursor: 'pointer', fontFamily: 'Prompt, sans-serif',
-                                }}
-                              >เลือก</button>
-                            )}
-                          </div>
-                        )}
                       </div>
                     </div>
                   )

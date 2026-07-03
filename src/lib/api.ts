@@ -142,6 +142,36 @@ export const uploadApi = {
   },
 }
 
+// Order Revisions
+export const revisionsApi = {
+  create: (orderId: string, data: {
+    title?: string; description?: string; jobDate?: string; jobTime?: string;
+    laborCost?: number; travelCost?: number; materialCost?: number;
+  }) => api.post<{ success: boolean; revision: any }>(`/api/orders/${orderId}/revision`, data),
+  list: (orderId: string) =>
+    api.get<{ success: boolean; revisions: any[] }>(`/api/orders/${orderId}/revision`),
+  approve: (orderId: string, revId: string, note?: string) =>
+    api.patch<{ success: boolean }>(`/api/orders/${orderId}/revision/${revId}`, { action: 'approve', note }),
+  reject: (orderId: string, revId: string, note?: string) =>
+    api.patch<{ success: boolean }>(`/api/orders/${orderId}/revision/${revId}`, { action: 'reject', note }),
+}
+
+// Disputes
+export const disputesApi = {
+  open: (orderId: string, data: { reason: string; description?: string }) =>
+    api.post<{ success: boolean; dispute: any }>(`/api/orders/${orderId}/dispute`, data),
+  get: (orderId: string) =>
+    api.get<{ success: boolean; dispute: any }>(`/api/orders/${orderId}/dispute`),
+}
+
+// Reviews
+export const reviewsApi = {
+  create: (data: { orderId: string; rating: number; comment?: string; tags?: string[] }) =>
+    api.post<{ success: boolean; review: any }>('/api/reviews', data),
+  getByOrder: (orderId: string) =>
+    api.get<{ success: boolean; reviews: any[] }>(`/api/reviews?orderId=${orderId}`),
+}
+
 // Profile
 export const profileApi = {
   update: (data: { fullName?: string; phone?: string; avatarUrl?: string }) =>

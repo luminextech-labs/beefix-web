@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/prisma'
 import { authGuard } from '@/lib/auth/guard'
+import { sendPushToUser } from '@/lib/push'
 
 const createOrderSchema = z.object({
   technicianId: z.string().uuid('ID ช่างไม่ถูกต้อง'),
@@ -241,6 +242,13 @@ export async function POST(req: NextRequest) {
         data: { orderId: order.id, technicianId: data.technicianId },
       },
     })
+
+    // Push notification (non-blocking)
+    sendPushToUser(technician.userId, {
+      title: 'มีงานใหม่!',
+      body: `มีการจอง "${data.title}" จากลูกค้า`,
+      data: { type: 'new_order', orderId: order.id, link: `/orders?id=${order.id}` },
+    }, prisma).catch(() => {})
 
     return NextResponse.json({ success: true, order }, { status: 201 })
   } catch (error) {

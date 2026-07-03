@@ -64,6 +64,9 @@ enum NotificationType {
   review_received
   technician_nearby
   order_cancelled
+  quotation_updated
+  quotation_received
+  order_updated
 }
 
 enum MessageType {
@@ -109,17 +112,18 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  addresses             Address[]
-  ordersAsCustomer      Order[]                 @relation("CustomerOrders")
-  technician            Technician?
-  wallet                Wallet?
-  reviews               Review[]
-  notifications         Notification[]
-  chatMessages          ChatMessage[]
-  chatRooms             ChatRoom[]
-  couponUsages          CouponUsage[]
-  walletTransactions    WalletTransaction[]     @relation("UserWalletTransactions")
-  paymentMethods        UserPaymentMethod[]
+  addresses          Address[]
+  ordersAsCustomer   Order[]             @relation("CustomerOrders")
+  technician         Technician?
+  wallet             Wallet?
+  reviews            Review[]
+  notifications      Notification[]
+  chatMessages       ChatMessage[]
+  chatRooms          ChatRoom[]
+  couponUsages       CouponUsage[]
+  walletTransactions WalletTransaction[] @relation("UserWalletTransactions")
+  paymentMethods     UserPaymentMethod[]
+  Quotation          Quotation[]
 
   @@map("users")
 }
@@ -129,29 +133,34 @@ model User {
 // =============================================
 
 model Technician {
-  id               String    @id @default(uuid())
-  userId           String    @unique @map("user_id")
-  headline         String?
-  bio              String?
-  yearsExperience  Int       @default(0) @map("years_experience")
-  hourlyRate       Decimal   @default(0) @map("hourly_rate") @db.Decimal(10, 2)
-  ratingAvg        Decimal   @default(0) @map("rating_avg") @db.Decimal(3, 2)
-  ratingCount      Int       @default(0) @map("rating_count")
-  isAvailable      Boolean   @default(true) @map("is_available")
-  autoAccept       Boolean   @default(false) @map("auto_accept")
-  verifiedAt       DateTime? @map("verified_at")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  userId          String    @unique @map("user_id")
+  headline        String?
+  bio             String?
+  yearsExperience Int       @default(0) @map("years_experience")
+  hourlyRate      Decimal   @default(0) @map("hourly_rate") @db.Decimal(10, 2)
+  ratingAvg       Decimal   @default(0) @map("rating_avg") @db.Decimal(3, 2)
+  ratingCount     Int       @default(0) @map("rating_count")
+  isAvailable     Boolean   @default(true) @map("is_available")
+  autoAccept      Boolean   @default(false) @map("auto_accept")
+  verifiedAt      DateTime? @map("verified_at")
+  latitude        Decimal?  @map("latitude") @db.Decimal(10, 8)
+  longitude       Decimal?  @map("longitude") @db.Decimal(11, 8)
+  serviceRadius   Int?      @map("service_radius") // รัศมีรับงาน หน่วย กม. (null = ทั่วประเทศ)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  services            TechnicianService[]
-  categories          TechnicianCategory[]
-  servicePackages     ServicePackage[]
-  orders              Order[]
-  reviews             Review[]
-  chatRoomsAsTech     ChatRoom[]            @relation("TechnicianChatRooms")
-  withdrawals         Withdrawal[]
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services        TechnicianService[]
+  categories      TechnicianCategory[]
+  customCategories CustomCategory[]
+  servicePackages ServicePackage[]
+  orders          Order[]
+  reviews         Review[]
+  chatRoomsAsTech ChatRoom[]           @relation("TechnicianChatRooms")
+  withdrawals     Withdrawal[]
+  Quotation       Quotation[]
 
   @@map("technicians")
 }
@@ -161,16 +170,16 @@ model Technician {
 // =============================================
 
 model Category {
-  id         String   @id @default(uuid())
-  name       String
-  slug       String   @unique
-  icon       String?
-  sortOrder  Int      @default(0) @map("sort_order")
-  isActive   Boolean  @default(true) @map("is_active")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  icon      String?
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  subCategories       SubCategory[]
+  subCategories        SubCategory[]
   technicianCategories TechnicianCategory[]
 
   @@map("categories")
@@ -181,16 +190,16 @@ model Category {
 // =============================================
 
 model SubCategory {
-  id          String   @id @default(uuid())
-  categoryId  String   @map("category_id")
-  name        String
-  slug        String
-  icon        String?
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  categoryId String   @map("category_id")
+  name       String
+  slug       String
+  icon       String?
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  category           Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category           Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   technicianServices TechnicianService[]
   servicePackages    ServicePackage[]
   orders             Order[]
@@ -204,18 +213,20 @@ model SubCategory {
 // =============================================
 
 model TechnicianService {
-  id              String   @id @default(uuid())
-  technicianId    String   @map("technician_id")
-  subCategoryId   String   @map("sub_category_id")
-  description     String?
-  basePrice       Decimal? @map("base_price") @db.Decimal(10, 2)
-  createdAt       DateTime @default(now()) @map("created_at")
+  id               String   @id @default(uuid())
+  technicianId     String   @map("technician_id")
+  subCategoryId     String?  @map("sub_category_id")
+  customCategoryId String?  @map("custom_category_id")
+  description      String?
+  basePrice        Decimal? @map("base_price") @db.Decimal(10, 2)
+  images           String[] @default([])
+  createdAt        DateTime @default(now()) @map("created_at")
 
   // Relations
-  technician  Technician  @relation(fields: [technicianId], references: [id], onDelete: Cascade)
-  subCategory SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  technician     Technician     @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  subCategory    SubCategory?   @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  customCategory CustomCategory? @relation(fields: [customCategoryId], references: [id], onDelete: Cascade)
 
-  @@unique([technicianId, subCategoryId])
   @@map("technician_services")
 }
 
@@ -224,18 +235,18 @@ model TechnicianService {
 // =============================================
 
 model Address {
-  id           String  @id @default(uuid())
-  userId       String  @map("user_id")
-  label        String
-  address      String
-  province     String?
-  district     String?
-  subDistrict  String? @map("sub_district")
-  postalCode   String? @map("postal_code")
-  latitude     Decimal? @db.Decimal(10, 8)
-  longitude    Decimal? @db.Decimal(11, 8)
-  isDefault    Boolean @default(false) @map("is_default")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  label       String
+  address     String
+  province    String?
+  district    String?
+  subDistrict String?  @map("sub_district")
+  postalCode  String?  @map("postal_code")
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -249,63 +260,66 @@ model Address {
 // =============================================
 
 model Order {
-  id                  String        @id @default(uuid())
-  orderNo             String        @unique @map("order_no")
-  customerId          String        @map("customer_id")
-  technicianId        String        @map("technician_id")
-  subCategoryId       String        @map("sub_category_id")
+  id            String @id @default(uuid())
+  orderNo       String @unique @map("order_no")
+  customerId    String @map("customer_id")
+  technicianId  String @map("technician_id")
+  subCategoryId String @map("sub_category_id")
 
   // Status
-  status              OrderStatus   @default(pending)
+  status OrderStatus @default(pending)
 
   // Details
-  title               String
-  description         String?
-  jobDate             DateTime          @map("job_date")
-  jobTime             String?       @map("job_time")
-  jobEndTime          String?       @map("job_end_time")
+  title       String
+  description String?
+  jobDate     DateTime @map("job_date")
+  jobTime     String?  @map("job_time")
+  jobEndTime  String?  @map("job_end_time")
 
   // Address
-  addressId           String?       @map("address_id")
-  addressText         String?       @map("address_text")
+  addressId   String? @map("address_id")
+  addressText String? @map("address_text")
 
   // Pricing
-  laborCost           Decimal       @default(0) @map("labor_cost") @db.Decimal(10, 2)
-  travelCost          Decimal       @default(0) @map("travel_cost") @db.Decimal(10, 2)
-  materialCost        Decimal       @default(0) @map("material_cost") @db.Decimal(10, 2)
-  discountAmount      Decimal       @default(0) @map("discount_amount") @db.Decimal(10, 2)
-  totalAmount         Decimal       @default(0) @map("total_amount") @db.Decimal(10, 2)
-  platformFee         Decimal       @default(0) @map("platform_fee") @db.Decimal(10, 2)
+  laborCost      Decimal @default(0) @map("labor_cost") @db.Decimal(10, 2)
+  travelCost     Decimal @default(0) @map("travel_cost") @db.Decimal(10, 2)
+  materialCost   Decimal @default(0) @map("material_cost") @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  totalAmount    Decimal @default(0) @map("total_amount") @db.Decimal(10, 2)
+  platformFee    Decimal @default(0) @map("platform_fee") @db.Decimal(10, 2)
 
   // Payment
-  paymentMethod       PaymentMethod @default(wallet) @map("payment_method")
-  paymentStatus       PaymentStatus @default(unpaid) @map("payment_status")
-  paidAt              DateTime?     @map("paid_at")
+  paymentMethod PaymentMethod @default(wallet) @map("payment_method")
+  paymentStatus PaymentStatus @default(unpaid) @map("payment_status")
+  paidAt        DateTime?     @map("paid_at")
 
   // Coupon
-  couponId            String?       @map("coupon_id")
-  couponDiscount      Decimal       @default(0) @map("coupon_discount") @db.Decimal(10, 2)
+  couponId       String? @map("coupon_id")
+  couponDiscount Decimal @default(0) @map("coupon_discount") @db.Decimal(10, 2)
 
   // Timestamps
-  technicianRespondedAt DateTime?   @map("technician_responded_at")
-  startedAt           DateTime?      @map("started_at")
-  completedAt         DateTime?      @map("completed_at")
-  cancelledAt         DateTime?      @map("cancelled_at")
-  cancelReason        String?        @map("cancel_reason")
-  createdAt           DateTime       @default(now()) @map("created_at")
-  updatedAt           DateTime       @updatedAt @map("updated_at")
+  technicianRespondedAt DateTime? @map("technician_responded_at")
+  startedAt             DateTime? @map("started_at")
+  completedAt           DateTime? @map("completed_at")
+  cancelledAt           DateTime? @map("cancelled_at")
+  cancelReason          String?   @map("cancel_reason")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  customer              User                  @relation("CustomerOrders", fields: [customerId], references: [id])
-  technician            Technician            @relation(fields: [technicianId], references: [id])
-  subCategory           SubCategory           @relation(fields: [subCategoryId], references: [id])
-  address               Address?               @relation(fields: [addressId], references: [id])
-  coupon                Coupon?                @relation(fields: [couponId], references: [id])
-  payment               Payment?
-  review                Review?
-  chatRoom              ChatRoom?
-  statusHistory         OrderStatusHistory[]
-  couponUsage           CouponUsage?
+  customer      User                 @relation("CustomerOrders", fields: [customerId], references: [id])
+  technician    Technician           @relation(fields: [technicianId], references: [id])
+  subCategory   SubCategory          @relation(fields: [subCategoryId], references: [id])
+  address       Address?             @relation(fields: [addressId], references: [id])
+  coupon        Coupon?              @relation(fields: [couponId], references: [id])
+  payment       Payment?
+  review        Review?
+  chatRoom      ChatRoom?
+  statusHistory OrderStatusHistory[]
+  revisions     OrderRevision[]
+  disputes      Dispute[]
+  couponUsage   CouponUsage?
+  Quotation     Quotation?
 
   @@index([customerId, status])
   @@index([technicianId, status])
@@ -319,25 +333,25 @@ model Order {
 // =============================================
 
 model Quotation {
-  id              String          @id @default(uuid())
-  orderId         String?         @unique @map("order_id")
-  customerId      String          @map("customer_id")
-  technicianId    String          @map("technician_id")
-  packageId       String?         @map("package_id")
-  title           String
-  description     String?
-  price           Decimal         @map("price") @db.Decimal(10, 2)
-  status          QuotationStatus @default(pending) @map("status")
-  validUntil      DateTime?       @map("valid_until")
-  customerNote    String?         @map("customer_note")
-  technicianNote  String?         @map("technician_note")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  id             String          @id @default(uuid())
+  orderId        String?         @unique @map("order_id")
+  customerId     String          @map("customer_id")
+  technicianId   String          @map("technician_id")
+  packageId      String?         @map("package_id")
+  title          String
+  description    String?
+  price          Decimal         @map("price") @db.Decimal(10, 2)
+  status         QuotationStatus @default(pending) @map("status")
+  validUntil     DateTime?       @map("valid_until")
+  customerNote   String?         @map("customer_note")
+  technicianNote String?         @map("technician_note")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
-  order       Order?         @relation(fields: [orderId], references: [id])
-  customer    User           @relation(fields: [customerId], references: [id])
-  technician  Technician      @relation(fields: [technicianId], references: [id])
-  package     ServicePackage? @relation(fields: [packageId], references: [id])
+  order      Order?          @relation(fields: [orderId], references: [id])
+  customer   User            @relation(fields: [customerId], references: [id])
+  technician Technician      @relation(fields: [technicianId], references: [id])
+  package    ServicePackage? @relation(fields: [packageId], references: [id])
 
   @@index([technicianId, status])
   @@index([customerId])
@@ -349,11 +363,11 @@ model Quotation {
 // =============================================
 
 model OrderStatusHistory {
-  id         String   @id @default(uuid())
-  orderId    String   @map("order_id")
-  status     String
-  note       String?
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  status    String
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -362,21 +376,76 @@ model OrderStatusHistory {
 }
 
 // =============================================
+// ORDER REVISIONS (แก้ไขงาน)
+// =============================================
+
+model OrderRevision {
+  id         String   @id @default(uuid())
+  orderId    String   @map("order_id")
+  requestedBy String  @map("requested_by")
+  title      String?
+  description String?  @map("description")
+  jobDate    DateTime? @map("job_date")
+  jobTime    String?  @map("job_time")
+  laborCost   Decimal? @map("labor_cost") @db.Decimal(10, 2)
+  travelCost  Decimal? @map("travel_cost") @db.Decimal(10, 2)
+  materialCost Decimal? @map("material_cost") @db.Decimal(10, 2)
+  status     String   @default("pending")
+  note       String?
+  resolvedAt DateTime? @map("resolved_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_revisions")
+}
+
+// =============================================
+// DISPUTES (ข้อพิพาท)
+// =============================================
+
+model Dispute {
+  id          String    @id @default(uuid())
+  orderId     String    @map("order_id")
+  openedBy    String    @map("opened_by")
+  reason      String
+  description String?   @map("description")
+  status      String    @default("open")
+
+  // Resolution fields (admin)
+  resolvedBy  String?   @map("resolved_by")
+  resolution String?   @map("resolution")
+  resolvedAt DateTime? @map("resolved_at")
+
+  // Financial adjustments
+  refundAmount  Decimal? @map("refund_amount") @db.Decimal(10, 2)
+  penaltyAmount Decimal? @map("penalty_amount") @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("disputes")
+}
+
+// =============================================
 // PAYMENTS
 // =============================================
 
 model Payment {
-  id             String         @id @default(uuid())
-  orderId        String         @unique @map("order_id")
-  amount         Decimal        @db.Decimal(10, 2)
-  method         PaymentMethod
-  cardLast4      String?        @map("card_last4")
-  cardBrand      String?        @map("card_brand")
+  id              String        @id @default(uuid())
+  orderId         String        @unique @map("order_id")
+  amount          Decimal       @db.Decimal(10, 2)
+  method          PaymentMethod
+  cardLast4       String?       @map("card_last4")
+  cardBrand       String?       @map("card_brand")
   promptpayNumber String?       @map("promptpay_number")
-  status         PaymentStatus  @default(paid)
-  transactionId  String?        @map("transaction_id")
-  paidAt         DateTime?      @map("paid_at")
-  createdAt      DateTime       @default(now()) @map("created_at")
+  status          PaymentStatus @default(paid)
+  transactionId   String?       @map("transaction_id")
+  paidAt          DateTime?     @map("paid_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
 
   // Relations
   order Order @relation(fields: [orderId], references: [id])
@@ -395,9 +464,9 @@ model Wallet {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions     WalletTransaction[]
-  withdrawals      Withdrawal[]
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+  withdrawals  Withdrawal[]
 
   @@map("wallets")
 }
@@ -407,19 +476,19 @@ model Wallet {
 // =============================================
 
 model WalletTransaction {
-  id             String                @id @default(uuid())
-  walletId       String                @map("wallet_id")
-  userId         String?               @map("user_id")
-  type           WalletTransactionType
-  amount         Decimal               @db.Decimal(10, 2)
-  balanceAfter   Decimal               @map("balance_after") @db.Decimal(12, 2)
-  reference      String?
-  description    String?
-  createdAt      DateTime              @default(now()) @map("created_at")
+  id           String                @id @default(uuid())
+  walletId     String                @map("wallet_id")
+  userId       String?               @map("user_id")
+  type         WalletTransactionType
+  amount       Decimal               @db.Decimal(10, 2)
+  balanceAfter Decimal               @map("balance_after") @db.Decimal(12, 2)
+  reference    String?
+  description  String?
+  createdAt    DateTime              @default(now()) @map("created_at")
 
   // Relations
   wallet Wallet? @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  user  User?   @relation("UserWalletTransactions", fields: [userId], references: [id])
+  user   User?   @relation("UserWalletTransactions", fields: [userId], references: [id])
 
   @@index([walletId, createdAt(sort: Desc)])
   @@map("wallet_transactions")
@@ -430,21 +499,21 @@ model WalletTransaction {
 // =============================================
 
 model Withdrawal {
-  id                  String           @id @default(uuid())
-  walletId            String           @map("wallet_id")
-  technicianId        String           @map("technician_id")
-  amount              Decimal          @db.Decimal(10, 2)
-  fee                 Decimal          @default(0) @db.Decimal(10, 2)
-  bankName            String?          @map("bank_name")
-  bankAccount         String?           @map("bank_account")
-  bankAccountName     String?           @map("bank_account_name")
-  status              WithdrawalStatus @default(pending)
-  processedAt         DateTime?        @map("processed_at")
-  createdAt           DateTime         @default(now()) @map("created_at")
+  id              String           @id @default(uuid())
+  walletId        String           @map("wallet_id")
+  technicianId    String           @map("technician_id")
+  amount          Decimal          @db.Decimal(10, 2)
+  fee             Decimal          @default(0) @db.Decimal(10, 2)
+  bankName        String?          @map("bank_name")
+  bankAccount     String?          @map("bank_account")
+  bankAccountName String?          @map("bank_account_name")
+  status          WithdrawalStatus @default(pending)
+  processedAt     DateTime?        @map("processed_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
 
   // Relations
-  wallet     Wallet      @relation(fields: [walletId], references: [id])
-  technician Technician  @relation(fields: [technicianId], references: [id])
+  wallet     Wallet     @relation(fields: [walletId], references: [id])
+  technician Technician @relation(fields: [technicianId], references: [id])
 
   @@map("withdrawals")
 }
@@ -454,21 +523,21 @@ model Withdrawal {
 // =============================================
 
 model Review {
-  id                String    @id @default(uuid())
-  orderId           String    @unique @map("order_id")
-  customerId        String    @map("customer_id")
-  technicianId       String    @map("technician_id")
-  rating            Int
-  comment           String?
-  tags              String[]
-  technicianReply   String?   @map("technician_reply")
-  repliedAt         DateTime? @map("replied_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
+  id              String    @id @default(uuid())
+  orderId         String    @unique @map("order_id")
+  customerId      String    @map("customer_id")
+  technicianId    String    @map("technician_id")
+  rating          Int
+  comment         String?
+  tags            String[]
+  technicianReply String?   @map("technician_reply")
+  repliedAt       DateTime? @map("replied_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   // Relations
-  order       Order      @relation(fields: [orderId], references: [id])
-  customer    User       @relation(fields: [customerId], references: [id])
-  technician  Technician @relation(fields: [technicianId], references: [id])
+  order      Order      @relation(fields: [orderId], references: [id])
+  customer   User       @relation(fields: [customerId], references: [id])
+  technician Technician @relation(fields: [technicianId], references: [id])
 
   @@map("reviews")
 }
@@ -478,22 +547,22 @@ model Review {
 // =============================================
 
 model Coupon {
-  id               String              @id @default(uuid())
-  code             String              @unique
-  discountType     CouponDiscountType  @map("discount_type")
-  discountValue    Decimal             @db.Decimal(10, 2) @map("discount_value")
-  minOrderAmount   Decimal              @default(0) @map("min_order_amount") @db.Decimal(10, 2)
-  maxDiscount      Decimal?             @map("max_discount") @db.Decimal(10, 2)
-  validFrom        DateTime            @map("valid_from")
-  validUntil       DateTime            @map("valid_until")
-  usageLimit       Int?                @map("usage_limit")
-  usageCount       Int                  @default(0) @map("usage_count")
-  isActive         Boolean              @default(true) @map("is_active")
-  createdAt        DateTime             @default(now()) @map("created_at")
+  id             String             @id @default(uuid())
+  code           String             @unique
+  discountType   CouponDiscountType @map("discount_type")
+  discountValue  Decimal            @map("discount_value") @db.Decimal(10, 2)
+  minOrderAmount Decimal            @default(0) @map("min_order_amount") @db.Decimal(10, 2)
+  maxDiscount    Decimal?           @map("max_discount") @db.Decimal(10, 2)
+  validFrom      DateTime           @map("valid_from")
+  validUntil     DateTime           @map("valid_until")
+  usageLimit     Int?               @map("usage_limit")
+  usageCount     Int                @default(0) @map("usage_count")
+  isActive       Boolean            @default(true) @map("is_active")
+  createdAt      DateTime           @default(now()) @map("created_at")
 
   // Relations
-  orders  Order[]
-  usages  CouponUsage[]
+  orders Order[]
+  usages CouponUsage[]
 
   @@map("coupons")
 }
@@ -523,17 +592,17 @@ model CouponUsage {
 // =============================================
 
 model ChatRoom {
-  id             String    @id @default(uuid())
-  orderId        String    @unique @map("order_id")
-  customerId     String    @map("customer_id")
-  technicianId   String    @map("technician_id")
-  lastMessage    String?   @map("last_message")
-  lastMessageAt  DateTime? @map("last_message_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
+  id            String    @id @default(uuid())
+  orderId       String    @unique @map("order_id")
+  customerId    String    @map("customer_id")
+  technicianId  String    @map("technician_id")
+  lastMessage   String?   @map("last_message")
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   // Relations
-  order       Order        @relation(fields: [orderId], references: [id])
-  customer   User         @relation(fields: [customerId], references: [id])
+  order      Order         @relation(fields: [orderId], references: [id])
+  customer   User          @relation(fields: [customerId], references: [id])
   technician Technician    @relation("TechnicianChatRooms", fields: [technicianId], references: [id])
   messages   ChatMessage[]
 
@@ -547,13 +616,13 @@ model ChatRoom {
 // =============================================
 
 model ChatMessage {
-  id           String       @id @default(uuid())
-  roomId       String       @map("room_id")
-  senderId     String       @map("sender_id")
-  message      String
-  messageType  MessageType  @default(text) @map("message_type")
-  isRead       Boolean      @default(false) @map("is_read")
-  createdAt    DateTime     @default(now()) @map("created_at")
+  id          String      @id @default(uuid())
+  roomId      String      @map("room_id")
+  senderId    String      @map("sender_id")
+  message     String
+  messageType MessageType @default(text) @map("message_type")
+  isRead      Boolean     @default(false) @map("is_read")
+  createdAt   DateTime    @default(now()) @map("created_at")
 
   // Relations
   room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
@@ -589,10 +658,10 @@ model Notification {
 // =============================================
 
 model TechnicianCategory {
-  id            String   @id @default(uuid())
-  technicianId  String   @map("technician_id")
-  categoryId    String   @map("category_id")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  technicianId String   @map("technician_id")
+  categoryId   String   @map("category_id")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
   technician Technician @relation(fields: [technicianId], references: [id], onDelete: Cascade)
@@ -602,24 +671,41 @@ model TechnicianCategory {
   @@map("technician_categories")
 }
 
+// Custom categories created by technicians
+model CustomCategory {
+  id           String   @id @default(uuid())
+  technicianId String   @map("technician_id")
+  name         String
+  icon         String   @default("🔧")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  technician Technician         @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  services   TechnicianService[]
+
+  @@unique([technicianId, name])
+  @@map("custom_categories")
+}
+
 // =============================================
 // SERVICE PACKAGES
 // =============================================
 
 model ServicePackage {
-  id             String      @id @default(uuid())
-  technicianId   String      @map("technician_id")
-  subCategoryId  String?     @map("sub_category_id")
-  title          String
-  description    String?
-  price          Decimal     @db.Decimal(10, 2)
-  durationHours  Decimal?    @map("duration_hours") @db.Decimal(4, 1)
-  isActive       Boolean     @default(true) @map("is_active")
-  createdAt      DateTime    @default(now()) @map("created_at")
+  id            String   @id @default(uuid())
+  technicianId  String   @map("technician_id")
+  subCategoryId String?  @map("sub_category_id")
+  title         String
+  description   String?
+  price         Decimal  @db.Decimal(10, 2)
+  durationHours Decimal? @map("duration_hours") @db.Decimal(4, 1)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   // Relations
   technician  Technician   @relation(fields: [technicianId], references: [id], onDelete: Cascade)
   subCategory SubCategory? @relation(fields: [subCategoryId], references: [id])
+  quotations  Quotation[]
 
   @@map("service_packages")
 }
@@ -629,20 +715,20 @@ model ServicePackage {
 // =============================================
 
 model UserPaymentMethod {
-  id          String               @id @default(uuid())
-  userId      String               @map("user_id")
-  type        UserPaymentMethodType
-  label       String
+  id              String                @id @default(uuid())
+  userId          String                @map("user_id")
+  type            UserPaymentMethodType
+  label           String
   // PromptPay
-  promptpayNumber  String?         @map("promptpay_number")
+  promptpayNumber String?               @map("promptpay_number")
   // Card
-  cardLast4       String?         @map("card_last4")
-  cardBrand       String?         @map("card_brand")
-  cardExpMonth    Int?            @map("card_exp_month")
-  cardExpYear     Int?            @map("card_exp_year")
+  cardLast4       String?               @map("card_last4")
+  cardBrand       String?               @map("card_brand")
+  cardExpMonth    Int?                  @map("card_exp_month")
+  cardExpYear     Int?                  @map("card_exp_year")
   // Default
-  isDefault        Boolean        @default(false) @map("is_default")
-  createdAt        DateTime       @default(now()) @map("created_at")
+  isDefault       Boolean               @default(false) @map("is_default")
+  createdAt       DateTime              @default(now()) @map("created_at")
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
         categories: {
           include: { category: true },
         },
+        customCategories: true,
       },
     })
 
@@ -93,7 +94,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { headline, bio, yearsExperience, hourlyRate, isAvailable, autoAccept } = body
+    const { headline, bio, yearsExperience, hourlyRate, isAvailable, autoAccept, latitude, longitude, serviceRadius } = body
 
     const technician = await prisma.technician.findUnique({
       where: { userId: auth.user.userId },
@@ -115,6 +116,9 @@ export async function PATCH(req: NextRequest) {
         ...(hourlyRate !== undefined && { hourlyRate }),
         ...(isAvailable !== undefined && { isAvailable }),
         ...(autoAccept !== undefined && { autoAccept }),
+        ...(latitude !== undefined && { latitude: latitude ? parseFloat(latitude) : null }),
+        ...(longitude !== undefined && { longitude: longitude ? parseFloat(longitude) : null }),
+        ...(serviceRadius !== undefined && { serviceRadius: serviceRadius ? parseInt(serviceRadius) : null }),
       },
     })
 

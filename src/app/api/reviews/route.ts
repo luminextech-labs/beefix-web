@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/prisma'
 import { authGuard } from '@/lib/auth/guard'
+import { sendPushToUser } from '@/lib/push'
 
 const reviewSchema = z.object({
   orderId: z.string().uuid(),
@@ -121,16 +122,22 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Notify technician
+    // Notify technician (DB + push)
     await prisma.notification.create({
       data: {
         userId: order.technician.userId,
         type: 'review_received',
-        title: 'ได้รับรีวิวใหม่!',
-        body: `ลูกค้าให้คะแนน ${result.data.rating} ดาว`,
+        title: 'ได้รับรีวิวใหม่! ⭐',
+        body: `ลูกค้าให้คะแนน ${result.data.rating} ดาว${result.data.comment ? ' "' + result.data.comment.slice(0, 40) + '..."' : ''}`,
         data: { orderId: order.id, reviewId: review.id },
       },
     })
+
+    sendPushToUser(order.technician.userId, {
+      title: 'ได้รับรีวิวใหม่! ⭐',
+      body: `ลูกค้าให้คะแนน ${result.data.rating} ดาว`,
+      data: { type: 'review_received', orderId: order.id, reviewId: review.id, link: `/profile/reviews` },
+    }, prisma).catch(() => {})
 
     return NextResponse.json({ success: true, review }, { status: 201 })
   } catch (error) {
