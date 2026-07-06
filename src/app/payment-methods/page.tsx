@@ -471,8 +471,8 @@ export default function PaymentMethodsPage() {
       {/* BOTTOM NAV */}
       <div className="bottom-nav">
         <Link href="/" className="nav-item"><span className="nav-icon">🏠</span>หน้าแรก</Link>
-        <Link href="/orders" className="nav-item"><span className="nav-icon">📋</span>รายการ</Link>
-        <Link href="/booking" className="nav-item"><span className="nav-icon">💬</span>จอง</Link>
+        <Link href="/orders" className="nav-item"><span className="nav-icon">📋</span>แชท</Link>
+        <Link href="/booking" className="nav-item"><span className="nav-icon">💬</span>แชท</Link>
         <Link href="/wallet" className="nav-item"><span className="nav-icon">💳</span>กระเป๋า</Link>
         <Link href="/profile" className="nav-item active"><span className="nav-icon">👤</span>โปรไฟล์</Link>
       </div>

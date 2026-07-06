@@ -565,10 +565,10 @@ export default function AddressesPage() {
           <span className="nav-icon">🏠</span>หน้าแรก
         </Link>
         <Link href="/orders" className="nav-item">
-          <span className="nav-icon">📋</span>รายการ
+          <span className="nav-icon">📋</span>แชท
         </Link>
         <Link href="/booking" className="nav-item">
-          <span className="nav-icon">💬</span>จอง
+          <span className="nav-icon">💬</span>แชท
         </Link>
         <Link href="/wallet" className="nav-item">
           <span className="nav-icon">💳</span>กระเป๋า
