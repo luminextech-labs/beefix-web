@@ -189,7 +189,7 @@ export default function HomePage() {
                   key={tech.id}
                   className="card-shadow"
                   style={{ padding: 16, display: 'flex', gap: 14, cursor: 'pointer' }}
-                  onClick={() => router.push(`/booking?tech=${tech.id}`)}
+                  onClick={() => window.open(`https://beefix-technician.vercel.app/profile/public?techId=${tech.id}`, '_blank')}
                 >
                   <div className="tech-avatar">👨‍🔧</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
