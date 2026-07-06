@@ -30,12 +30,7 @@ export default function Navbar() {
                   + จองช่าง
                 </Button>
               </Link>
-              <button
-                onClick={logout}
-                className="text-sm text-gray-400 hover:text-gray-600 ml-1"
-              >
-                ออก
-              </button>
+
             </>
           ) : (
             <>
