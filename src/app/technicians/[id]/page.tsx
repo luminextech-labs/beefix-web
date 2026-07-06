@@ -93,10 +93,12 @@ function TechProfileInner() {
             : p
         ))
       }
-    } catch {
+    } catch (err) {
+      console.error('Like error:', err)
+      alert('เกิดข้อผิดพลาด: ' + JSON.stringify(err))
       setPortfolio(prev => prev.map(p =>
         p.id === item.id
-          ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
+          ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likedByUser ? p.likeCount + 1 : p.likeCount }
           : p
       ))
     } finally {
