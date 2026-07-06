@@ -42,6 +42,8 @@ function TechProfileInner() {
   const [commentText, setCommentText] = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
   const [showComments, setShowComments] = useState<string | null>(null)
+  const [selectedService, setSelectedService] = useState<any>(null)
+  const [chatMsg, setChatMsg] = useState('')
 
   const commentInputRef = useRef<HTMLInputElement>(null)
 
@@ -247,30 +249,144 @@ function TechProfileInner() {
           )}
         </div>
 
-        {/* ===================== BLOCK 3: SERVICES ===================== */}
+        {/* ===================== BLOCK 3: SERVICES (Shopee-style grid) ===================== */}
         {tech.services && tech.services.length > 0 && (
-          <div className="card-shadow" style={{ padding: 16, marginBottom: 12, borderRadius: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>🔧 บริการ</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>🔧 บริการ ({tech.services.length})</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
               {tech.services.map((svc: any) => (
-                <div key={svc.id} style={{ background: 'var(--bg)', borderRadius: 10, padding: '10px 12px' }}>
-                  {svc.images && svc.images.length > 0 && (
-                    <div style={{ display: 'flex', gap: 6, marginBottom: 8, overflowX: 'auto' }}>
-                      {svc.images.map((img: string, i: number) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img key={i} src={img} alt="" style={{ width: 60, height: 60, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                      ))}
+                <div
+                  key={svc.id}
+                  onClick={() => setSelectedService(svc)}
+                  style={{ background: 'white', borderRadius: 12, overflow: 'hidden', border: '1.5px solid var(--border)', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+                >
+                  {/* Service image */}
+                  {svc.images && svc.images.length > 0 ? (
+                    <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
+                      <img src={svc.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      {svc.images.length > 1 && (
+                        <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: 10, padding: '2px 6px', borderRadius: 10 }}>+{svc.images.length}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ aspectRatio: '1/1', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>
+                      {svc.subCategory?.icon || '🔧'}
                     </div>
                   )}
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{svc.subCategory?.name}</div>
-                  {svc.description && <div style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 2 }}>{svc.description}</div>}
-                  {svc.basePrice != null && (
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginTop: 4 }}>฿{Number(svc.basePrice).toLocaleString()}</div>
-                  )}
+                  <div style={{ padding: '8px 10px' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4, lineHeight: 1.3 }}>{svc.subCategory?.name}</div>
+                    {svc.basePrice != null && (
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#DC2626', fontFamily: 'monospace' }}>฿{Number(svc.basePrice).toLocaleString()}</div>
+                    )}
+                    {svc.description && (
+                      <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2, lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{svc.description}</div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+
+            {/* SERVICE DETAIL SHEET */}
+            {selectedService && (
+              <div
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300, display: 'flex', alignItems: 'flex-end' }}
+                onClick={() => setSelectedService(null)}
+              >
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{ background: 'white', width: '100%', borderRadius: '20px 20px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: '0 0 max(16px, env(safe-area-inset-bottom))' }}
+                >
+                  {/* Handle */}
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: 12 }}>
+                    <div style={{ width: 36, height: 4, background: '#E0D5C0', borderRadius: 2 }} />
+                  </div>
+
+                  {/* Image carousel */}
+                  {selectedService.images && selectedService.images.length > 0 ? (
+                    <div style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '0 16px 12px', scrollSnapType: 'x mandatory' }}>
+                      {selectedService.images.map((img: string, i: number) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={i} src={img} alt="" style={{ width: 200, height: 200, borderRadius: 12, objectFit: 'cover', flexShrink: 0, scrollSnapAlign: 'start' }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', background: 'var(--primary-light)', margin: '0 16px 12px', borderRadius: 12 }}>
+                      <span style={{ fontSize: 80 }}>{selectedService.subCategory?.icon || '🔧'}</span>
+                    </div>
+                  )}
+
+                  <div style={{ padding: '0 16px' }}>
+                    {/* Service name + price */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div style={{ fontSize: 16, fontWeight: 800 }}>{selectedService.subCategory?.name}</div>
+                      {selectedService.basePrice != null && (
+                        <div style={{ fontSize: 20, fontWeight: 800, color: '#DC2626', fontFamily: 'monospace' }}>฿{Number(selectedService.basePrice).toLocaleString()}</div>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    {selectedService.description && (
+                      <div style={{ fontSize: 13, color: 'var(--text-light)', lineHeight: 1.6, marginBottom: 16 }}>
+                        {selectedService.description}
+                      </div>
+                    )}
+
+                    {/* Quick description chip */}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+                      {selectedService.subCategory?.category && (
+                        <span style={{ background: 'var(--primary-light)', color: '#8B6914', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+                          {selectedService.subCategory.category.name}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Tech info in sheet */}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', background: 'var(--bg)', padding: '10px 12px', borderRadius: 12, marginBottom: 16 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, overflow: 'hidden' }}>
+                        {userData?.avatarUrl ? <img src={userData.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (userData?.fullName || '?').charAt(0)}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>{userData?.fullName}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-light)' }}>⭐ {Number(tech.ratingAvg || 0).toFixed(1)} ({tech.ratingCount || 0} รีวิว) · {tech.yearsExperience || 0} ปีประสบการณ์</div>
+                      </div>
+                    </div>
+
+                    {/* Chat input */}
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>💬 ส่งข้อความถามช่าง</div>
+                    <textarea
+                      value={chatMsg}
+                      onChange={e => setChatMsg(e.target.value)}
+                      placeholder={`สวัสดีครับ สนใจใช้บริการ${selectedService.subCategory?.name}...`}
+                      style={{ width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 12, border: '1.5px solid var(--border)', fontSize: 13, resize: 'none', outline: 'none', fontFamily: 'inherit', marginBottom: 12, boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {/* Action buttons */}
+                  <div style={{ display: 'flex', gap: 10, padding: '0 16px 0', position: 'sticky', bottom: 0, background: 'white', paddingTop: 8 }}>
+                    <button
+                      onClick={() => {
+                        setChatMsg(`สวัสดีครับ สนใจใช้บริการ "${selectedService.subCategory?.name}" ครับ`)
+                        setSelectedService(null)
+                        router.push(`/chat/${techId}`)
+                      }}
+                      style={{ flex: 1, padding: '14px 0', borderRadius: 30, border: '2px solid var(--primary)', background: 'white', color: 'var(--primary)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Prompt, sans-serif' }}
+                    >
+                      💬 แชทเลย
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedService(null)
+                        router.push(`/booking?tech=${techId}&service=${selectedService.subCategory?.id}`)
+                      }}
+                      style={{ flex: 1, padding: '14px 0', borderRadius: 30, border: 'none', background: 'var(--primary)', color: '#3D2C00', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,184,0,0.4)', fontFamily: 'Prompt, sans-serif' }}
+                    >
+                      📋 ขอใบเสนอราคา
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* ===================== BLOCK 4: PORTFOLIO (Facebook-style) ===================== */}
