@@ -73,6 +73,9 @@ export const techniciansApi = {
     if (params?.page) query.set('page', String(params.page))
     return api.get<{ success: boolean; technicians: any[]; pagination: any }>(`/api/technicians?${query}`)
   },
+  getPublicProfile: (techId: string) => {
+    return api.get<{ success: boolean; technician: any }>(`/api/technicians/${techId}/public`)
+  },
 }
 
 // Orders

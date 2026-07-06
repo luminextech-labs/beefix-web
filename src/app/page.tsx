@@ -194,7 +194,7 @@ export default function HomePage() {
                   <div
                     className="tech-avatar"
                     style={{ cursor: 'pointer', flexShrink: 0 }}
-                    onClick={e => { e.stopPropagation(); window.open(`https://beefix-technician.vercel.app/profile/public?techId=${tech.id}`, '_blank') }}
+                    onClick={e => { e.stopPropagation(); router.push(`/technicians/${tech.id}`) }}
                   >👨‍🔧</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
