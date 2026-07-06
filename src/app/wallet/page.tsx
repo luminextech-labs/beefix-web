@@ -189,7 +189,7 @@ export default function WalletPage() {
           <span className="nav-icon">📋</span>แชท
         </Link>
         <Link href="/booking" className="nav-item">
-          <span className="nav-icon">💬</span>แชท
+          <span className="nav-icon">💬</span>จอง
         </Link>
         <Link href="/wallet" className="nav-item active">
           <span className="nav-icon">💳</span>กระเป๋า
