@@ -152,7 +152,7 @@ export default function ProfilePage() {
           <span className="nav-icon">🏠</span>หน้าแรก
         </Link>
         <Link href="/orders" className="nav-item">
-          <span className="nav-icon">📋</span>แชท
+          <span className="nav-icon">📋</span>รายการ
         </Link>
         <Link href="/booking" className="nav-item">
           <span className="nav-icon">💬</span>จอง
