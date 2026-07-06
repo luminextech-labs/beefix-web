@@ -262,14 +262,14 @@ function TechProfileInner() {
                 >
                   {/* Service image */}
                   {svc.images && svc.images.length > 0 ? (
-                    <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden' }}>
                       <img src={svc.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       {svc.images.length > 1 && (
                         <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: 10, padding: '2px 6px', borderRadius: 10 }}>+{svc.images.length}</div>
                       )}
                     </div>
                   ) : (
-                    <div style={{ aspectRatio: '1/1', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>
+                    <div style={{ aspectRatio: '4/3', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>
                       {svc.subCategory?.icon || '🔧'}
                     </div>
                   )}
@@ -428,10 +428,10 @@ function TechProfileInner() {
                   }} onClick={() => setViewingImages(item.images)}>
                     {item.images.slice(0, 4).map((img: string, i: number) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={img} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
+                      <img key={i} src={img} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
                     ))}
                     {item.images.length > 4 && (
-                      <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', fontWeight: 700 }}>
+                      <div style={{ width: '100%', aspectRatio: '4/3', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', fontWeight: 700 }}>
                         +{item.images.length - 4}
                       </div>
                     )}
