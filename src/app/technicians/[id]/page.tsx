@@ -367,7 +367,7 @@ function TechProfileInner() {
                       onClick={() => {
                         setChatMsg(`สวัสดีครับ สนใจใช้บริการ "${selectedService.subCategory?.name}" ครับ`)
                         setSelectedService(null)
-                        router.push(`/chat/${techId}`)
+                        router.push(`/chat/${techId}?service=${selectedService.subCategory?.id}&serviceName=${encodeURIComponent(selectedService.subCategory?.name || '')}`)
                       }}
                       style={{ flex: 1, padding: '14px 0', borderRadius: 30, border: '2px solid var(--primary)', background: 'white', color: 'var(--primary)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Prompt, sans-serif' }}
                     >
@@ -376,7 +376,7 @@ function TechProfileInner() {
                     <button
                       onClick={() => {
                         setSelectedService(null)
-                        router.push(`/booking?tech=${techId}&service=${selectedService.subCategory?.id}`)
+                        router.push(`/chat/${techId}?service=${selectedService.subCategory?.id}&serviceName=${encodeURIComponent(selectedService.subCategory?.name || '')}`)
                       }}
                       style={{ flex: 1, padding: '14px 0', borderRadius: 30, border: 'none', background: 'var(--primary)', color: '#3D2C00', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,184,0,0.4)', fontFamily: 'Prompt, sans-serif' }}
                     >
