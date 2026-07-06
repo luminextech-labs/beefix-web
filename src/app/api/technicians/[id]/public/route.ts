@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { verifyToken } from '@/lib/auth/jwt'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const authToken = req.cookies.get('auth_token')?.value ||
-                      req.cookies.get('tech_token')?.value
-    const userId = authToken || null
+    const rawToken = req.headers.get('authorization')?.replace('Bearer ', '') ||
+                     req.cookies.get('auth_token')?.value ||
+                     req.cookies.get('tech_token')?.value
+    const payload = rawToken ? verifyToken(rawToken) : null
+    const userId = payload?.userId || null
 
     const technician = await prisma.technician.findUnique({
       where: { id },
