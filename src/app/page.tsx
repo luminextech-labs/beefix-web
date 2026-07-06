@@ -189,9 +189,13 @@ export default function HomePage() {
                   key={tech.id}
                   className="card-shadow"
                   style={{ padding: 16, display: 'flex', gap: 14, cursor: 'pointer' }}
-                  onClick={() => window.open(`https://beefix-technician.vercel.app/profile/public?techId=${tech.id}`, '_blank')}
+                  onClick={() => router.push(`/booking?tech=${tech.id}`)}
                 >
-                  <div className="tech-avatar">👨‍🔧</div>
+                  <div
+                    className="tech-avatar"
+                    style={{ cursor: 'pointer', flexShrink: 0 }}
+                    onClick={e => { e.stopPropagation(); window.open(`https://beefix-technician.vercel.app/profile/public?techId=${tech.id}`, '_blank') }}
+                  >👨‍🔧</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                       <span style={{ fontSize: 15, fontWeight: 700 }}>{tech.user?.fullName || 'ช่าง'}</span>
