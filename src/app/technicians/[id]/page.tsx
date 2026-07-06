@@ -1,28 +1,161 @@
 'use client'
 import Link from 'next/link'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { techniciansApi } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+
+type PortfolioItem = {
+  id: string
+  images: string[]
+  caption?: string
+  likeCount: number
+  commentCount: number
+  likedByUser: boolean
+  createdAt: string
+  _count?: { likes: number; comments: number }
+  likes?: { userId: string }[]
+}
+
+type Comment = {
+  id: string
+  content: string
+  createdAt: string
+  user: { id: string; fullName: string; avatarUrl?: string }
+}
 
 function TechProfileInner() {
   const params = useParams()
   const router = useRouter()
+  const { user } = useAuth()
   const techId = params.id as string
   const [tech, setTech] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [viewingImages, setViewingImages] = useState<string[] | null>(null)
 
+  // Like / Comment state
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
+  const [likingId, setLikingId] = useState<string | null>(null)
+  const [commentItemId, setCommentItemId] = useState<string | null>(null)
+  const [comments, setComments] = useState<Record<string, Comment[]>>({})
+  const [commentText, setCommentText] = useState('')
+  const [commentLoading, setCommentLoading] = useState(false)
+  const [showComments, setShowComments] = useState<string | null>(null)
+
+  const commentInputRef = useRef<HTMLInputElement>(null)
+
+  const reloadTech = () => {
+    if (!techId) return
+    techniciansApi.getPublicProfile(techId)
+      .then((res: any) => {
+        if (res.success) {
+          setTech(res.technician)
+          setPortfolio(res.technician.portfolioItems || [])
+        }
+      })
+  }
+
   useEffect(() => {
     if (!techId) { setError('ไม่พบ ID ช่าง'); setLoading(false); return }
     techniciansApi.getPublicProfile(techId)
       .then((res: any) => {
-        if (res.success) setTech(res.technician)
+        if (res.success) {
+          setTech(res.technician)
+          setPortfolio(res.technician.portfolioItems || [])
+        }
         else setError(res.message || 'ไม่พบโปรไฟล์')
       })
       .catch(() => setError('โหลดโปรไฟล์ไม่ได้'))
       .finally(() => setLoading(false))
   }, [techId])
+
+  const handleLike = async (item: PortfolioItem) => {
+    if (!user) { alert('กรุณาเข้าสู่ระบบก่อน'); return }
+    if (likingId) return
+    setLikingId(item.id)
+    // Optimistic update
+    setPortfolio(prev => prev.map(p =>
+      p.id === item.id
+        ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
+        : p
+    ))
+    try {
+      const res = await fetch(`/api/portfolio/${item.id}/like`, { method: 'POST' })
+      const data = await res.json()
+      if (!data.success) {
+        // Revert on failure
+        setPortfolio(prev => prev.map(p =>
+          p.id === item.id
+            ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
+            : p
+        ))
+      }
+    } catch {
+      setPortfolio(prev => prev.map(p =>
+        p.id === item.id
+          ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
+          : p
+      ))
+    } finally {
+      setLikingId(null)
+    }
+  }
+
+  const handleShare = (item: PortfolioItem) => {
+    const url = `${window.location.origin}/technicians/${techId}`
+    if (navigator.share) {
+      navigator.share({ title: `${tech?.user?.fullName} - ผลงาน`, url })
+    } else {
+      navigator.clipboard.writeText(url)
+      alert('ลิงก์ถูกคัดลอกไปยังคลิปบอร์ดแล้ว!')
+    }
+  }
+
+  const loadComments = async (itemId: string) => {
+    try {
+      const res = await fetch(`/api/portfolio/${itemId}/comment`)
+      const data = await res.json()
+      if (data.success) {
+        setComments(prev => ({ ...prev, [itemId]: data.comments }))
+      }
+    } catch {}
+  }
+
+  const toggleComments = (itemId: string) => {
+    if (showComments === itemId) {
+      setShowComments(null)
+    } else {
+      setShowComments(itemId)
+      loadComments(itemId)
+    }
+  }
+
+  const handleComment = async (itemId: string) => {
+    if (!user) { alert('กรุณาเข้าสู่ระบบก่อน'); return }
+    if (!commentText.trim()) return
+    setCommentLoading(true)
+    try {
+      const res = await fetch(`/api/portfolio/${itemId}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: commentText }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setComments(prev => ({
+          ...prev,
+          [itemId]: [...(prev[itemId] || []), data.comment],
+        }))
+        setPortfolio(prev => prev.map(p =>
+          p.id === itemId ? { ...p, commentCount: p.commentCount + 1 } : p
+        ))
+        setCommentText('')
+      }
+    } catch {} finally {
+      setCommentLoading(false)
+    }
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg)' }}>
@@ -36,7 +169,7 @@ function TechProfileInner() {
     </div>
   )
 
-  const user = tech.user
+  const userData = tech.user
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', paddingBottom: 100 }}>
@@ -66,13 +199,13 @@ function TechProfileInner() {
           </button>
         </div>
         <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-dark)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, overflow: 'hidden', border: '3px solid rgba(255,255,255,0.5)' }}>
-          {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          {userData?.avatarUrl ? (
+            <img src={userData.avatarUrl} alt={userData?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <span>{user?.fullName?.charAt(0) || '?'}</span>
+            <span>{userData?.fullName?.charAt(0) || '?'}</span>
           )}
         </div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#3D2C00' }}>{user?.fullName}</div>
+        <div style={{ fontSize: 20, fontWeight: 700, color: '#3D2C00' }}>{userData?.fullName}</div>
         {tech.headline && <div style={{ fontSize: 13, color: '#3D2C00', opacity: 0.85, marginTop: 4 }}>{tech.headline}</div>}
 
         {/* Availability badge */}
@@ -140,40 +273,152 @@ function TechProfileInner() {
           </div>
         )}
 
-        {/* ===================== BLOCK 4: PORTFOLIO ===================== */}
-        {tech.portfolioItems && tech.portfolioItems.length > 0 && (
-          <div className="card-shadow" style={{ padding: 16, marginBottom: 12, borderRadius: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>🖼️ ผลงาน</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {tech.portfolioItems.map((item: any) => (
-                <div key={item.id} style={{ borderRadius: 10, overflow: 'hidden', background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                  {/* Images */}
-                  {item.images && item.images.length > 0 && (
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: item.images.length === 1 ? '1fr' : '1fr 1fr',
-                      gap: 2, cursor: 'pointer'
-                    }} onClick={() => setViewingImages(item.images)}>
-                      {item.images.slice(0, 4).map((img: string, i: number) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img key={i} src={img} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
-                      ))}
-                      {item.images.length > 4 && (
-                        <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', fontWeight: 700 }}>
-                          +{item.images.length - 4}
-                        </div>
-                      )}
+        {/* ===================== BLOCK 4: PORTFOLIO (Facebook-style) ===================== */}
+        {portfolio.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            {portfolio.map((item: PortfolioItem) => (
+              <div key={item.id} className="card-shadow" style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', background: 'white' }}>
+
+                {/* Post Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px 8px' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, overflow: 'hidden', flexShrink: 0 }}>
+                    {userData?.avatarUrl ? (
+                      <img src={userData.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      (userData?.fullName || '?').charAt(0)
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{userData?.fullName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-light)' }}>
+                      {new Date(item.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>
-                  )}
-                  {/* Caption */}
-                  {item.caption && (
-                    <div style={{ padding: '10px 12px 4px', fontSize: 13, lineHeight: 1.5 }}>
-                      {item.caption}
-                    </div>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Caption */}
+                {item.caption && (
+                  <div style={{ padding: '0 14px 8px', fontSize: 13, lineHeight: 1.55, color: 'var(--text)' }}>
+                    {item.caption}
+                  </div>
+                )}
+
+                {/* Images */}
+                {item.images && item.images.length > 0 && (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: item.images.length === 1 ? '1fr' : '1fr 1fr',
+                    gap: 2, cursor: 'pointer'
+                  }} onClick={() => setViewingImages(item.images)}>
+                    {item.images.slice(0, 4).map((img: string, i: number) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={i} src={img} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
+                    ))}
+                    {item.images.length > 4 && (
+                      <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', fontWeight: 700 }}>
+                        +{item.images.length - 4}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Action bar */}
+                <div style={{ display: 'flex', alignItems: 'center', padding: '6px 8px', borderBottom: '1px solid var(--border)' }}>
+                  {/* Like */}
+                  <button
+                    onClick={() => handleLike(item)}
+                    disabled={likingId === item.id}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                      padding: '8px 0', background: 'none', border: 'none', cursor: 'pointer',
+                      color: item.likedByUser ? '#DC2626' : 'var(--text-light)',
+                      fontSize: 13, fontWeight: 600, transition: 'all 0.15s',
+                    }}
+                  >
+                    <span style={{ fontSize: 16 }}>{item.likedByUser ? '❤️' : '🤍'}</span>
+                    <span>{item.likeCount > 0 ? item.likeCount : 'ถูกใจ'}</span>
+                  </button>
+
+                  {/* Comment */}
+                  <button
+                    onClick={() => toggleComments(item.id)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                      padding: '8px 0', background: 'none', border: 'none', cursor: 'pointer',
+                      color: showComments === item.id ? 'var(--primary)' : 'var(--text-light)',
+                      fontSize: 13, fontWeight: 600,
+                    }}
+                  >
+                    <span style={{ fontSize: 16 }}>💬</span>
+                    <span>{item.commentCount > 0 ? item.commentCount : 'แสดงความคิดเห็น'}</span>
+                  </button>
+
+                  {/* Share */}
+                  <button
+                    onClick={() => handleShare(item)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                      padding: '8px 0', background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-light)', fontSize: 13, fontWeight: 600,
+                    }}
+                  >
+                    <span style={{ fontSize: 16 }}>📤</span>
+                    <span>แชร์</span>
+                  </button>
+                </div>
+
+                {/* Comments Section */}
+                {showComments === item.id && (
+                  <div>
+                    {/* Comment list */}
+                    {(comments[item.id] || []).length > 0 && (
+                      <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {comments[item.id].map((c: Comment) => (
+                          <div key={c.id} style={{ display: 'flex', gap: 8 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, overflow: 'hidden' }}>
+                              {c.user.avatarUrl ? (
+                                <img src={c.user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                c.user.fullName.charAt(0)
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 600 }}>{c.user.fullName}</div>
+                              <div style={{ fontSize: 12, color: 'var(--text)', lineHeight: 1.5, background: 'var(--bg)', padding: '6px 10px', borderRadius: '0 12px 12px 12px', marginTop: 2 }}>{c.content}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Comment input */}
+                    <div style={{ display: 'flex', gap: 8, padding: '8px 14px', alignItems: 'center', borderTop: '1px solid var(--border)' }}>
+                      <input
+                        ref={commentInputRef}
+                        value={commentText}
+                        onChange={e => setCommentText(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleComment(item.id) } }}
+                        placeholder="แสดงความคิดเห็น..."
+                        style={{ flex: 1, padding: '8px 12px', borderRadius: 20, border: '1.5px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+                      />
+                      <button
+                        onClick={() => handleComment(item.id)}
+                        disabled={!commentText.trim() || commentLoading}
+                        style={{
+                          padding: '8px 14px', borderRadius: 20, border: 'none',
+                          background: commentText.trim() ? 'var(--primary)' : '#E5E5E5',
+                          color: commentText.trim() ? '#3D2C00' : '#999',
+                          fontSize: 12, fontWeight: 700, cursor: commentText.trim() ? 'pointer' : 'not-allowed',
+                        }}
+                      >
+                        {commentLoading ? '...' : 'ส่ง'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            ))}
           </div>
         )}
 

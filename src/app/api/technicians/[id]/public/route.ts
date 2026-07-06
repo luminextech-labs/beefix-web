@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma'
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
+    const authToken = req.cookies.get('auth_token')?.value ||
+                      req.cookies.get('tech_token')?.value
+    const userId = authToken || null
 
     const technician = await prisma.technician.findUnique({
       where: { id },
@@ -30,6 +33,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         customCategories: true,
         portfolioItems: {
           orderBy: { createdAt: 'desc' },
+          include: {
+            _count: { select: { likes: true, comments: true } },
+            likes: userId ? { where: { userId } } : false,
+          },
         },
       },
     })
@@ -38,7 +45,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, message: 'ไม่พบโปรไฟล์ช่าง' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, technician })
+    // Add likedByUser flag to each portfolio item
+    const technicianWithLikes = {
+      ...technician,
+      portfolioItems: technician.portfolioItems.map(item => ({
+        ...item,
+        likedByUser: userId ? item.likes.length > 0 : false,
+        likes: undefined, // don't expose internal likes
+      })),
+    }
+
+    return NextResponse.json({ success: true, technician: technicianWithLikes })
   } catch (error) {
     console.error('Technician public profile error:', error)
     return NextResponse.json({ success: false, message: 'เกิดข้อผิดพลาด' }, { status: 500 })

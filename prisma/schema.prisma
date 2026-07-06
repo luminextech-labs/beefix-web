@@ -131,6 +131,8 @@ model User {
   walletTransactions WalletTransaction[] @relation("UserWalletTransactions")
   paymentMethods     UserPaymentMethod[]
   Quotation          Quotation[]
+  portfolioLikes     PortfolioLike[]
+  portfolioComments  PortfolioComment[]
 
   @@map("users")
 }
@@ -755,12 +757,43 @@ model PortfolioItem {
   technicianId String   @map("technician_id")
   images      String[] @default([]) // รูปภาพ
   caption     String?  // คำอธิบาย (caption แบบโพสเฟสบุค)
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  technician Technician @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  technician Technician       @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  likes      PortfolioLike[]
+  comments   PortfolioComment[]
 
   @@index([technicianId, createdAt(sort: Desc)])
   @@map("portfolio_items")
+}
+
+model PortfolioLike {
+  id            String   @id @default(uuid())
+  portfolioItemId String @map("portfolio_item_id")
+  userId        String   @map("user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  portfolioItem PortfolioItem @relation(fields: [portfolioItemId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioItemId, userId])
+  @@map("portfolio_likes")
+}
+
+model PortfolioComment {
+  id            String   @id @default(uuid())
+  portfolioItemId String @map("portfolio_item_id")
+  userId        String   @map("user_id")
+  content       String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  portfolioItem PortfolioItem @relation(fields: [portfolioItemId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioItemId, createdAt(sort: Desc)])
+  @@map("portfolio_comments")
 }
