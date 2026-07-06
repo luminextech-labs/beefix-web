@@ -94,7 +94,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { headline, bio, yearsExperience, hourlyRate, isAvailable, autoAccept, latitude, longitude, serviceRadius } = body
+    const { profession, headline, bio, yearsExperience, hourlyRate, isAvailable, autoAccept, latitude, longitude, serviceRadius } = body
 
     const technician = await prisma.technician.findUnique({
       where: { userId: auth.user.userId },
@@ -110,6 +110,7 @@ export async function PATCH(req: NextRequest) {
     const updated = await prisma.technician.update({
       where: { id: technician.id },
       data: {
+        ...(profession !== undefined && { profession }),
         ...(headline !== undefined && { headline }),
         ...(bio !== undefined && { bio }),
         ...(yearsExperience !== undefined && { yearsExperience }),

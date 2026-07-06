@@ -3,8 +3,21 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
-const MENU_ITEMS = [
+const MENU_ITEMS_COMMON = [
   { icon: '👤', label: 'โปรไฟล์', href: '/profile/edit' },
+  { icon: '📍', label: 'ที่อยู่', href: '/addresses' },
+  { icon: '💳', label: 'วิธีการชำระเงิน', href: '/payment-methods' },
+  { icon: '🔔', label: 'แจ้งเตือน', href: '/notifications' },
+  { icon: '📞', label: 'ติดต่อศูนย์ช่วยเหลือ', href: '/help' },
+  { icon: '🚪', label: 'ออกจากระบบ', action: 'logout', danger: true },
+]
+
+const MENU_ITEMS_TECHNICIAN = [
+  { icon: '✏️', label: '1. แก้ไขโปรไฟล์', href: '/profile/edit' },
+  { icon: '🏪', label: '2. บริการของฉัน', href: '/technician/services' },
+  { icon: '📸', label: '3. ผลงาน', href: '/technician/portfolio' },
+  { icon: '🏷️', label: '4. อาชีพ', href: '/technician/profession' },
+  { icon: '⭐', label: '5. ดูรีวิว', href: '/technician/reviews' },
   { icon: '📍', label: 'ที่อยู่', href: '/addresses' },
   { icon: '💳', label: 'วิธีการชำระเงิน', href: '/payment-methods' },
   { icon: '🔔', label: 'แจ้งเตือน', href: '/notifications' },
@@ -16,7 +29,10 @@ export default function ProfilePage() {
   const { user, logout } = useAuth()
   const router = useRouter()
 
-  const handleMenuClick = (item: typeof MENU_ITEMS[0]) => {
+  const isTechnician = user?.role === 'technician'
+  const MENU_ITEMS = isTechnician ? MENU_ITEMS_TECHNICIAN : MENU_ITEMS_COMMON
+
+  const handleMenuClick = (item: typeof MENU_ITEMS_COMMON[0]) => {
     if (item.action === 'logout') {
       if (window.confirm('ยืนยันการออกจากระบบ?')) {
         logout()
@@ -64,8 +80,16 @@ export default function ProfilePage() {
             )}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 2 }}>
-              {user?.fullName ?? 'ผู้ใช้งาน'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <div style={{ fontSize: 17, fontWeight: 700 }}>
+                {user?.fullName ?? 'ผู้ใช้งาน'}
+              </div>
+              {user?.role === 'technician' && (
+                <span style={{ background: 'var(--primary)', color: '#3D2C00', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>👨‍🔧 ช่าง</span>
+              )}
+              {user?.role === 'admin' && (
+                <span style={{ background: '#DCFCE7', color: '#15803D', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>⚙️ Admin</span>
+              )}
             </div>
             <div style={{ fontSize: 13, color: 'var(--text-light)' }}>
               {user?.email ?? 'email@example.com'}

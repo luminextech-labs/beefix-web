@@ -20,6 +20,13 @@ enum UserRole {
   admin
 }
 
+enum Profession {
+  electrical   // ไฟฟ้า
+  plumbing     // ประปา
+  it           // IT
+  construction // ก่อสร้าง
+}
+
 enum OrderStatus {
   pending
   confirmed
@@ -133,22 +140,24 @@ model User {
 // =============================================
 
 model Technician {
-  id              String    @id @default(uuid())
-  userId          String    @unique @map("user_id")
+  id              String     @id @default(uuid())
+  userId          String     @unique @map("user_id")
+  profession      Profession @default(it) @map("profession")
   headline        String?
   bio             String?
-  yearsExperience Int       @default(0) @map("years_experience")
-  hourlyRate      Decimal   @default(0) @map("hourly_rate") @db.Decimal(10, 2)
-  ratingAvg       Decimal   @default(0) @map("rating_avg") @db.Decimal(3, 2)
-  ratingCount     Int       @default(0) @map("rating_count")
-  isAvailable     Boolean   @default(true) @map("is_available")
-  autoAccept      Boolean   @default(false) @map("auto_accept")
-  verifiedAt      DateTime? @map("verified_at")
-  latitude        Decimal?  @map("latitude") @db.Decimal(10, 8)
-  longitude       Decimal?  @map("longitude") @db.Decimal(11, 8)
-  serviceRadius   Int?      @map("service_radius") // รัศมีรับงาน หน่วย กม. (null = ทั่วประเทศ)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  yearsExperience Int        @default(0) @map("years_experience")
+  hourlyRate      Decimal    @default(0) @map("hourly_rate") @db.Decimal(10, 2)
+  ratingAvg       Decimal    @default(0) @map("rating_avg") @db.Decimal(3, 2)
+  ratingCount     Int        @default(0) @map("rating_count")
+  isAvailable     Boolean    @default(true) @map("is_available")
+  autoAccept      Boolean    @default(false) @map("auto_accept")
+  verifiedAt      DateTime?  @map("verified_at")
+  latitude        Decimal?   @map("latitude") @db.Decimal(10, 8)
+  longitude       Decimal?   @map("longitude") @db.Decimal(11, 8)
+  serviceRadius   Int?       @map("service_radius") // รัศมีรับงาน หน่วย กม. (null = ทั่วประเทศ)
+  certifications Json       @default("[]") @map("certifications") // ใบรับรอง/ประกาศนียบัตร [{name, issuer, year, fileUrl}]
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
 
   // Relations
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -161,6 +170,7 @@ model Technician {
   chatRoomsAsTech ChatRoom[]           @relation("TechnicianChatRooms")
   withdrawals     Withdrawal[]
   Quotation       Quotation[]
+  portfolioItems  PortfolioItem[]
 
   @@map("technicians")
 }
@@ -734,4 +744,23 @@ model UserPaymentMethod {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_payment_methods")
+}
+
+// =============================================
+// PORTFOLIO (ผลงานช่าง)
+// =============================================
+
+model PortfolioItem {
+  id           String   @id @default(uuid())
+  technicianId String   @map("technician_id")
+  images      String[] @default([]) // รูปภาพ
+  caption     String?  // คำอธิบาย (caption แบบโพสเฟสบุค)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  technician Technician @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@index([technicianId, createdAt(sort: Desc)])
+  @@map("portfolio_items")
 }
