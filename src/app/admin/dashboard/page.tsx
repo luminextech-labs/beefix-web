@@ -370,99 +370,158 @@ const navGroups: { group: string; items: NavItem[] }[] = [
 
 // ─── Components ───────────────────────────────────────────────────────────────
 
-function KPICard({ label, value, change, prefix = '', suffix = '', trend }: {
-  label: string; value: string | number; change?: number | string; prefix?: string; suffix?: string; trend?: 'up' | 'down' | 'neutral';
+function KPICard({ label, value, change, sparkline, icon }: {
+  label: string; value: string | number; change?: number | string;
+  sparkline?: number[]; icon?: string;
 }) {
-  const isUp = typeof change === 'number' ? change >= 0 : trend === 'up' || trend === 'neutral';
-  const color = typeof change === 'number' ? (change >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-500';
-  const arrow = typeof change === 'number' ? (change >= 0 ? '↑' : '↓') : (trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→');
+  const isPositive = typeof change === 'number' ? change >= 0 : true;
+  const changeBg = typeof change === 'number'
+    ? (change >= 0 ? 'bg-[#00c853]/20 text-[#00c853]' : 'bg-[#ff5252]/20 text-[#ff5252]')
+    : 'bg-[#2a2f4a] text-[#8a8fa3]';
+  const changeArrow = typeof change === 'number'
+    ? (change >= 0 ? '↑' : '↓')
+    : '';
+  const sparkColor = isPositive ? '#00c853' : '#ff5252';
+  const iconBg = isPositive ? 'bg-[#00c853]/20' : 'bg-[#ff5252]/20';
+
   return (
-    <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] hover:shadow-md transition-shadow">
-      <div className="text-xs text-[#8B7355] font-medium mb-1">{label}</div>
-      <div className="text-xl font-bold text-[#3D2C00]">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
-      {change !== undefined && (
-        <div className={`text-xs font-semibold mt-1 ${color}`}>{arrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}${typeof change === 'number' && Math.abs(change) < 100 ? '%' : ''}` : change}</div>
-      )}
+    <div className="bg-[#252a40] rounded-xl p-5 border border-[#2a2f4a] hover:border-[#3a3f5a] transition-all flex flex-col gap-3">
+      <div className="flex items-start justify-between">
+        <div className="text-[11px] text-[#8a8fa3] font-medium uppercase tracking-wide">{label}</div>
+        {icon && (
+          <div className={`w-10 h-10 ${iconBg} rounded-xl flex items-center justify-center text-lg`}>
+            {icon}
+          </div>
+        )}
+      </div>
+      <div className="text-2xl font-bold text-white leading-tight">
+        {typeof value === 'number' ? value.toLocaleString('th-TH') : value}
+      </div>
+      <div className="flex items-center justify-between">
+        {change !== undefined && (
+          <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg text-[11px] font-semibold ${changeBg}`}>
+            {changeArrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}%` : change}
+          </span>
+        )}
+        {sparkline && (
+          <MiniSparkline data={sparkline} color={sparkColor} height={28} />
+        )}
+      </div>
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
-    active: { label: 'Active', className: 'bg-green-100 text-green-700' },
-    completed: { label: 'Completed', className: 'bg-green-100 text-green-700' },
-    success: { label: 'Success', className: 'bg-green-100 text-green-700' },
-    approved: { label: 'Approved', className: 'bg-green-100 text-green-700' },
-    published: { label: 'Published', className: 'bg-green-100 text-green-700' },
-    visible: { label: 'Visible', className: 'bg-green-100 text-green-700' },
-    healthy: { label: 'Healthy', className: 'bg-green-100 text-green-700' },
-    in_progress: { label: 'In Progress', className: 'bg-purple-100 text-purple-700' },
-    delivered: { label: 'Delivered', className: 'bg-blue-100 text-blue-700' },
-    pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-700' },
-    warning: { label: 'Warning', className: 'bg-yellow-100 text-yellow-700' },
-    paused: { label: 'Paused', className: 'bg-yellow-100 text-yellow-700' },
-    draft: { label: 'Draft', className: 'bg-gray-100 text-gray-600' },
-    inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-600' },
-    suspended: { label: 'Suspended', className: 'bg-red-100 text-red-600' },
-    cancelled: { label: 'Cancelled', className: 'bg-gray-100 text-gray-600' },
-    rejected: { label: 'Rejected', className: 'bg-red-100 text-red-600' },
-    failed: { label: 'Failed', className: 'bg-red-100 text-red-600' },
-    error: { label: 'Error', className: 'bg-red-100 text-red-600' },
-    disputed: { label: 'Disputed', className: 'bg-orange-100 text-orange-700' },
-    refunded: { label: 'Refunded', className: 'bg-orange-100 text-orange-700' },
-    chargeback: { label: 'Chargeback', className: 'bg-red-100 text-red-600' },
-    held: { label: 'Held', className: 'bg-blue-100 text-blue-700' },
-    problem: { label: 'Problem', className: 'bg-red-100 text-red-600' },
-    pending_release: { label: 'Pending Release', className: 'bg-yellow-100 text-yellow-700' },
-    released: { label: 'Released', className: 'bg-green-100 text-green-700' },
-    open: { label: 'Open', className: 'bg-red-100 text-red-600' },
-    reported: { label: 'Reported', className: 'bg-orange-100 text-orange-700' },
-    hidden: { label: 'Hidden', className: 'bg-gray-100 text-gray-600' },
-    banned: { label: 'Banned', className: 'bg-red-100 text-red-600' },
-    flagged: { label: 'Flagged', className: 'bg-orange-100 text-orange-700' },
-    investigating: { label: 'Investigating', className: 'bg-yellow-100 text-yellow-700' },
-    pending_review: { label: 'Pending Review', className: 'bg-yellow-100 text-yellow-700' },
-    high: { label: 'High', className: 'bg-red-100 text-red-600' },
-    medium: { label: 'Medium', className: 'bg-orange-100 text-orange-700' },
-    low: { label: 'Low', className: 'bg-yellow-100 text-yellow-700' },
-    confirmed: { label: 'Confirmed', className: 'bg-green-100 text-green-700' },
-    expired: { label: 'Expired', className: 'bg-gray-100 text-gray-600' },
-    super_admin: { label: 'Super Admin', className: 'bg-purple-100 text-purple-700' },
-    finance_manager: { label: 'Finance', className: 'bg-blue-100 text-blue-700' },
-    support_manager: { label: 'Support', className: 'bg-green-100 text-green-700' },
-    content_manager: { label: 'Content', className: 'bg-yellow-100 text-yellow-700' },
-    operations: { label: 'Operations', className: 'bg-orange-100 text-orange-700' },
+    active: { label: 'Active', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    completed: { label: 'Completed', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    success: { label: 'Success', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    approved: { label: 'Approved', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    published: { label: 'Published', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    visible: { label: 'Visible', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    healthy: { label: 'Healthy', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    confirmed: { label: 'Confirmed', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    delivered: { label: 'Delivered', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    held: { label: 'Held', className: 'bg-[#2196f3]/20 text-[#2196f3]' },
+    in_progress: { label: 'In Progress', className: 'bg-[#e91e63]/20 text-[#e91e63]' },
+    processing: { label: 'Processing', className: 'bg-[#e91e63]/20 text-[#e91e63]' },
+    disputed: { label: 'Disputed', className: 'bg-[#e91e63]/20 text-[#e91e63]' },
+    refunded: { label: 'Refunded', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    pending: { label: 'Pending', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    warning: { label: 'Warning', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    paused: { label: 'Paused', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    draft: { label: 'Draft', className: 'bg-[#5a6078]/30 text-[#8a8fa3]' },
+    inactive: { label: 'Inactive', className: 'bg-[#5a6078]/30 text-[#8a8fa3]' },
+    suspended: { label: 'Suspended', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    cancelled: { label: 'Cancelled', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    rejected: { label: 'Rejected', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    failed: { label: 'Failed', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    error: { label: 'Error', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    chargeback: { label: 'Chargeback', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    problem: { label: 'Problem', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    pending_release: { label: 'Pending Release', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    released: { label: 'Released', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    open: { label: 'Open', className: 'bg-[#2196f3]/20 text-[#2196f3]' },
+    reported: { label: 'Reported', className: 'bg-[#e91e63]/20 text-[#e91e63]' },
+    hidden: { label: 'Hidden', className: 'bg-[#5a6078]/30 text-[#8a8fa3]' },
+    banned: { label: 'Banned', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    flagged: { label: 'Flagged', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    investigating: { label: 'Investigating', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    pending_review: { label: 'Pending Review', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    high: { label: 'High', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    medium: { label: 'Medium', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    low: { label: 'Low', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    expired: { label: 'Expired', className: 'bg-[#5a6078]/30 text-[#8a8fa3]' },
+    super_admin: { label: 'Super Admin', className: 'bg-[#e91e63]/20 text-[#e91e63]' },
+    finance_manager: { label: 'Finance', className: 'bg-[#2196f3]/20 text-[#2196f3]' },
+    support_manager: { label: 'Support', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    content_manager: { label: 'Content', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    operations: { label: 'Operations', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    image: { label: 'Image', className: 'bg-[#2196f3]/20 text-[#2196f3]' },
+    video: { label: 'Video', className: 'bg-[#e91e63]/20 text-[#e91e63]' },
+    document: { label: 'Document', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    bank_transfer: { label: 'Bank Transfer', className: 'bg-[#2196f3]/20 text-[#2196f3]' },
+    credit_card: { label: 'Credit Card', className: 'bg-[#2196f3]/20 text-[#2196f3]' },
+    wallet: { label: 'Wallet', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    qr_promptpay: { label: 'QR PromptPay', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    promptpay: { label: 'PromptPay', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    used: { label: 'Used', className: 'bg-[#5a6078]/30 text-[#8a8fa3]' },
+    closed: { label: 'Closed', className: 'bg-[#5a6078]/30 text-[#8a8fa3]' },
+    verified: { label: 'Verified', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    kyc: { label: 'KYC', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    kyc_approved: { label: 'KYC Approved', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    kyc_pending: { label: 'KYC Pending', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    kyc_rejected: { label: 'KYC Rejected', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
+    'kyc-pending': { label: 'KYC Pending', className: 'bg-[#ffc107]/20 text-[#ffc107]' },
+    'kyc-approved': { label: 'KYC Approved', className: 'bg-[#00c853]/20 text-[#00c853]' },
+    'kyc-rejected': { label: 'KYC Rejected', className: 'bg-[#ff5252]/20 text-[#ff5252]' },
   };
-  const cfg = map[status] || { label: status, className: 'bg-gray-100 text-gray-600' };
-  return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.className}`}>{cfg.label}</span>;
+  const cfg = map[status] || { label: status, className: 'bg-[#2a2f4a] text-[#8a8fa3]' };
+  return <span className={`inline-block px-2.5 py-1 rounded-lg text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</span>;
 }
 
 function SectionHeader({ title, icon, actions }: { title: string; icon?: string; actions?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg font-bold text-[#3D2C00] flex items-center gap-2">
-        {icon && <span>{icon}</span>}{title}
+    <div className="flex items-center justify-between mb-5">
+      <h2 className="text-base font-bold text-white flex items-center gap-2">
+        {icon && <span>{icon}</span>}
+        {title}
       </h2>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions}
     </div>
   );
 }
 
-function ActionBtn({ label, variant = 'primary', size = 'sm' }: { label: string; variant?: 'primary' | 'secondary' | 'danger'; size?: 'sm' | 'md' }) {
-  const base = 'rounded-lg font-semibold cursor-pointer transition-all font-Prompt';
-  const sizeCls = size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm';
-  const variantCls = variant === 'primary' ? 'bg-[#FFB800] text-[#3D2C00] hover:bg-[#E5A500] shadow-sm' : variant === 'danger' ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm' : 'bg-white text-[#3D2C00] border border-[#F0E4C8] hover:bg-[#FFF8E7]';
-  return <button className={`${base} ${sizeCls} ${variantCls}`}>{label}</button>;
+function ActionBtn({ label, variant = 'secondary', size = 'md', onClick }: {
+  label: string; variant?: 'primary' | 'secondary' | 'danger'; size?: 'sm' | 'md'; onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 font-semibold rounded-lg transition-colors text-xs
+        ${size === 'sm' ? 'px-3 py-1.5' : 'px-4 py-2'}
+        ${variant === 'primary' ? 'bg-[#e91e63] text-white hover:bg-[#c1175a]' :
+          variant === 'danger' ? 'bg-[#ff5252] text-white hover:bg-[#e54545]' :
+          'bg-[#252a40] text-white border border-[#2a2f4a] hover:bg-[#2a2f4a]'
+        }`}
+    >
+      {label}
+    </button>
+  );
 }
 
 function TabPills({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) {
   return (
-    <div className="flex gap-1 mb-4 flex-wrap">
+    <div className="flex items-center gap-1.5 mb-5 flex-wrap">
       {tabs.map(tab => (
         <button
           key={tab}
           onClick={() => onChange(tab)}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${active === tab ? 'bg-[#FFB800] text-[#3D2C00]' : 'bg-white text-[#8B7355] border border-[#F0E4C8] hover:bg-[#FFF8E7]'}`}
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            active === tab
+              ? 'bg-[#e91e63] text-white'
+              : 'bg-[#252a40] text-[#8a8fa3] border border-[#2a2f4a] hover:bg-[#2a2f4a] hover:text-white'
+          }`}
         >
           {tab}
         </button>
@@ -473,20 +532,20 @@ function TabPills({ tabs, active, onChange }: { tabs: string[]; active: string; 
 
 function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode[][] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#F0E4C8]">
+    <div className="overflow-x-auto rounded-xl border border-[#2a2f4a]">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-[#FFF8E7]">
+          <tr className="bg-[#1e2235]">
             {headers.map((h, i) => (
-              <th key={i} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase tracking-wider">{h}</th>
+              <th key={i} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase tracking-wider">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, ri) => (
-            <tr key={ri} className={`border-t border-[#F0E4C8] ${ri % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+            <tr key={ri} className={`border-t border-[#2a2f4a] ${ri % 2 === 0 ? 'bg-[#1e2235]' : 'bg-[#252a40]'}`}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-4 py-3 text-sm text-[#3D2C00]">{cell}</td>
+                <td key={ci} className="px-4 py-3 text-sm text-white">{cell}</td>
               ))}
             </tr>
           ))}
@@ -499,18 +558,18 @@ function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode
 function MiniBar({ value, max = 100, color = '#FFB800' }: { value: number; max?: number; color?: string }) {
   const pct = Math.min((value / max) * 100, 100);
   return (
-    <div className="w-full bg-gray-100 rounded-full h-2">
+    <div className="w-full bg-[#1e2235] rounded-full h-2">
       <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
     </div>
   );
 }
 
-function MiniSparkline({ data, color = '#FFB800' }: { data: number[]; color?: string }) {
+function MiniSparkline({ data, color = '#FFB800', height = 28 }: { data: number[]; color?: string; height?: number }) {
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max - min || 1;
   const w = 80;
-  const h = 28;
+  const h = height;
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(' ');
   return (
     <svg width={w} height={h} className="inline-block">
@@ -521,11 +580,9 @@ function MiniSparkline({ data, color = '#FFB800' }: { data: number[]; color?: st
 
 function DateRangePicker() {
   return (
-    <div className="flex items-center gap-2 bg-white border border-[#F0E4C8] rounded-lg px-3 py-2">
-      <span className="text-sm">📅</span>
-      <span className="text-xs text-[#8B7355]">09 ก.ค. 2026 – 09 ก.ค. 2026</span>
-      <span className="text-xs text-[#FFB800] font-semibold cursor-pointer ml-1">เปลี่ยน</span>
-    </div>
+    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#252a40] border border-[#2a2f4a] rounded-lg text-xs text-[#8a8fa3] hover:bg-[#2a2f4a] hover:text-white transition-colors">
+      📅 1 – 31 ก.ค. 2569
+    </button>
   );
 }
 
@@ -568,24 +625,24 @@ function Section_01_ExecutiveDashboard() {
         <KPICard label="Retention Rate" value={`${mockKPI.retentionRate}%`} change={1.3} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">💰 Revenue Overview (7 วันล่าสุด)</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">💰 Revenue Overview (7 วันล่าสุด)</h3>
           <div className="flex items-end gap-2 h-32">
             {[42, 55, 48, 63, 58, 71, 68].map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.45}px`, background: i === 6 ? '#FFB800' : '#FFE066' }} />
-                <span className="text-xs text-[#8B7355]">วัน {i + 1}</span>
+                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.45}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }} />
+                <span className="text-xs text-[#8a8fa3]">วัน {i + 1}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">📈 GMV Trend (7 วันล่าสุด)</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">📈 GMV Trend (7 วันล่าสุด)</h3>
           <div className="flex items-end gap-2 h-32">
             {[38, 52, 45, 60, 55, 70, 65].map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.45}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }} />
-                <span className="text-xs text-[#8B7355]">วัน {i + 1}</span>
+                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.45}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }} />
+                <span className="text-xs text-[#8a8fa3]">วัน {i + 1}</span>
               </div>
             ))}
           </div>
@@ -602,31 +659,31 @@ function Section_02_Buyers() {
     <div className="space-y-3">
       <SectionHeader title="Buyers Management" icon="🛒" actions={<><ActionBtn label="+ เพิ่ม Buyer" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ชื่อ', 'อีเมล', 'ใช้จ่าย (฿)', 'ออเดอร์', 'Trust Score', 'KYC', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockBuyers.map((b, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{b.id}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{b.name}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{b.email}</td>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{TH.currency(b.spend)}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{b.email}</td>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{TH.currency(b.spend)}</td>
                 <td className="px-3 py-2 text-xs">{b.orders}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={b.trustScore} color={b.trustScore >= 90 ? '#22C55E' : b.trustScore >= 70 ? '#FFB800' : '#EF4444'} /><span className="text-xs font-semibold">{b.trustScore}</span></div></td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={b.trustScore} color={b.trustScore >= 90 ? '#00c853' : b.trustScore >= 70 ? '#ffc107' : '#ff5252'} /><span className="text-xs font-semibold">{b.trustScore}</span></div></td>
                 <td className="px-3 py-2"><StatusBadge status={b.kyc} /></td>
                 <td className="px-3 py-2"><StatusBadge status={b.status} /></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
-                    <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔑</button>
-                    {b.status === 'active' ? <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>}
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">👁️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">🔑</button>
+                    {b.status === 'active' ? <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">✓</button>}
                   </div>
                 </td>
               </tr>
@@ -645,33 +702,33 @@ function Section_03_Sellers() {
     <div className="space-y-3">
       <SectionHeader title="Sellers Management" icon="🛠️" actions={<><ActionBtn label="+ เพิ่ม Seller" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ชื่อ', 'สกิล', 'รายได้ (฿)', 'ถอนแล้ว (฿)', 'Rating', 'Response', 'Completion', 'On-Time', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockSellers.map((s, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{s.id}</td>
                 <td className="px-3 py-2 font-semibold">{s.name}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{s.skill}</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(s.income)}</td>
-                <td className="px-3 py-2 text-[#8B7355]">{TH.currency(s.withdrawn)}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-1"><span className="text-yellow-500">⭐</span><span className="font-bold">{s.rating}</span></div></td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.responseRate} color={s.responseRate >= 95 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.responseRate}%</span></div></td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.completionRate} color={s.completionRate >= 90 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.completionRate}%</span></div></td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.onTime} color={s.onTime >= 90 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.onTime}%</span></div></td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{s.skill}</td>
+                <td className="px-3 py-2 font-semibold text-white">{TH.currency(s.income)}</td>
+                <td className="px-3 py-2 text-[#8a8fa3]">{TH.currency(s.withdrawn)}</td>
+                <td className="px-3 py-2"><div className="flex items-center gap-1"><span className="text-[#ffc107]">⭐</span><span className="font-bold">{s.rating}</span></div></td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.responseRate} color={s.responseRate >= 95 ? '#00c853' : '#ffc107'} /><span className="text-xs font-semibold">{s.responseRate}%</span></div></td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.completionRate} color={s.completionRate >= 90 ? '#00c853' : '#ffc107'} /><span className="text-xs font-semibold">{s.completionRate}%</span></div></td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.onTime} color={s.onTime >= 90 ? '#00c853' : '#ffc107'} /><span className="text-xs font-semibold">{s.onTime}%</span></div></td>
                 <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
-                    <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">💰</button>
-                    {s.status !== 'suspended' ? <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>}
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">👁️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">💰</button>
+                    {s.status !== 'suspended' ? <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">✓</button>}
                   </div>
                 </td>
               </tr>
@@ -695,33 +752,33 @@ function Section_04_Jobs() {
       <SectionHeader title="Job Management" icon="📋" actions={<><ActionBtn label="+ สร้างงาน" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="flex items-center gap-3 flex-wrap">
         <TabPills tabs={tabs} active={tab} onChange={setTab} />
-        <input type="text" placeholder="🔍 ค้นหางาน..." className="form-input flex-1 min-w-[200px]" />
+        <input type="text" placeholder="🔍 ค้นหางาน..." className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63] flex-1 min-w-[200px]" />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ชื่องาน', 'ผู้ว่าจ้าง', 'ช่าง', 'ราคา (฿)', 'สถานะ', 'Timeline', 'สร้างเมื่อ', 'แชท', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockJobs.map((j, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{j.id}</td>
                 <td className="px-3 py-2 font-semibold text-xs max-w-[180px] truncate">{j.title}</td>
                 <td className="px-3 py-2 text-xs">{j.owner}</td>
                 <td className="px-3 py-2 text-xs">{j.freelancer}</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(j.price)}</td>
+                <td className="px-3 py-2 font-semibold text-white">{TH.currency(j.price)}</td>
                 <td className="px-3 py-2"><StatusBadge status={j.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{j.timeline}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{j.created}</td>
-                <td className="px-3 py-2">{j.chat ? <span className="text-green-500 font-bold">💬</span> : <span className="text-gray-300">-</span>}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{j.timeline}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{j.created}</td>
+                <td className="px-3 py-2">{j.chat ? <span className="text-[#00c853] font-bold">💬</span> : <span className="text-[#5a6078]">-</span>}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
-                    <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">👁️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">✏️</button>
                   </div>
                 </td>
               </tr>
@@ -740,28 +797,28 @@ function Section_05_Orders() {
     <div className="space-y-3">
       <SectionHeader title="Order Management" icon="🧾" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="+ สร้างออเดอร์" variant="primary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ลูกค้า', 'บริการ', 'มูลค่า (฿)', 'ภาษี (฿)', 'ค่าคอม (฿)', 'ใบเสร็จ', 'Escrow', 'สถานะ', 'วันที่'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockOrders.map((o, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{o.id}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{o.customer}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[160px] truncate">{o.service}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(o.amount)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(o.tax)}</td>
-                <td className="px-3 py-2 text-[#FFB800] font-semibold">{TH.currency(o.commission)}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3] max-w-[160px] truncate">{o.service}</td>
+                <td className="px-3 py-2 font-bold text-xs text-white">{TH.currency(o.amount)}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{TH.currency(o.tax)}</td>
+                <td className="px-3 py-2 text-[#ffc107] font-semibold">{TH.currency(o.commission)}</td>
                 <td className="px-3 py-2 font-mono text-xs">{o.receipt}</td>
                 <td className="px-3 py-2"><StatusBadge status={o.escrow} /></td>
                 <td className="px-3 py-2"><StatusBadge status={o.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{o.date}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{o.date}</td>
               </tr>
             ))}
           </tbody>
@@ -784,30 +841,30 @@ function Section_06_Escrow() {
         <KPICard label="Problem Funds" value={TH.currency(35000)} change={22.1} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'Order', 'มูลค่า (฿)', 'สถานะ', 'วันที่ถือ', 'วันปล่อย', 'เหตุผล', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockEscrow.map((e, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{e.id}</td>
                 <td className="px-3 py-2 font-mono text-xs">{e.order}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(e.amount)}</td>
+                <td className="px-3 py-2 font-bold text-xs text-white">{TH.currency(e.amount)}</td>
                 <td className="px-3 py-2"><StatusBadge status={e.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.heldAt}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.releasedAt}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.reason}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{e.heldAt}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{e.releasedAt}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{e.reason}</td>
                 <td className="px-3 py-2">
-                  {e.status === 'held' && <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">ปล่อย</button>}
-                  {e.status === 'problem' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">แก้ไข</button>}
-                  {e.status === 'pending_release' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">รอ...</button>}
-                  {e.status === 'released' && <span className="text-xs text-[#8B7355]">-</span>}
+                  {e.status === 'held' && <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">ปล่อย</button>}
+                  {e.status === 'problem' && <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">แก้ไข</button>}
+                  {e.status === 'pending_release' && <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">รอ...</button>}
+                  {e.status === 'released' && <span className="text-xs text-[#8a8fa3]">-</span>}
                 </td>
               </tr>
             ))}
@@ -831,35 +888,35 @@ function Section_07_Withdrawal() {
         <KPICard label="ค่าธรรมเนียมรวม" value={TH.currency(65)} change={3} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ผู้ขาย', 'ธนาคาร', 'เลขบัญชี', 'จำนวน (฿)', 'ค่าธรรมเนียม (฿)', 'วิธี', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockWithdrawals.map((w, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{w.id}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{w.seller}</td>
                 <td className="px-3 py-2 text-xs">{w.bank}</td>
                 <td className="px-3 py-2 font-mono text-xs">{w.account}</td>
-                <td className="px-3 py-2 font-bold text-[#3D2C00]">{TH.currency(w.amount)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(w.fee)}</td>
+                <td className="px-3 py-2 font-bold text-white">{TH.currency(w.amount)}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{TH.currency(w.fee)}</td>
                 <td className="px-3 py-2 text-xs"><StatusBadge status={w.method} /></td>
                 <td className="px-3 py-2"><StatusBadge status={w.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{w.date}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{w.date}</td>
                 <td className="px-3 py-2">
                   {w.status === 'pending' && (
                     <div className="flex gap-1">
-                      <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>
-                      <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">✗</button>
+                      <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">✓</button>
+                      <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">✗</button>
                     </div>
                   )}
-                  {w.status !== 'pending' && <span className="text-xs text-[#8B7355]">-</span>}
+                  {w.status !== 'pending' && <span className="text-xs text-[#8a8fa3]">-</span>}
                 </td>
               </tr>
             ))}
@@ -883,26 +940,26 @@ function Section_08_Payments() {
         <KPICard label="Pending" value={TH.currency(35000)} change={12} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ประเภท', 'มูลค่า (฿)', 'สถานะ', 'Gateway', 'Card/Account', 'วันที่', 'รายละเอียด'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockPayments.map((p, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
                 <td className="px-3 py-2 text-xs font-semibold">{p.type.replace('_', ' ')}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(p.amount)}</td>
+                <td className="px-3 py-2 font-bold text-xs text-white">{TH.currency(p.amount)}</td>
                 <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
                 <td className="px-3 py-2 text-xs">{p.gateway}</td>
                 <td className="px-3 py-2 font-mono text-xs">{p.card}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{p.date}</td>
-                <td className="px-3 py-2 text-xs text-red-500">{p.error || '-'}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{p.date}</td>
+                <td className="px-3 py-2 text-xs text-[#ff5252]">{p.error || '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -925,29 +982,29 @@ function Section_09_Promotions() {
         <KPICard label="Expired" value="1" change={0} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ประเภท', 'ชื่อ/Code', 'ส่วนลด', 'ใช้ไป/จำกัด', 'Status', 'หมดอายุ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockPromotions.map((p, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
                 <td className="px-3 py-2"><StatusBadge status={p.type} /></td>
                 <td className="px-3 py-2 font-semibold text-xs">{p.code || p.name}</td>
-                <td className="px-3 py-2 font-bold text-[#FFB800]">{p.discount || p.bonus || p.cashback}</td>
+                <td className="px-3 py-2 font-bold text-[#ffc107]">{p.discount || p.bonus || p.cashback}</td>
                 <td className="px-3 py-2 text-xs">{p.usage}{p.limit ? `/${p.limit}` : ''}</td>
                 <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{p.exp}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{p.exp}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⛔</button>
                   </div>
                 </td>
               </tr>
@@ -969,23 +1026,23 @@ function Section_10_Notifications() {
       <SectionHeader title="Notification Center" icon="📢" />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">📤 ส่งการแจ้งเตือน</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">📤 ส่งการแจ้งเตือน</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-[#8B7355] mb-1">ช่องทาง</label>
+              <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">ช่องทาง</label>
               <div className="flex gap-2 flex-wrap">
                 {channels.map(ch => (
                   <label key={ch} className="flex items-center gap-1 text-sm cursor-pointer">
-                    <input type="checkbox" className="accent-[#FFB800]" defaultChecked={ch === 'Email'} />
+                    <input type="checkbox" className="accent-[#e91e63]" defaultChecked={ch === 'Email'} />
                     <span>{channelIcons[ch]} {ch}</span>
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#8B7355] mb-1">กลุ่มเป้าหมาย</label>
-              <select className="form-input">
+              <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">กลุ่มเป้าหมาย</label>
+              <select className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]">
                 <option>ทุกผู้ใช้</option>
                 <option>เฉพาะ Seller</option>
                 <option>เฉพาะ Buyer</option>
@@ -993,18 +1050,18 @@ function Section_10_Notifications() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#8B7355] mb-1">หัวข้อ</label>
-              <input type="text" className="form-input" placeholder="แจ้งเตือน: ระบบบำรุงรักษา" />
+              <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">หัวข้อ</label>
+              <input type="text" className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" placeholder="แจ้งเตือน: ระบบบำรุงรักษา" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#8B7355] mb-1">เนื้อหา</label>
-              <textarea className="form-input" rows={4} placeholder="พิมพ์ข้อความที่นี่..." />
+              <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">เนื้อหา</label>
+              <textarea className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" rows={4} placeholder="พิมพ์ข้อความที่นี่..." />
             </div>
-            <button className="btn-primary w-auto px-6">📤 ส่งการแจ้งเตือน</button>
+            <button className="bg-[#e91e63] text-white hover:bg-[#c1175a] px-6 py-2 rounded-lg font-semibold transition-colors w-auto">📤 ส่งการแจ้งเตือน</button>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">📋 ประวัติการส่งล่าสุด</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">📋 ประวัติการส่งล่าสุด</h3>
           <div className="space-y-3">
             {[
               { ch: '📧', title: 'แจ้งเตือนเตือนรีวิว', target: '342 คน', status: 'sent', time: '2 ชม. ที่แล้ว' },
@@ -1013,17 +1070,17 @@ function Section_10_Notifications() {
               { ch: '📢', title: 'Broadcast: แคมเปญวันเสาร์', target: '8,420 คน', status: 'sent', time: '1 วันที่แล้ว' },
               { ch: '📧', title: 'Email: สรุปรายเดือน', target: '2,180 คน', status: 'failed', time: '1 วันที่แล้ว' },
             ].map((n, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
+              <div key={i} className="flex items-center justify-between p-3 bg-[#1e2235] rounded-xl">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{n.ch}</span>
                   <div>
-                    <div className="font-semibold text-sm text-[#3D2C00]">{n.title}</div>
-                    <div className="text-xs text-[#8B7355]">{n.target}</div>
+                    <div className="font-semibold text-sm text-white">{n.title}</div>
+                    <div className="text-xs text-[#8a8fa3]">{n.target}</div>
                   </div>
                 </div>
                 <div className="text-right">
                   <StatusBadge status={n.status} />
-                  <div className="text-xs text-[#8B7355] mt-1">{n.time}</div>
+                  <div className="text-xs text-[#8a8fa3] mt-1">{n.time}</div>
                 </div>
               </div>
             ))}
@@ -1047,18 +1104,18 @@ function Section_11_Support() {
         <KPICard label="SLA Breach" value="0" change={0} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'หัวข้อ', 'ผู้ใช้', 'ประเภท', 'Priority', 'มอบหมาย', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockTickets.map((t, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{t.id}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{t.subject}</td>
                 <td className="px-3 py-2 text-xs">{t.user}</td>
@@ -1066,11 +1123,11 @@ function Section_11_Support() {
                 <td className="px-3 py-2"><StatusBadge status={t.priority} /></td>
                 <td className="px-3 py-2 text-xs">{t.assigned}</td>
                 <td className="px-3 py-2"><StatusBadge status={t.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{t.date}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{t.date}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
-                    <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">👁️</button>
+                    <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">✓</button>
                   </div>
                 </td>
               </tr>
@@ -1095,32 +1152,32 @@ function Section_12_Reviews() {
         <KPICard label="Avg Rating" value="4.7" change={0.1} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'จาก', 'ถึง', 'งาน', 'Rating', 'Comment', 'AI Score', 'Status', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockReviews.map((r, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
                 <td className="px-3 py-2 text-xs">{r.from}</td>
                 <td className="px-3 py-2 text-xs">{r.to}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{r.job}</td>
-                <td className="px-3 py-2"><div className="flex text-yellow-400 text-xs">{Array.from({ length: r.rating }).map((_, j) => '⭐').join('')}</div></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px] truncate">{r.comment}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={r.fakeScore * 100} max={100} color={r.fakeScore > 0.7 ? '#EF4444' : r.fakeScore > 0.3 ? '#FFB800' : '#22C55E'} /><span className="text-xs font-semibold">{r.fakeScore}</span></div></td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{r.job}</td>
+                <td className="px-3 py-2"><div className="flex text-[#ffc107] text-xs">{Array.from({ length: r.rating }).map((_, j) => '⭐').join('')}</div></td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3] max-w-[200px] truncate">{r.comment}</td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={r.fakeScore * 100} max={100} color={r.fakeScore > 0.7 ? '#ff5252' : r.fakeScore > 0.3 ? '#ffc107' : '#00c853'} /><span className="text-xs font-semibold">{r.fakeScore}</span></div></td>
                 <td className="px-3 py-2"><StatusBadge status={r.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{r.date}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{r.date}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    {r.status === 'visible' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🙈</button>}
-                    {r.status === 'reported' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔍</button>}
-                    <button className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 font-semibold">✓</button>
+                    {r.status === 'visible' && <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">🙈</button>}
+                    {r.status === 'reported' && <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">🔍</button>}
+                    <button className="px-2 py-1 text-xs bg-[#2a2f4a] text-[#8a8fa3] rounded hover:bg-[#2a2f4a] font-semibold">✓</button>
                   </div>
                 </td>
               </tr>
@@ -1139,29 +1196,29 @@ function Section_13_CMS() {
     <div className="space-y-3">
       <SectionHeader title="Content Management (CMS)" icon="📄" actions={<><ActionBtn label="+ สร้างเนื้อหา" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ประเภท', 'ชื่อเรื่อง', 'เนื้อหา', 'Status', 'อัปเดต', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockCMS.map((c, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{c.id}</td>
                 <td className="px-3 py-2"><StatusBadge status={c.type} /></td>
                 <td className="px-3 py-2 font-semibold text-xs">{c.title}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px] truncate">{c.content}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3] max-w-[200px] truncate">{c.content}</td>
                 <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{c.updated}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{c.updated}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">👁️</button>
-                    <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🗑️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">👁️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">🗑️</button>
                   </div>
                 </td>
               </tr>
@@ -1180,29 +1237,29 @@ function Section_14_Categories() {
     <div className="space-y-3">
       <SectionHeader title="Category Management" icon="🏷️" actions={<><ActionBtn label="+ สร้าง Category" variant="primary" size="sm" /><ActionBtn label="+ สร้าง Tag" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ไอคอน', 'ชื่อ Category', 'Tags', 'Skills', 'Jobs', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockCategories.map((c, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{c.id}</td>
                 <td className="px-3 py-2 text-xl">{c.icon}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{c.name}</td>
-                <td className="px-3 py-2"><div className="flex flex-wrap gap-1">{c.tags.slice(0, 2).map(t => <span key={t} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-2 py-0.5 rounded-full">{t}</span>)}</div></td>
+                <td className="px-3 py-2 font-bold text-xs text-white">{c.name}</td>
+                <td className="px-3 py-2"><div className="flex flex-wrap gap-1">{c.tags.slice(0, 2).map(t => <span key={t} className="text-xs bg-[#ffc107]/20 text-[#ffc107] px-2 py-0.5 rounded-full">{t}</span>)}</div></td>
                 <td className="px-3 py-2 font-semibold text-xs">{TH.number(c.skills)}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{TH.number(c.jobs)}</td>
                 <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    <button className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 font-semibold">📋</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2a2f4a] text-[#8a8fa3] rounded hover:bg-[#2a2f4a] font-semibold">📋</button>
                   </div>
                 </td>
               </tr>
@@ -1221,31 +1278,31 @@ function Section_15_Search() {
     <div className="space-y-3">
       <SectionHeader title="Search Management" icon="🔍" actions={<><ActionBtn label="+ เพิ่ม Keyword" variant="primary" size="sm" /><ActionBtn label="🔄 Sync Search Index" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['Keyword', 'การค้นหา/วัน', 'ผลลัพธ์', 'CTR', 'แนวโน้ม', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockSearchKeywords.map((k, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{k.keyword}</td>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{k.keyword}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{TH.number(k.searches)}</td>
                 <td className="px-3 py-2 text-xs">{k.results}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={k.ctr} color={k.ctr >= 60 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{k.ctr}%</span></div></td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={k.ctr} color={k.ctr >= 60 ? '#00c853' : '#ffc107'} /><span className="text-xs font-semibold">{k.ctr}%</span></div></td>
                 <td className="px-3 py-2">
-                  {k.trending === 'up' && <span className="text-green-500 font-bold">↑</span>}
-                  {k.trending === 'down' && <span className="text-red-500 font-bold">↓</span>}
-                  {k.trending === 'stable' && <span className="text-gray-400 font-bold">→</span>}
+                  {k.trending === 'up' && <span className="text-[#00c853] font-bold">↑</span>}
+                  {k.trending === 'down' && <span className="text-[#ff5252] font-bold">↓</span>}
+                  {k.trending === 'stable' && <span className="text-[#5a6078] font-bold">→</span>}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🚫</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">🚫</button>
                   </div>
                 </td>
               </tr>
@@ -1270,43 +1327,43 @@ function Section_16_Analytics() {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">👥 User Growth</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">👥 User Growth</h3>
           <div className="space-y-3">
             {[{ label: 'DAU', val: 8420 }, { label: 'WAU', val: 32100 }, { label: 'MAU', val: 98400 }].map((u, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="font-semibold text-[#3D2C00]">{u.label}: {TH.number(u.val)}</span>
-                  <span className="text-green-500 text-xs font-bold">+{mockAnalytics[i]?.change}%</span>
+                  <span className="font-semibold text-white">{u.label}: {TH.number(u.val)}</span>
+                  <span className="text-[#00c853] text-xs font-bold">+{mockAnalytics[i]?.change}%</span>
                 </div>
                 <MiniBar value={(u.val / 100000) * 100} color="#FFB800" />
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">💰 Revenue Mix</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">💰 Revenue Mix</h3>
           <div className="space-y-3">
-            {[{ label: 'GMV', val: 48200000, color: '#FFB800' }, { label: 'Revenue', val: 4820000, color: '#E5A500' }, { label: 'Commission', val: 964000, color: '#8B6914' }, { label: 'Profit', val: 3200000, color: '#22C55E' }].map((r, i) => (
+            {[{ label: 'GMV', val: 48200000, color: '#e91e63' }, { label: 'Revenue', val: 4820000, color: '#ff8c00' }, { label: 'Commission', val: 964000, color: '#ffc107' }, { label: 'Profit', val: 3200000, color: '#00c853' }].map((r, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="font-semibold text-[#3D2C00]">{r.label}</span>
-                  <span className="font-bold text-[#3D2C00]">{TH.currency(r.val)}</span>
+                  <span className="font-semibold text-white">{r.label}</span>
+                  <span className="font-bold text-white">{TH.currency(r.val)}</span>
                 </div>
                 <MiniBar value={(r.val / 50000000) * 100} color={r.color} />
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">🔄 Conversion Funnel</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">🔄 Conversion Funnel</h3>
           <div className="space-y-2">
-            {[['เข้าชม', 12400, '#FFB800'], ['สนใจ', 8200, '#FFE066'], ['ติดต่อ', 3400, '#F0C040'], ['จ้างงาน', 1240, '#22C55E']].map(([label, val, color], i) => (
+            {[['เข้าชม', 12400, '#e91e63'], ['สนใจ', 8200, '#ff8c00'], ['ติดต่อ', 3400, '#ffc107'], ['จ้างงาน', 1240, '#00c853']].map(([label, val, color], i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="text-xs font-semibold w-16 text-[#8B7355]">{label}</span>
-                <div className="flex-1 bg-gray-100 rounded-full h-5">
+                <span className="text-xs font-semibold w-16 text-[#8a8fa3]">{label}</span>
+                <div className="flex-1 bg-[#1e2235] rounded-full h-5">
                   <div className="h-5 rounded-full flex items-center justify-end pr-2" style={{ width: `${(Number(val) / 12400) * 100}%`, background: color as string }}>
-                    <span className="text-xs font-bold text-[#3D2C00]">{TH.number(Number(val))}</span>
+                    <span className="text-xs font-bold text-white">{TH.number(Number(val))}</span>
                   </div>
                 </div>
               </div>
@@ -1321,7 +1378,7 @@ function Section_16_Analytics() {
 function Section_17_Fraud() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Bot', 'Fake Account', 'Chargeback', 'Fake Review', 'VPN/Proxy', 'Spam'];
-  const severityColor: Record<string, string> = { high: 'bg-red-100 text-red-600', medium: 'bg-orange-100 text-orange-600', low: 'bg-yellow-100 text-yellow-700' };
+  const severityColor: Record<string, string> = { high: 'bg-[#ff5252]/20 text-red-600', medium: 'bg-[#ffc107]/20 text-orange-600', low: 'bg-[#ffc107]/20 text-yellow-700' };
   return (
     <div className="space-y-3">
       <SectionHeader title="Fraud Detection" icon="🚨" actions={<><ActionBtn label="🤖 AI Settings" variant="secondary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
@@ -1332,30 +1389,30 @@ function Section_17_Fraud() {
         <KPICard label="False Positive Rate" value="4.2%" change={-0.8} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ประเภท', 'ระดับ', 'ผู้ใช้', 'รายละเอียด', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFraudAlerts.map((f, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{f.id}</td>
                 <td className="px-3 py-2 text-xs font-semibold">{f.type.replace('_', ' ')}</td>
                 <td className="px-3 py-2"><span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${severityColor[f.severity]}`}>{f.severity.toUpperCase()}</span></td>
                 <td className="px-3 py-2 font-mono text-xs">{f.user}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px]">{f.detail}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3] max-w-[200px]">{f.detail}</td>
                 <td className="px-3 py-2"><StatusBadge status={f.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{f.date}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{f.date}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    {f.status === 'investigating' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button>}
-                    {f.status === 'flagged' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔍</button>}
-                    <button className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 font-semibold">✓</button>
+                    {f.status === 'investigating' && <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⛔</button>}
+                    {f.status === 'flagged' && <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">🔍</button>}
+                    <button className="px-2 py-1 text-xs bg-[#2a2f4a] text-[#8a8fa3] rounded hover:bg-[#2a2f4a] font-semibold">✓</button>
                   </div>
                 </td>
               </tr>
@@ -1380,31 +1437,31 @@ function Section_18_AI() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">🎯 Matching Accuracy Trend (7 วัน)</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">🎯 Matching Accuracy Trend (7 วัน)</h3>
           <div className="flex items-end gap-2 h-32">
             {[91.2, 92.5, 93.1, 92.8, 94.0, 93.7, 94.2].map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg flex items-end" style={{ height: `${v * 1.05}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }}>
-                  <div className="w-full rounded-t-lg" style={{ height: `${v}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }} />
+                <div className="w-full rounded-t-lg flex items-end" style={{ height: `${v * 1.05}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }}>
+                  <div className="w-full rounded-t-lg" style={{ height: `${v}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }} />
                 </div>
-                <span className="text-xs text-[#8B7355]">วัน {i + 1}</span>
+                <span className="text-xs text-[#8a8fa3]">วัน {i + 1}</span>
               </div>
             ))}
           </div>
-          <div className="mt-3 text-center text-sm font-semibold text-[#3D2C00]">Current: <span className="text-[#FFB800]">94.2%</span> ↑ +0.8%</div>
+          <div className="mt-3 text-center text-sm font-semibold text-white">Current: <span className="text-[#ffc107]">94.2%</span> ↑ +0.8%</div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">💬 Chat Usage (7 วัน)</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">💬 Chat Usage (7 วัน)</h3>
           <div className="flex items-end gap-2 h-32">
             {[38200, 41000, 39500, 44200, 46800, 45200, 48200].map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${(v / 50000) * 128}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }} />
-                <span className="text-xs text-[#8B7355]">วัน {i + 1}</span>
+                <div className="w-full rounded-t-lg" style={{ height: `${(v / 50000) * 128}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }} />
+                <span className="text-xs text-[#8a8fa3]">วัน {i + 1}</span>
               </div>
             ))}
           </div>
-          <div className="mt-3 text-center text-sm font-semibold text-[#3D2C00]">Today: <span className="text-[#FFB800]">48,200</span> ↑ +15.3%</div>
+          <div className="mt-3 text-center text-sm font-semibold text-white">Today: <span className="text-[#ffc107]">48,200</span> ↑ +15.3%</div>
         </div>
       </div>
     </div>
@@ -1426,33 +1483,33 @@ function Section_19_Marketing() {
         <KPICard label="Total CPA" value={TH.currency(189)} change={-4.2} />
         <KPICard label="Conversions" value="2,250" change={15.3} />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['Channel', 'Spend (฿)', 'Revenue (฿)', 'ROI %', 'ROAS', 'CPA (฿)', 'Conversions', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockMarketing.map((m, i) => (
               <tr key={m.channel}
-                className="border-b border-[#F0E4C8] hover:bg-[#FFF8E7]/60"
+                className="border-b border-[#2a2f4a] hover:bg-[#2a2f4a]"
               >
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{m.channel}</td>
+                <td className="px-3 py-2 font-semibold text-white">{m.channel}</td>
                 <td className="px-3 py-2">{TH.currency(m.spend)}</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(m.revenue)}</td>
+                <td className="px-3 py-2 font-semibold text-white">{TH.currency(m.revenue)}</td>
                 <td className="px-3 py-2">
-                  <span className="text-green-600 font-bold">{m.roi}%</span>
+                  <span className="text-[#00c853] font-bold">{m.roi}%</span>
                 </td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{m.roas.toFixed(1)}x</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(m.cpa)}</td>
+                <td className="px-3 py-2 font-semibold text-white">{m.roas.toFixed(1)}x</td>
+                <td className="px-3 py-2 font-semibold text-white">{TH.currency(m.cpa)}</td>
                 <td className="px-3 py-2 font-semibold">{TH.number(m.conversions)}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">📊</button>
-                    <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">📊</button>
+                    <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">✏️</button>
                   </div>
                 </td>
               </tr>
@@ -1478,63 +1535,63 @@ function Section_20_ServerMonitor() {
         <KPICard label="API Latency (ms)" value="124" change={-8} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['Resource', 'Usage', 'Status', 'Details', 'Last Checked'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockServer.map((s, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{s.resource}</td>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{s.resource}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <MiniBar value={s.usage} max={100} color={s.usage >= 80 ? '#EF4444' : s.usage >= 60 ? '#FFB800' : '#22C55E'} />
+                    <MiniBar value={s.usage} max={100} color={s.usage >= 80 ? '#ff5252' : s.usage >= 60 ? '#ffc107' : '#00c853'} />
                     <span className="text-xs font-bold">{typeof s.usage === 'number' && s.usage < 100 ? `${s.usage}%` : s.usage}{s.suffix || ''}</span>
                   </div>
                 </td>
                 <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{s.expiry ? `หมดอายุ: ${s.expiry}` : '-'}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">2 วินาทีที่แล้ว</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{s.expiry ? `หมดอายุ: ${s.expiry}` : '-'}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">2 วินาทีที่แล้ว</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">⚡ API Latency (ms)</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">⚡ API Latency (ms)</h3>
           <div className="flex items-end gap-2 h-24">
             {[120, 135, 118, 142, 128, 115, 124].map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.6}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }} />
-                <span className="text-xs text-[#8B7355]">{v}ms</span>
+                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.6}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }} />
+                <span className="text-xs text-[#8a8fa3]">{v}ms</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">💾 Memory Usage</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">💾 Memory Usage</h3>
           <div className="flex items-end gap-2 h-24">
             {[58, 62, 65, 61, 68, 70, 68].map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.5}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }} />
-                <span className="text-xs text-[#8B7355]">{v}%</span>
+                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.5}px`, background: i === 6 ? '#e91e63' : '#ff8c00' }} />
+                <span className="text-xs text-[#8a8fa3]">{v}%</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">📊 Storage Breakdown</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">📊 Storage Breakdown</h3>
           <div className="space-y-2">
-            {[{ label: 'Images', val: 42, color: '#FFB800' }, { label: 'Videos', val: 28, color: '#E5A500' }, { label: 'Documents', val: 18, color: '#8B6914' }, { label: 'Others', val: 12, color: '#F0E4C8' }].map((s, i) => (
+            {[{ label: 'Images', val: 42, color: '#e91e63' }, { label: 'Videos', val: 28, color: '#ff8c00' }, { label: 'Documents', val: 18, color: '#ffc107' }, { label: 'Others', val: 12, color: '#5a6078' }].map((s, i) => (
               <div key={i}>
-                <div className="flex justify-between text-xs mb-0.5"><span className="text-[#8B7355]">{s.label}</span><span className="font-semibold text-[#3D2C00]">{s.val}%</span></div>
-                <div className="bg-gray-100 rounded-full h-2"><div className="h-2 rounded-full" style={{ width: `${s.val}%`, background: s.color }} /></div>
+                <div className="flex justify-between text-xs mb-0.5"><span className="text-[#8a8fa3]">{s.label}</span><span className="font-semibold text-white">{s.val}%</span></div>
+                <div className="bg-[#1e2235] rounded-full h-2"><div className="h-2 rounded-full" style={{ width: `${s.val}%`, background: s.color }} /></div>
               </div>
             ))}
           </div>
@@ -1551,25 +1608,25 @@ function Section_21_Logs() {
     <div className="space-y-3">
       <SectionHeader title="Logs" icon="📜" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="⚙️ Log Settings" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'Type', 'Action', 'Admin', 'Target', 'IP', 'Date & Time', 'Status'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockLogs.map((l, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{l.id}</td>
                 <td className="px-3 py-2"><StatusBadge status={l.type} /></td>
-                <td className="px-3 py-2 text-xs font-semibold text-[#3D2C00]">{l.action}</td>
+                <td className="px-3 py-2 text-xs font-semibold text-white">{l.action}</td>
                 <td className="px-3 py-2 text-xs">{l.admin}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{l.target}</td>
-                <td className="px-3 py-2 font-mono text-xs text-[#8B7355]">{l.ip}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{l.date}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{l.target}</td>
+                <td className="px-3 py-2 font-mono text-xs text-[#8a8fa3]">{l.ip}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{l.date}</td>
                 <td className="px-3 py-2"><StatusBadge status={l.status} /></td>
               </tr>
             ))}
@@ -1594,53 +1651,53 @@ function Section_22_Security() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">👥 Active Admin Sessions</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">👥 Active Admin Sessions</h3>
           <div className="space-y-3">
             {[
               { name: 'สุรชัย ใจดี', email: 'surachai@beefix.com', device: 'Chrome / macOS', ip: '1.46.234.18', location: 'Bangkok, TH', time: '2 ชม. ที่แล้ว', current: true },
               { name: 'ณิชารีย์ เจริญ', email: 'nitcharee@beefix.com', device: 'Safari / iOS', ip: '49.228.17.93', location: 'Chiang Mai, TH', time: '5 ชม. ที่แล้ว', current: false },
               { name: 'วิชัย เกษตรวิสุทธิ์', email: 'vichai@beefix.com', device: 'Firefox / Windows', ip: '203.150.82.41', location: 'Phuket, TH', time: '1 ชม. ที่แล้ว', current: false },
             ].map((s, i) => (
-              <div key={i} className="p-3 bg-[#FFF8E7] rounded-xl">
+              <div key={i} className="p-3 bg-[#1e2235] rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">👤</span>
                     <div>
-                      <div className="font-semibold text-sm text-[#3D2C00]">{s.name}</div>
-                      <div className="text-xs text-[#8B7355]">{s.email}</div>
+                      <div className="font-semibold text-sm text-white">{s.name}</div>
+                      <div className="text-xs text-[#8a8fa3]">{s.email}</div>
                     </div>
                   </div>
-                  {s.current && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Current</span>}
+                  {s.current && <span className="text-xs bg-[#00c853]/20 text-green-700 px-2 py-0.5 rounded-full font-bold">Current</span>}
                 </div>
-                <div className="flex items-center gap-4 text-xs text-[#8B7355]">
+                <div className="flex items-center gap-4 text-xs text-[#8a8fa3]">
                   <span>📱 {s.device}</span>
                   <span>🌐 {s.ip}</span>
                   <span>📍 {s.location}</span>
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-[#8B7355]">{s.time}</span>
-                  {!s.current && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔ Revoke</button>}
+                  <span className="text-xs text-[#8a8fa3]">{s.time}</span>
+                  {!s.current && <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⛔ Revoke</button>}
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">🔑 API Key Management</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">🔑 API Key Management</h3>
           <div className="space-y-3">
             {[
               { name: 'Beefix iOS App', key: 'bfx_live_************k92m', perms: 'Read, Write', calls: '4.8M', status: 'active' },
               { name: 'Stripe Webhook', key: 'bfx_live_************w38x', perms: 'Read', calls: '892K', status: 'active' },
               { name: 'Test Environment', key: 'bfx_test_************4h28', perms: 'Read, Write', calls: '42K', status: 'inactive' },
             ].map((k, i) => (
-              <div key={i} className="p-3 bg-[#FFF8E7] rounded-xl">
+              <div key={i} className="p-3 bg-[#1e2235] rounded-xl">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-sm text-[#3D2C00]">{k.name}</span>
+                  <span className="font-semibold text-sm text-white">{k.name}</span>
                   <StatusBadge status={k.status} />
                 </div>
-                <div className="font-mono text-xs text-[#8B7355] mb-1">{k.key}</div>
-                <div className="flex items-center gap-3 text-xs text-[#8B7355]">
+                <div className="font-mono text-xs text-[#8a8fa3] mb-1">{k.key}</div>
+                <div className="flex items-center gap-3 text-xs text-[#8a8fa3]">
                   <span>🔑 {k.perms}</span>
                   <span>📊 {k.calls}</span>
                   <button className="text-blue-500 hover:underline ml-auto">✏️ Rotate</button>
@@ -1667,30 +1724,30 @@ function Section_23_AdminManagement() {
         <KPICard label="Departments" value="4" change={0} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['ID', 'ชื่อ', 'อีเมล', 'Role', 'แผนก', 'Sessions', 'สถานะ', 'เข้าล่าสุด', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAdmins.map((a, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
                 <td className="px-3 py-2 font-mono text-xs">{a.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{a.name}</td>
                 <td className="px-3 py-2 text-xs">{a.email}</td>
                 <td className="px-3 py-2"><StatusBadge status={a.role} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.department}</td>
-                <td className="px-3 py-2"><span className="font-bold text-xs text-[#3D2C00]">{a.sessions}</span></td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{a.department}</td>
+                <td className="px-3 py-2"><span className="font-bold text-xs text-white">{a.sessions}</span></td>
                 <td className="px-3 py-2"><StatusBadge status={a.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.lastLogin}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{a.lastLogin}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    {a.status === 'active' ? <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>}
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    {a.status === 'active' ? <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-[#00c853]/20 text-[#00c853] rounded hover:bg-[#00c853]/20 font-semibold">✓</button>}
                   </div>
                 </td>
               </tr>
@@ -1715,29 +1772,29 @@ function Section_24_FileManagement() {
         <KPICard label="Videos" value="220 GB" change={1.6} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['File Name', 'Type', 'Size', 'Owner', 'Uploads', 'Storage', 'Status', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFiles.map((f, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00] max-w-[180px] truncate">{f.name}</td>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
+                <td className="px-3 py-2 font-semibold text-xs text-white max-w-[180px] truncate">{f.name}</td>
                 <td className="px-3 py-2"><StatusBadge status={f.type} /></td>
                 <td className="px-3 py-2 font-semibold text-xs">{f.size}</td>
                 <td className="px-3 py-2 text-xs">{f.owner}</td>
                 <td className="px-3 py-2 text-xs">{TH.number(f.uploads)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{f.storage}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{f.storage}</td>
                 <td className="px-3 py-2"><StatusBadge status={f.status} /></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
-                    <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🗑️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">👁️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">🗑️</button>
                   </div>
                 </td>
               </tr>
@@ -1762,30 +1819,30 @@ function Section_25_APIManagement() {
         <KPICard label="Error Rate" value="0.12%" change={-0.03} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['Name', 'API Key', 'Permissions', 'Rate Limit', 'Total Calls', 'Last Used', 'Status', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAPIKeys.map((k, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{k.name}</td>
-                <td className="px-3 py-2 font-mono text-xs text-[#8B7355]">{k.key}</td>
-                <td className="px-3 py-2"><div className="flex gap-1 flex-wrap">{k.permissions.map(p => <span key={p} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-1.5 py-0.5 rounded">{p}</span>)}</div></td>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{k.name}</td>
+                <td className="px-3 py-2 font-mono text-xs text-[#8a8fa3]">{k.key}</td>
+                <td className="px-3 py-2"><div className="flex gap-1 flex-wrap">{k.permissions.map(p => <span key={p} className="text-xs bg-[#ffc107]/20 text-[#ffc107] px-1.5 py-0.5 rounded">{p}</span>)}</div></td>
                 <td className="px-3 py-2 text-xs">{k.rateLimit}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{TH.number(k.calls)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{k.lastUsed}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{k.lastUsed}</td>
                 <td className="px-3 py-2"><StatusBadge status={k.status} /></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔄</button>
-                    <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🗑️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">🔄</button>
+                    <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">🗑️</button>
                   </div>
                 </td>
               </tr>
@@ -1814,42 +1871,42 @@ function Section_26_FinancialReport() {
         <KPICard label="VAT" value={TH.currency(33600)} change={6.8} />
         <KPICard label="Net Profit" value={TH.currency(239600)} change={12.1} />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['วันที่', 'GMV (฿)', 'Revenue (฿)', 'Commission (฿)', 'VAT (฿)', 'Cost (฿)', 'Profit (฿)'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFinancialReports.map((r, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{r.period}</td>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{r.period}</td>
                 <td className="px-3 py-2 font-semibold text-xs">{TH.currency(r.gmv)}</td>
                 <td className="px-3 py-2 text-xs">{TH.currency(r.revenue)}</td>
-                <td className="px-3 py-2 text-[#FFB800] font-semibold">{TH.currency(r.commission)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(r.vat)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(r.cost)}</td>
-                <td className="px-3 py-2 font-bold text-green-600 text-xs">{TH.currency(r.profit)}</td>
+                <td className="px-3 py-2 text-[#ffc107] font-semibold">{TH.currency(r.commission)}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{TH.currency(r.vat)}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{TH.currency(r.cost)}</td>
+                <td className="px-3 py-2 font-bold text-[#00c853] text-xs">{TH.currency(r.profit)}</td>
               </tr>
             ))}
-            <tr className="border-t-2 border-[#FFB800] bg-[#FFF8E7] font-bold">
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">รวม</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.gmv, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.revenue, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#FFB800]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.commission, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.vat, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.cost, 0))}</td>
-              <td className="px-3 py-2 text-green-600 text-xs">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.profit, 0))}</td>
+            <tr className="border-t-2 border-[#e91e63] bg-[#1e2235] font-bold">
+              <td className="px-3 py-2 text-xs text-white">รวม</td>
+              <td className="px-3 py-2 text-xs text-white">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.gmv, 0))}</td>
+              <td className="px-3 py-2 text-xs text-white">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.revenue, 0))}</td>
+              <td className="px-3 py-2 text-xs text-[#ffc107]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.commission, 0))}</td>
+              <td className="px-3 py-2 text-xs text-white">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.vat, 0))}</td>
+              <td className="px-3 py-2 text-xs text-white">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.cost, 0))}</td>
+              <td className="px-3 py-2 text-[#00c853] text-xs">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.profit, 0))}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">💵 P&L Breakdown</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">💵 P&L Breakdown</h3>
           <div className="space-y-3">
             {[
               { label: 'Revenue', val: 482000, color: '#FFB800' },
@@ -1860,18 +1917,18 @@ function Section_26_FinancialReport() {
             ].map((item, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-[#8B7355]">{item.label}</span>
-                  <span className="font-bold text-[#3D2C00]">{TH.currency(item.val)}</span>
+                  <span className="text-[#8a8fa3]">{item.label}</span>
+                  <span className="font-bold text-white">{TH.currency(item.val)}</span>
                 </div>
-                <div className="bg-gray-100 rounded-full h-3">
+                <div className="bg-[#1e2235] rounded-full h-3">
                   <div className="h-3 rounded-full" style={{ width: `${(item.val / 500000) * 100}%`, background: item.color }} />
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">📊 Cash Flow</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a]">
+          <h3 className="font-bold text-white mb-3">📊 Cash Flow</h3>
           <div className="flex items-end gap-2 h-40">
             {[
               { label: 'ต.ค.', in: 4.2, out: 2.1 },
@@ -1883,20 +1940,20 @@ function Section_26_FinancialReport() {
             ].map((m, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                 <div className="w-full flex flex-col-reverse" style={{ height: '80px' }}>
-                  <div className="w-full rounded-t-sm" style={{ height: `${m.in * 15}px`, background: '#22C55E' }} />
-                  <div className="w-full rounded-t-sm" style={{ height: `${m.out * 15}px`, background: '#EF4444' }} />
+                  <div className="w-full rounded-t-sm" style={{ height: `${m.in * 15}px`, background: '#00c853' }} />
+                  <div className="w-full rounded-t-sm" style={{ height: `${m.out * 15}px`, background: '#ff5252' }} />
                 </div>
-                <span className="text-xs text-[#8B7355] mt-1">{m.label}</span>
+                <span className="text-xs text-[#8a8fa3] mt-1">{m.label}</span>
                 <div className="flex gap-0.5 mt-0.5">
-                  <div className="w-3 h-2 rounded-sm bg-green-500" />
-                  <div className="w-3 h-2 rounded-sm bg-red-400" />
+                  <div className="w-3 h-2 rounded-sm bg-[#00c853]" />
+                  <div className="w-3 h-2 rounded-sm bg-[#ff5252]" />
                 </div>
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-4 mt-3 text-xs text-[#8B7355]">
-            <span className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm bg-green-500" /> Inflow</span>
-            <span className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm bg-red-400" /> Outflow</span>
+          <div className="flex items-center gap-4 mt-3 text-xs text-[#8a8fa3]">
+            <span className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm bg-[#00c853]" /> Inflow</span>
+            <span className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm bg-[#ff5252]" /> Outflow</span>
           </div>
         </div>
       </div>
@@ -1917,34 +1974,34 @@ function Section_27_Automation() {
         <KPICard label="Failed (วันนี้)" value="3" change={-2} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-[#252a40] rounded-2xl border border-[#2a2f4a] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#1e2235]">
               {['Name', 'Trigger', 'Schedule', 'Last Run', 'Success Rate', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8a8fa3] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAutomations.map((a, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[160px] truncate">{a.trigger}</td>
+              <tr key={i} className={`border-t border-[#2a2f4a] ${i % 2 === 0 ? 'bg-white' : 'bg-[#1e2235]'}`}>
+                <td className="px-3 py-2 font-semibold text-xs text-white">{a.name}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3] max-w-[160px] truncate">{a.trigger}</td>
                 <td className="px-3 py-2 text-xs"><StatusBadge status={a.schedule} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.lastRun}</td>
+                <td className="px-3 py-2 text-xs text-[#8a8fa3]">{a.lastRun}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <MiniBar value={a.successRate} max={100} color={a.successRate >= 95 ? '#22C55E' : a.successRate >= 85 ? '#FFB800' : '#EF4444'} />
-                    <span className="text-xs font-bold text-[#3D2C00]">{a.successRate}%</span>
+                    <MiniBar value={a.successRate} max={100} color={a.successRate >= 95 ? '#00c853' : a.successRate >= 85 ? '#ffc107' : '#ff5252'} />
+                    <span className="text-xs font-bold text-white">{a.successRate}%</span>
                   </div>
                 </td>
                 <td className="px-3 py-2"><StatusBadge status={a.status} /></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1">
-                    <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
-                    <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">▶️</button>
-                    <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⏸️</button>
+                    <button className="px-2 py-1 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">✏️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">▶️</button>
+                    <button className="px-2 py-1 text-xs bg-[#ff5252]/20 text-[#ff5252] rounded hover:bg-[#ff5252]/20 font-semibold">⏸️</button>
                   </div>
                 </td>
               </tr>
@@ -1964,62 +2021,62 @@ function Section_28_Settings() {
       <SectionHeader title="Settings" icon="⚙️" actions={<><ActionBtn label="💾 Save All" variant="primary" size="sm" /><ActionBtn label="🔄 Reset" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] space-y-3">
-          <h3 className="font-bold text-[#3D2C00]">🌐 General Settings</h3>
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a] space-y-3">
+          <h3 className="font-bold text-white">🌐 General Settings</h3>
           <div>
-            <label className="block text-xs font-semibold text-[#8B7355] mb-1">Site Name</label>
-            <input type="text" className="form-input" defaultValue="Beefix" />
+            <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">Site Name</label>
+            <input type="text" className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" defaultValue="Beefix" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[#8B7355] mb-1">Site URL</label>
-            <input type="text" className="form-input" defaultValue="https://beefix.co.th" />
+            <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">Site URL</label>
+            <input type="text" className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" defaultValue="https://beefix.co.th" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[#8B7355] mb-1">Support Email</label>
-            <input type="text" className="form-input" defaultValue="support@beefix.co.th" />
+            <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">Support Email</label>
+            <input type="text" className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" defaultValue="support@beefix.co.th" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[#8B7355] mb-1">Default Language</label>
-            <select className="form-input" defaultValue="th">
+            <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">Default Language</label>
+            <select className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" defaultValue="th">
               <option value="th">ไทย</option>
               <option value="en">English</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[#8B7355] mb-1">Default Currency</label>
-            <select className="form-input" defaultValue="THB">
+            <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">Default Currency</label>
+            <select className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" defaultValue="THB">
               <option value="THB">THB (บาท)</option>
               <option value="USD">USD ($)</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[#8B7355] mb-1">Tax Rate (%)</label>
-            <input type="number" className="form-input" defaultValue="7" />
+            <label className="block text-xs font-semibold text-[#8a8fa3] mb-1">Tax Rate (%)</label>
+            <input type="number" className="bg-[#1e2235] border border-[#2a2f4a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#e91e63]" defaultValue="7" />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] space-y-3">
-          <h3 className="font-bold text-[#3D2C00]">💳 Payment Gateway</h3>
-          <div className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
+        <div className="bg-[#252a40] rounded-xl p-3 border border-[#2a2f4a] space-y-3">
+          <h3 className="font-bold text-white">💳 Payment Gateway</h3>
+          <div className="flex items-center justify-between p-3 bg-[#1e2235] rounded-xl">
             <div className="flex items-center gap-3">
               <span className="text-2xl">💳</span>
               <div>
                 <div className="font-semibold text-sm">Stripe</div>
-                <div className="text-xs text-green-500">● Connected</div>
+                <div className="text-xs text-[#00c853]">● Connected</div>
               </div>
             </div>
-            <button className="px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">Configure</button>
+            <button className="px-3 py-1.5 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">Configure</button>
           </div>
-          <div className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-[#1e2235] rounded-xl">
             <div className="flex items-center gap-3">
               <span className="text-2xl">📱</span>
               <div>
                 <div className="font-semibold text-sm">PromptPay / SCB QR</div>
-                <div className="text-xs text-green-500">● Connected</div>
+                <div className="text-xs text-[#00c853]">● Connected</div>
               </div>
             </div>
-            <button className="px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">Configure</button>
+            <button className="px-3 py-1.5 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">Configure</button>
           </div>
-          <div className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-[#1e2235] rounded-xl">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🏦</span>
               <div>
@@ -2027,28 +2084,28 @@ function Section_28_Settings() {
                 <div className="text-xs text-yellow-600">● Pending Setup</div>
               </div>
             </div>
-            <button className="px-3 py-1.5 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">Setup</button>
+            <button className="px-3 py-1.5 text-xs bg-[#ffc107]/20 text-[#ffc107] rounded hover:bg-[#ffc107]/20 font-semibold">Setup</button>
           </div>
-          <h3 className="font-bold text-[#3D2C00] pt-4">☁️ Cloud Storage</h3>
-          <div className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
+          <h3 className="font-bold text-white pt-4">☁️ Cloud Storage</h3>
+          <div className="flex items-center justify-between p-3 bg-[#1e2235] rounded-xl">
             <div className="flex items-center gap-3">
               <span className="text-2xl">📦</span>
               <div>
                 <div className="font-semibold text-sm">AWS S3</div>
-                <div className="text-xs text-green-500">● Connected (230.5 GB used)</div>
+                <div className="text-xs text-[#00c853]">● Connected (230.5 GB used)</div>
               </div>
             </div>
-            <button className="px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">Settings</button>
+            <button className="px-3 py-1.5 text-xs bg-[#2196f3]/20 text-[#2196f3] rounded hover:bg-[#2196f3]/20 font-semibold">Settings</button>
           </div>
-          <h3 className="font-bold text-[#3D2C00] pt-4">🔧 Maintenance Mode</h3>
-          <div className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
+          <h3 className="font-bold text-white pt-4">🔧 Maintenance Mode</h3>
+          <div className="flex items-center justify-between p-3 bg-[#1e2235] rounded-xl">
             <div>
               <div className="font-semibold text-sm">Maintenance Mode</div>
-              <div className="text-xs text-red-500">ปิดปรับปรุงระบบ</div>
+              <div className="text-xs text-[#ff5252]">ปิดปรับปรุงระบบ</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFB800]"></div>
+              <div className="w-11 h-6 bg-[#2a2f4a] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#2a2f4a] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e91e63]"></div>
             </label>
           </div>
         </div>
@@ -2063,29 +2120,29 @@ function Section_29_Widgets() {
   return (
     <div className="space-y-3">
       <SectionHeader title="Dashboard Widgets" icon="🧩" actions={<><ActionBtn label="🔄 Reset to Default" variant="secondary" size="sm" /><ActionBtn label="💾 Save Layout" variant="primary" size="sm" /></>} />
-      <p className="text-sm text-[#8B7355]">คลิกเพื่อเปิด/ปิด widget — ลากเพื่อจัดเรียงใหม่ (drag-to-reorder)</p>
+      <p className="text-sm text-[#8a8fa3]">คลิกเพื่อเปิด/ปิด widget — ลากเพื่อจัดเรียงใหม่ (drag-to-reorder)</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3">
         {widgets.map(w => (
           <div
             key={w.id}
             onClick={() => toggle(w.id)}
-            className={`cursor-pointer rounded-2xl p-4 border transition-all ${w.enabled ? 'bg-white border-[#F0E4C8] shadow-sm hover:shadow-md' : 'bg-gray-50 border-gray-200 opacity-60'}`}
+            className={`cursor-pointer rounded-2xl p-4 border transition-all ${w.enabled ? 'bg-white border-[#2a2f4a] shadow-sm hover:shadow-md' : 'bg-gray-50 border-gray-200 opacity-60'}`}
           >
             <div className="flex items-start justify-between mb-2">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg ${w.enabled ? 'bg-[#FFF0B3]' : 'bg-gray-200'}`}>
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg ${w.enabled ? 'bg-[#FFF0B3]' : 'bg-[#2a2f4a]'}`}>
                 {{
                   w1: '💰', w2: '👥', w3: '📋', w4: '⚠️', w5: '🏧',
                   w6: '🔔', w7: '❌', w8: '🖥️', w9: '🤖', w10: '📊',
                   w11: '🛠️', w12: '🛒', w13: '💡'
                 }[w.id] || '📊'}
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${w.enabled ? 'border-[#FFB800] bg-[#FFB800]' : 'border-gray-300'}`}>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${w.enabled ? 'border-[#e91e63] bg-[#e91e63]' : 'border-[#2a2f4a]'}`}>
                 {w.enabled && <div className="w-2 h-2 rounded-full bg-white" />}
               </div>
             </div>
-            <div className="text-lg font-bold text-[#3D2C00]">{w.value}</div>
-            <div className="text-xs text-[#8B7355] font-semibold">{w.label}</div>
-            <div className={`text-xs font-bold mt-1 ${w.trend === 'up' ? 'text-green-500' : w.trend === 'down' ? 'text-red-500' : 'text-gray-400'}`}>
+            <div className="text-lg font-bold text-white">{w.value}</div>
+            <div className="text-xs text-[#8a8fa3] font-semibold">{w.label}</div>
+            <div className={`text-xs font-bold mt-1 ${w.trend === 'up' ? 'text-[#00c853]' : w.trend === 'down' ? 'text-[#ff5252]' : 'text-[#5a6078]'}`}>
               {w.change}
             </div>
           </div>
@@ -2153,86 +2210,76 @@ export default function AdminDashboard() {
 
 
   return (
-    <div className="min-h-screen bg-[#FFF8E7] flex">
+    <div className="min-h-screen bg-[#1a1d2e] flex">
       {/* Sidebar */}
       {/* Sidebar — flex, always visible on desktop, hidden on mobile */}
-      <aside className="w-[220px] flex-shrink-0 bg-white border-r border-[#F0E4C8] flex flex-col overflow-y-auto hidden lg:flex">
-        {/* Logo */}
-        <div className="flex items-center gap-2 px-3 py-3 border-b border-[#F0E4C8]">
-          <div className="w-8 h-8 bg-[#FFB800] rounded-lg flex items-center justify-center text-sm shadow-sm flex-shrink-0">
-            🐝
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-bold text-[#3D2C00] text-xs truncate">Beefix Admin</div>
-            <div className="text-[10px] text-[#8B7355] truncate">Control Panel</div>
-          </div>
+      <aside className="w-[240px] flex-shrink-0 bg-[#15172a] border-r border-[#2a2f4a] flex flex-col overflow-y-auto">
+  {/* Logo */}
+  <div className="flex items-center gap-3 px-5 py-4 border-b border-[#2a2f4a]">
+    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">🐝</div>
+    <div className="flex-1 min-w-0">
+      <div className="font-bold text-white text-sm">Beefix</div>
+      <div className="text-[10px] text-[#8a8fa3]">Admin Panel</div>
+    </div>
+  </div>
+  {/* Nav */}
+  <nav className="flex-1 overflow-y-auto py-3 px-3">
+    {navGroups.map(group => (
+      <div key={group.group} className="mb-4">
+        <div className="text-[10px] font-bold text-[#5a6078] uppercase tracking-widest px-2 mb-2">
+          {group.group}
         </div>
-
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-2">
-          {navGroups.map(group => (
-            <div key={group.group} className="mb-1">
-              <button
-                onClick={() => toggleGroup(group.group)}
-                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#8B7355] hover:bg-[#FFF8E7] transition-colors"
-              >                <span>{openGroups.has(group.group) ? '▼' : '▶'}</span>
-                <span>{group.group}</span>
-              </button>
-              {openGroups.has(group.group) && (
-                <div>
-                  {group.items.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveSection(item.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
-                        activeSection === item.id
-                          ? 'bg-[#FFF0B3] text-[#3D2C00] border-r-4 border-[#FFB800] font-bold'
-                          : 'text-[#8B7355] hover:bg-[#FFF8E7]'
-                      }`}
-                    >
-                      <span className="text-lg flex-shrink-0">{item.icon}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
-
-        {/* Admin profile */}
-        <div className="border-t border-[#F0E4C8] p-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#FFB800] rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">A</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-[#3D2C00] truncate">Admin</div>
-                <div className="text-xs text-[#8B7355] truncate">superadmin@beefix.com</div>
-              </div>
-          </div>
-        </div>
-      </aside>
+        {group.items.map(item => (
+          <button
+            key={item.id}
+            onClick={() => setActiveSection(item.id)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm mb-0.5 transition-all ${
+              activeSection === item.id
+                ? 'bg-[rgba(233,30,99,0.15)] text-white border-l-2 border-[#e91e63] font-semibold'
+                : 'text-[#8a8fa3] hover:bg-[#1e2235] hover:text-white'
+            }`}
+          >
+            <span className="text-base flex-shrink-0">{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+    ))}
+  </nav>
+  {/* Admin profile */}
+  <div className="border-t border-[#2a2f4a] p-4">
+    <div className="flex items-center gap-3 px-2 py-1.5">
+      <div className="w-9 h-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white">A</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold text-white truncate">Admin</div>
+        <div className="text-[11px] text-[#8a8fa3] truncate">superadmin@beefix.com</div>
+      </div>
+    </div>
+  </div>
+</aside>
 
       {/* Main Content */}
       <main className="flex-1 min-w-0">
         {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-4 py-2.5 flex items-center justify-between shadow-sm gap-2">
-          <div className="flex items-center gap-2">
-            <div className="bg-[#FFB800] rounded-lg w-8 h-8 flex items-center justify-center text-sm">🐝</div>
-            <div className="hidden sm:block">
-              <h1 className="font-bold text-[#3D2C00] text-sm">Beefix Admin</h1>
-              <p className="text-[10px] text-[#8B7355]">Panel · {new Date().toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">
-              🔔<span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
-            </button>
-            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">⚙️</button>
-            <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-3 py-1.5 bg-[#FFF8E7] text-[#3D2C00] rounded-lg text-xs font-semibold hover:bg-[#FFF0B3] transition-colors hidden sm:block">ออก</button>
-          </div>
-        </header>
+        <header className="sticky top-0 z-40 bg-[#1a1d2e] border-b border-[#2a2f4a] px-5 py-3 flex items-center justify-between gap-3">
+  <div className="flex items-center gap-3">
+    <div className="w-9 h-9 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-sm font-bold text-white">🐝</div>
+    <div>
+      <h1 className="font-bold text-white text-sm">Beefix Admin</h1>
+      <p className="text-[11px] text-[#8a8fa3]">{new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    </div>
+  </div>
+  <div className="flex items-center gap-2">
+    <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-2 text-[#8a8fa3] hover:text-white hover:bg-[#252a40] rounded-lg transition-colors text-sm">
+      🔔<span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#e91e63] text-white text-[9px] font-bold rounded-full flex items-center justify-center">3</span>
+    </button>
+    <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-2 text-[#8a8fa3] hover:text-white hover:bg-[#252a40] rounded-lg transition-colors text-sm">⚙️</button>
+    <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-3 py-1.5 bg-[#e91e63] text-white rounded-lg text-xs font-semibold hover:bg-[#c1175a] transition-colors">ออก</button>
+  </div>
+</header>
 
         {/* Page Content */}
-        <div className="p-5 min-h-[calc(100vh-57px)]">
+        <div className="bg-[#1a1d2e] p-5 min-h-[calc(100vh-57px)]">
           <div className="max-w-[1440px] mx-auto">
             {renderSection()}
           </div>
@@ -2248,7 +2295,7 @@ export default function AdminDashboard() {
               toast.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
               toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
               toast.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-              'bg-blue-50 text-blue-700 border-blue-200'
+              'bg-blue-50 text-[#2196f3] border-blue-200'
             }`}
           >
             {toast.message}
