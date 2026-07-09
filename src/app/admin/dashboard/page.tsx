@@ -411,25 +411,26 @@ function KPICard({ label, value, change, prefix = '', suffix = '', trend, sparkl
   sparkline?: number[]; icon?: string;
 }) {
   const isPositive = typeof change === 'number' ? change >= 0 : trend === 'up' || trend === 'neutral';
-  const changeColor = typeof change === 'number' ? (change >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-400';
+  const changeBg = typeof change === 'number' ? (change >= 0 ? 'bg-green-500' : 'bg-red-500') : 'bg-gray-100';
+  const changeText = typeof change === 'number' ? (change >= 0 ? 'text-white' : 'text-white') : 'text-gray-500';
   const arrow = typeof change === 'number' ? (change >= 0 ? '↑' : '↓') : (trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→');
   const sparkColor = isPositive ? '#22C55E' : '#EF4444';
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-[#F0E4C8] hover:shadow-md transition-shadow flex items-center gap-3">
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 flex items-center gap-4">
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] text-[#8B7355] font-medium mb-0.5 uppercase tracking-wide">{label}</div>
-        <div className="text-lg font-bold text-[#3D2C00] leading-tight">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
+        <div className="text-[10px] text-[#B8A882] font-semibold mb-1 uppercase tracking-wider">{label}</div>
+        <div className="text-xl font-bold text-[#1a1a1a] leading-tight">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
         {change !== undefined && (
-          <div className={`text-[11px] font-semibold mt-0.5 ${changeColor}`}>
+          <div className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full mt-1.5 ${changeBg} ${changeText}`}>
             {arrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}${typeof change === 'number' && Math.abs(change) < 100 ? '%' : ''}` : change}
           </div>
         )}
       </div>
       {sparkline && (
-        <MiniSparkline data={sparkline} color={sparkColor} height={36} />
+        <MiniSparkline data={sparkline} color={sparkColor} height={40} />
       )}
       {!sparkline && icon && (
-        <div className="text-2xl opacity-60">{icon}</div>
+        <div className="text-2xl opacity-50">{icon}</div>
       )}
     </div>
   );
@@ -437,59 +438,101 @@ function KPICard({ label, value, change, prefix = '', suffix = '', trend, sparkl
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
-    active: { label: 'Active', className: 'bg-green-100 text-green-700' },
-    completed: { label: 'Completed', className: 'bg-green-100 text-green-700' },
-    success: { label: 'Success', className: 'bg-green-100 text-green-700' },
-    approved: { label: 'Approved', className: 'bg-green-100 text-green-700' },
-    published: { label: 'Published', className: 'bg-green-100 text-green-700' },
-    visible: { label: 'Visible', className: 'bg-green-100 text-green-700' },
-    healthy: { label: 'Healthy', className: 'bg-green-100 text-green-700' },
-    in_progress: { label: 'In Progress', className: 'bg-purple-100 text-purple-700' },
-    delivered: { label: 'Delivered', className: 'bg-blue-100 text-blue-700' },
-    pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-700' },
-    warning: { label: 'Warning', className: 'bg-yellow-100 text-yellow-700' },
-    paused: { label: 'Paused', className: 'bg-yellow-100 text-yellow-700' },
-    draft: { label: 'Draft', className: 'bg-gray-100 text-gray-600' },
-    inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-600' },
-    suspended: { label: 'Suspended', className: 'bg-red-100 text-red-600' },
-    cancelled: { label: 'Cancelled', className: 'bg-gray-100 text-gray-600' },
-    rejected: { label: 'Rejected', className: 'bg-red-100 text-red-600' },
-    failed: { label: 'Failed', className: 'bg-red-100 text-red-600' },
-    error: { label: 'Error', className: 'bg-red-100 text-red-600' },
-    disputed: { label: 'Disputed', className: 'bg-orange-100 text-orange-700' },
-    refunded: { label: 'Refunded', className: 'bg-orange-100 text-orange-700' },
-    chargeback: { label: 'Chargeback', className: 'bg-red-100 text-red-600' },
-    held: { label: 'Held', className: 'bg-blue-100 text-blue-700' },
-    problem: { label: 'Problem', className: 'bg-red-100 text-red-600' },
-    pending_release: { label: 'Pending Release', className: 'bg-yellow-100 text-yellow-700' },
-    released: { label: 'Released', className: 'bg-green-100 text-green-700' },
-    open: { label: 'Open', className: 'bg-red-100 text-red-600' },
-    reported: { label: 'Reported', className: 'bg-orange-100 text-orange-700' },
-    hidden: { label: 'Hidden', className: 'bg-gray-100 text-gray-600' },
-    banned: { label: 'Banned', className: 'bg-red-100 text-red-600' },
-    flagged: { label: 'Flagged', className: 'bg-orange-100 text-orange-700' },
-    investigating: { label: 'Investigating', className: 'bg-yellow-100 text-yellow-700' },
-    pending_review: { label: 'Pending Review', className: 'bg-yellow-100 text-yellow-700' },
-    high: { label: 'High', className: 'bg-red-100 text-red-600' },
-    medium: { label: 'Medium', className: 'bg-orange-100 text-orange-700' },
-    low: { label: 'Low', className: 'bg-yellow-100 text-yellow-700' },
-    confirmed: { label: 'Confirmed', className: 'bg-green-100 text-green-700' },
-    expired: { label: 'Expired', className: 'bg-gray-100 text-gray-600' },
-    super_admin: { label: 'Super Admin', className: 'bg-purple-100 text-purple-700' },
-    finance_manager: { label: 'Finance', className: 'bg-blue-100 text-blue-700' },
-    support_manager: { label: 'Support', className: 'bg-green-100 text-green-700' },
-    content_manager: { label: 'Content', className: 'bg-yellow-100 text-yellow-700' },
-    operations: { label: 'Operations', className: 'bg-orange-100 text-orange-700' },
+    active: { label: 'Active', className: 'bg-emerald-50 text-emerald-700' },
+    completed: { label: 'Completed', className: 'bg-emerald-50 text-emerald-700' },
+    success: { label: 'Success', className: 'bg-emerald-50 text-emerald-700' },
+    approved: { label: 'Approved', className: 'bg-emerald-50 text-emerald-700' },
+    published: { label: 'Published', className: 'bg-emerald-50 text-emerald-700' },
+    visible: { label: 'Visible', className: 'bg-emerald-50 text-emerald-700' },
+    healthy: { label: 'Healthy', className: 'bg-emerald-50 text-emerald-700' },
+    confirmed: { label: 'Confirmed', className: 'bg-emerald-50 text-emerald-700' },
+    in_progress: { label: 'In Progress', className: 'bg-violet-50 text-violet-700' },
+    delivered: { label: 'Delivered', className: 'bg-sky-50 text-sky-700' },
+    pending: { label: 'Pending', className: 'bg-amber-50 text-amber-700' },
+    warning: { label: 'Warning', className: 'bg-amber-50 text-amber-700' },
+    paused: { label: 'Paused', className: 'bg-amber-50 text-amber-700' },
+    draft: { label: 'Draft', className: 'bg-gray-100 text-gray-500' },
+    inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-500' },
+    suspended: { label: 'Suspended', className: 'bg-red-50 text-red-600' },
+    cancelled: { label: 'Cancelled', className: 'bg-gray-100 text-gray-500' },
+    rejected: { label: 'Rejected', className: 'bg-red-50 text-red-600' },
+    failed: { label: 'Failed', className: 'bg-red-50 text-red-600' },
+    error: { label: 'Error', className: 'bg-red-50 text-red-600' },
+    disputed: { label: 'Disputed', className: 'bg-orange-50 text-orange-700' },
+    refunded: { label: 'Refunded', className: 'bg-orange-50 text-orange-700' },
+    chargeback: { label: 'Chargeback', className: 'bg-red-50 text-red-600' },
+    held: { label: 'Held', className: 'bg-sky-50 text-sky-700' },
+    problem: { label: 'Problem', className: 'bg-red-50 text-red-600' },
+    pending_release: { label: 'Pending Release', className: 'bg-amber-50 text-amber-700' },
+    released: { label: 'Released', className: 'bg-emerald-50 text-emerald-700' },
+    open: { label: 'Open', className: 'bg-red-50 text-red-600' },
+    reported: { label: 'Reported', className: 'bg-orange-50 text-orange-700' },
+    hidden: { label: 'Hidden', className: 'bg-gray-100 text-gray-500' },
+    banned: { label: 'Banned', className: 'bg-red-50 text-red-600' },
+    flagged: { label: 'Flagged', className: 'bg-orange-50 text-orange-700' },
+    investigating: { label: 'Investigating', className: 'bg-amber-50 text-amber-700' },
+    pending_review: { label: 'Pending Review', className: 'bg-amber-50 text-amber-700' },
+    high: { label: 'High', className: 'bg-red-50 text-red-600' },
+    medium: { label: 'Medium', className: 'bg-orange-50 text-orange-700' },
+    low: { label: 'Low', className: 'bg-amber-50 text-amber-700' },
+    expired: { label: 'Expired', className: 'bg-gray-100 text-gray-500' },
+    super_admin: { label: 'Super Admin', className: 'bg-violet-50 text-violet-700' },
+    finance_manager: { label: 'Finance', className: 'bg-sky-50 text-sky-700' },
+    support_manager: { label: 'Support', className: 'bg-emerald-50 text-emerald-700' },
+    content_manager: { label: 'Content', className: 'bg-amber-50 text-amber-700' },
+    operations: { label: 'Operations', className: 'bg-orange-50 text-orange-700' },
+    bank_transfer: { label: 'Bank Transfer', className: 'bg-sky-50 text-sky-700' },
+    promptpay: { label: 'PromptPay', className: 'bg-emerald-50 text-emerald-700' },
+    image: { label: 'Image', className: 'bg-sky-50 text-sky-700' },
+    video: { label: 'Video', className: 'bg-violet-50 text-violet-700' },
+    document: { label: 'Document', className: 'bg-amber-50 text-amber-700' },
+    banner: { label: 'Banner', className: 'bg-pink-50 text-pink-700' },
+    blog: { label: 'Blog', className: 'bg-sky-50 text-sky-700' },
+    faq: { label: 'FAQ', className: 'bg-emerald-50 text-emerald-700' },
+    terms: { label: 'Terms', className: 'bg-gray-100 text-gray-500' },
+    privacy: { label: 'Privacy', className: 'bg-blue-50 text-blue-700' },
+    help: { label: 'Help', className: 'bg-sky-50 text-sky-700' },
+    referral: { label: 'Referral', className: 'bg-emerald-50 text-emerald-700' },
+    cashback: { label: 'Cashback', className: 'bg-green-50 text-green-700' },
+    campaign: { label: 'Campaign', className: 'bg-pink-50 text-pink-700' },
+    voucher: { label: 'Voucher', className: 'bg-amber-50 text-amber-700' },
+    coupon: { label: 'Coupon', className: 'bg-amber-50 text-amber-700' },
+    flash_sale: { label: 'Flash Sale', className: 'bg-red-50 text-red-600' },
+    credit_card: { label: 'Credit Card', className: 'bg-sky-50 text-sky-700' },
+    qr_promptpay: { label: 'QR PromptPay', className: 'bg-emerald-50 text-emerald-700' },
+    wallet: { label: 'Wallet', className: 'bg-violet-50 text-violet-700' },
+    admin: { label: 'Admin', className: 'bg-violet-50 text-violet-700' },
+    payment: { label: 'Payment', className: 'bg-sky-50 text-sky-700' },
+    login: { label: 'Login', className: 'bg-sky-50 text-sky-700' },
+    api: { label: 'API', className: 'bg-amber-50 text-amber-700' },
+    email: { label: 'Email', className: 'bg-sky-50 text-sky-700' },
+    security: { label: 'Security', className: 'bg-red-50 text-red-600' },
+    activity: { label: 'Activity', className: 'bg-gray-100 text-gray-500' },
+    Instant: { label: 'Instant', className: 'bg-emerald-50 text-emerald-700' },
+    'Every 6h': { label: 'Every 6h', className: 'bg-sky-50 text-sky-700' },
+    'Daily 09:00': { label: 'Daily 09:00', className: 'bg-amber-50 text-amber-700' },
+    'Daily 02:00': { label: 'Daily 02:00', className: 'bg-violet-50 text-violet-700' },
+    'Daily 06:00': { label: 'Daily 06:00', className: 'bg-orange-50 text-orange-700' },
+    complaint: { label: 'Complaint', className: 'bg-orange-50 text-orange-700' },
+    refund: { label: 'Refund', className: 'bg-orange-50 text-orange-700' },
+    general: { label: 'General', className: 'bg-gray-100 text-gray-500' },
+    bot: { label: 'Bot', className: 'bg-red-50 text-red-600' },
+    fake_account: { label: 'Fake Account', className: 'bg-orange-50 text-orange-700' },
+    multiple_login: { label: 'Multiple Login', className: 'bg-orange-50 text-orange-700' },
+    fake_review: { label: 'Fake Review', className: 'bg-red-50 text-red-600' },
+    vpn_proxy: { label: 'VPN/Proxy', className: 'bg-orange-50 text-orange-700' },
+    spam: { label: 'Spam', className: 'bg-amber-50 text-amber-700' },
   };
-  const cfg = map[status] || { label: status, className: 'bg-gray-100 text-gray-600' };
-  return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.className}`}>{cfg.label}</span>;
+  const cfg = map[status] || { label: status, className: 'bg-gray-100 text-gray-500' };
+  return <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</span>;
 }
 
 function SectionHeader({ title, icon, actions }: { title: string; icon?: string; actions?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-3">
-      <h2 className="text-lg font-bold text-[#3D2C00] flex items-center gap-2">
-        {icon && <span>{icon}</span>}{title}
+    <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+      <h2 className="text-base font-bold text-[#1a1a1a] flex items-center gap-2">
+        {icon && <span className="text-lg">{icon}</span>}
+        <span>{title}</span>
       </h2>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
@@ -497,20 +540,20 @@ function SectionHeader({ title, icon, actions }: { title: string; icon?: string;
 }
 
 function ActionBtn({ label, variant = 'primary', size = 'sm' }: { label: string; variant?: 'primary' | 'secondary' | 'danger'; size?: 'sm' | 'md' }) {
-  const base = 'rounded-lg font-semibold cursor-pointer transition-all font-Prompt';
+  const base = 'rounded-lg font-semibold cursor-pointer transition-all font-Prompt inline-flex items-center gap-1.5';
   const sizeCls = size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm';
-  const variantCls = variant === 'primary' ? 'bg-[#FFB800] text-[#3D2C00] hover:bg-[#E5A500] shadow-sm' : variant === 'danger' ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm' : 'bg-white text-[#3D2C00] border border-[#F0E4C8] hover:bg-[#FFF8E7]';
+  const variantCls = variant === 'primary' ? 'bg-[#FFB800] text-[#3D2C00] hover:bg-[#E5A500] shadow-sm' : variant === 'danger' ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm' : 'bg-gray-50 text-[#3D2C00] border border-gray-200 hover:bg-gray-100';
   return <button className={`${base} ${sizeCls} ${variantCls}`}>{label}</button>;
 }
 
 function TabPills({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) {
   return (
-    <div className="flex gap-1 mb-4 flex-wrap">
+    <div className="flex gap-1 mb-5 flex-wrap">
       {tabs.map(tab => (
         <button
           key={tab}
           onClick={() => onChange(tab)}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${active === tab ? 'bg-[#FFB800] text-[#3D2C00]' : 'bg-white text-[#8B7355] border border-[#F0E4C8] hover:bg-[#FFF8E7]'}`}
+          className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${active === tab ? 'bg-[#FFB800] text-[#3D2C00] font-bold' : 'bg-transparent text-[#8B7355] hover:bg-[#FFF8E7]'}`}
         >
           {tab}
         </button>
@@ -521,20 +564,20 @@ function TabPills({ tabs, active, onChange }: { tabs: string[]; active: string; 
 
 function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode[][] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#F0E4C8]">
+    <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-[#FFF8E7]">
+          <tr className="bg-[#FAFAFA] border-b border-gray-100">
             {headers.map((h, i) => (
-              <th key={i} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase tracking-wider">{h}</th>
+              <th key={i} className="px-4 py-3 text-left text-[11px] font-semibold text-[#8B7355] uppercase tracking-wider">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, ri) => (
-            <tr key={ri} className={`border-t border-[#F0E4C8] ${ri % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
+            <tr key={ri} className={`border-b border-gray-50 hover:bg-gray-50/30 transition-colors ${ri % 2 === 0 ? 'bg-white' : 'bg-gray-white'}`}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-3 py-2 text-xs text-[#3D2C00]">{cell}</td>
+                <td key={ci} className="px-4 py-3 text-xs text-[#3D2C00]">{cell}</td>
               ))}
             </tr>
           ))}
@@ -556,7 +599,7 @@ function MiniBar({ value, max = 100, color = '#FFB800' }: { value: number; max?:
 
 function DateRangePicker() {
   return (
-    <div className="flex items-center gap-2 bg-white border border-[#F0E4C8] rounded-lg px-3 py-2">
+    <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-4 py-3">
       <span className="text-sm">📅</span>
       <span className="text-xs text-[#8B7355]">09 ก.ค. 2026 – 09 ก.ค. 2026</span>
       <span className="text-xs text-[#FFB800] font-semibold cursor-pointer ml-1">เปลี่ยน</span>
@@ -655,58 +698,68 @@ function Section_01_ExecutiveDashboard() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Line Chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl p-4 shadow-sm border border-[#F0E4C8]">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-[#3D2C00] text-sm">GMV & Revenue Trend</h3>
+        <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-bold text-[#1a1a1a] text-sm">GMV & Revenue Trend</h3>
             <div className="flex items-center gap-4 text-[11px]">
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#FFB800] inline-block"/>GMV</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500 inline-block"/>Revenue</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#FFB800] inline-block rounded-full"/>GMV</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-green-500 inline-block rounded-full"/>Revenue</span>
             </div>
           </div>
-          <div className="relative h-40">
+          <div className="relative h-44">
             <svg viewBox="0 0 420 100" className="w-full h-full" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gmvGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#FFB800" stopOpacity="0.15"/>
+                  <stop offset="100%" stopColor="#FFB800" stopOpacity="0"/>
+                </linearGradient>
+                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22C55E" stopOpacity="0.1"/>
+                  <stop offset="100%" stopColor="#22C55E" stopOpacity="0"/>
+                </linearGradient>
+              </defs>
               {[25, 50, 75].map(y => (
-                <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#F0E4C8" strokeWidth="0.5" />
+                <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#F0F0F0" strokeWidth="0.5" />
               ))}
               <polyline
                 points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.gmv / maxVal) * 80}`).join(' ')}
-                fill="none" stroke="#FFB800" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+                fill="none" stroke="#FFB800" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"
               />
               <polyline
                 points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.rev / maxVal) * 80}`).join(' ')}
-                fill="none" stroke="#22C55E" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+                fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"
               />
               {chartData.map((d, i) => (
-                <circle key={i} cx={i * 60 + 30} cy={100 - (d.gmv / maxVal) * 80} r="3" fill="#FFB800" />
+                <circle key={i} cx={i * 60 + 30} cy={100 - (d.gmv / maxVal) * 80} r="3.5" fill="#FFB800" />
               ))}
             </svg>
-            <div className="flex justify-between mt-1 px-2">
+            <div className="flex justify-between mt-2 px-2">
               {chartData.map((d, i) => (
-                <span key={i} className="text-[10px] text-[#8B7355]">{d.day}</span>
+                <span key={i} className="text-[11px] text-[#8B7355]">{d.day}</span>
               ))}
             </div>
           </div>
         </div>
 
         {/* Donut Chart */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] text-sm mb-4">Jobs Summary</h3>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <h3 className="font-bold text-[#1a1a1a] text-sm mb-5">Jobs Summary</h3>
           <div className="flex flex-col items-center">
-            <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90">
+            <svg width="140" height="140" viewBox="0 0 140 140" className="-rotate-90">
               {donut.map((seg, i) => (
-                <circle key={i} cx="60" cy="60" r={radius} fill="none" stroke={seg.color} strokeWidth="16" strokeDasharray={`${seg.dash} ${seg.gap}`} strokeDashoffset={-seg.offset} />
+                <circle key={i} cx="70" cy="70" r={radius + 4} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${seg.dash * 1.2} ${seg.gap * 1.2}`} strokeDashoffset={-seg.offset * 1.2} />
               ))}
-              <circle cx="60" cy="60" r="28" fill="white" />
+              <circle cx="70" cy="70" r="32" fill="white" />
             </svg>
-            <div className="text-center -mt-2">
-              <div className="text-lg font-bold text-[#3D2C00]">{TH.number(totalJobs)}</div>
-              <div className="text-[10px] text-[#8B7355]">Total Jobs</div>
+            <div className="text-center -mt-4">
+              <div className="text-2xl font-bold text-[#1a1a1a]">{TH.number(totalJobs)}</div>
+              <div className="text-[11px] text-[#8B7355] font-medium">Total Jobs</div>
             </div>
-            <div className="mt-3 space-y-1 w-full">
+            <div className="mt-4 space-y-2 w-full">
               {jobStats.map((j, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px]">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: j.color }} />
+                <div key={i} className="flex items-center justify-between text-[12px]">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: j.color }} />
                     <span className="text-[#3D2C00]">{j.label}</span>
                   </span>
                   <span className="font-semibold text-[#3D2C00]">{TH.number(j.value)}</span>
@@ -724,30 +777,30 @@ function Section_02_Buyers() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Active', 'Suspended', 'Pending KYC'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Buyers Management" icon="🛒" actions={<><ActionBtn label="+ เพิ่ม Buyer" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ชื่อ', 'อีเมล', 'ใช้จ่าย (฿)', 'ออเดอร์', 'Trust Score', 'KYC', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockBuyers.map((b, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{b.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{b.name}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{b.email}</td>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{TH.currency(b.spend)}</td>
-                <td className="px-3 py-2 text-xs">{b.orders}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={b.trustScore} color={b.trustScore >= 90 ? '#22C55E' : b.trustScore >= 70 ? '#FFB800' : '#EF4444'} /><span className="text-xs font-semibold">{b.trustScore}</span></div></td>
-                <td className="px-3 py-2"><StatusBadge status={b.kyc} /></td>
-                <td className="px-3 py-2"><StatusBadge status={b.status} /></td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{b.id}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{b.name}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{b.email}</td>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{TH.currency(b.spend)}</td>
+                <td className="px-4 py-3 text-xs">{b.orders}</td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={b.trustScore} color={b.trustScore >= 90 ? '#22C55E' : b.trustScore >= 70 ? '#FFB800' : '#EF4444'} /><span className="text-xs font-semibold">{b.trustScore}</span></div></td>
+                <td className="px-4 py-3"><StatusBadge status={b.kyc} /></td>
+                <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔑</button>
@@ -767,32 +820,32 @@ function Section_03_Sellers() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Active', 'Warning', 'Suspended'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Sellers Management" icon="🛠️" actions={<><ActionBtn label="+ เพิ่ม Seller" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ชื่อ', 'สกิล', 'รายได้ (฿)', 'ถอนแล้ว (฿)', 'Rating', 'Response', 'Completion', 'On-Time', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockSellers.map((s, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{s.id}</td>
-                <td className="px-3 py-2 font-semibold">{s.name}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{s.skill}</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(s.income)}</td>
-                <td className="px-3 py-2 text-[#8B7355]">{TH.currency(s.withdrawn)}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-1"><span className="text-yellow-500">⭐</span><span className="font-bold">{s.rating}</span></div></td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.responseRate} color={s.responseRate >= 95 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.responseRate}%</span></div></td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.completionRate} color={s.completionRate >= 90 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.completionRate}%</span></div></td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={s.onTime} color={s.onTime >= 90 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.onTime}%</span></div></td>
-                <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{s.id}</td>
+                <td className="px-4 py-3 font-semibold">{s.name}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{s.skill}</td>
+                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{TH.currency(s.income)}</td>
+                <td className="px-4 py-3 text-[#8B7355]">{TH.currency(s.withdrawn)}</td>
+                <td className="px-4 py-3"><div className="flex items-center gap-1"><span className="text-yellow-500">⭐</span><span className="font-bold">{s.rating}</span></div></td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={s.responseRate} color={s.responseRate >= 95 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.responseRate}%</span></div></td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={s.completionRate} color={s.completionRate >= 90 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.completionRate}%</span></div></td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={s.onTime} color={s.onTime >= 90 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{s.onTime}%</span></div></td>
+                <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">💰</button>
@@ -816,34 +869,34 @@ function Section_04_Jobs() {
     'Delivered': 'ส่งมอบแล้ว', 'Completed': 'เสร็จสิ้น', 'Cancelled': 'ยกเลิก', 'Disputed': 'ข้อพิพาท', 'Refunded': 'คืนเงิน'
   };
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Job Management" icon="📋" actions={<><ActionBtn label="+ สร้างงาน" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="flex items-center gap-3 flex-wrap">
         <TabPills tabs={tabs} active={tab} onChange={setTab} />
         <input type="text" placeholder="🔍 ค้นหางาน..." className="form-input flex-1 min-w-[200px]" />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ชื่องาน', 'ผู้ว่าจ้าง', 'ช่าง', 'ราคา (฿)', 'สถานะ', 'Timeline', 'สร้างเมื่อ', 'แชท', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockJobs.map((j, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{j.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs max-w-[180px] truncate">{j.title}</td>
-                <td className="px-3 py-2 text-xs">{j.owner}</td>
-                <td className="px-3 py-2 text-xs">{j.freelancer}</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(j.price)}</td>
-                <td className="px-3 py-2"><StatusBadge status={j.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{j.timeline}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{j.created}</td>
-                <td className="px-3 py-2">{j.chat ? <span className="text-green-500 font-bold">💬</span> : <span className="text-gray-300">-</span>}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{j.id}</td>
+                <td className="px-4 py-3 font-semibold text-xs max-w-[180px] truncate">{j.title}</td>
+                <td className="px-4 py-3 text-xs">{j.owner}</td>
+                <td className="px-4 py-3 text-xs">{j.freelancer}</td>
+                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{TH.currency(j.price)}</td>
+                <td className="px-4 py-3"><StatusBadge status={j.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{j.timeline}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{j.created}</td>
+                <td className="px-4 py-3">{j.chat ? <span className="text-green-500 font-bold">💬</span> : <span className="text-gray-300">-</span>}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">✏️</button>
@@ -862,31 +915,31 @@ function Section_05_Orders() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Completed', 'Pending', 'Refunded', 'Disputed'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Order Management" icon="🧾" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="+ สร้างออเดอร์" variant="primary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ลูกค้า', 'บริการ', 'มูลค่า (฿)', 'ภาษี (฿)', 'ค่าคอม (฿)', 'ใบเสร็จ', 'Escrow', 'สถานะ', 'วันที่'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockOrders.map((o, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{o.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{o.customer}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[160px] truncate">{o.service}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(o.amount)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(o.tax)}</td>
-                <td className="px-3 py-2 text-[#FFB800] font-semibold">{TH.currency(o.commission)}</td>
-                <td className="px-3 py-2 font-mono text-xs">{o.receipt}</td>
-                <td className="px-3 py-2"><StatusBadge status={o.escrow} /></td>
-                <td className="px-3 py-2"><StatusBadge status={o.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{o.date}</td>
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{o.id}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{o.customer}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[160px] truncate">{o.service}</td>
+                <td className="px-4 py-3 font-bold text-xs text-[#3D2C00]">{TH.currency(o.amount)}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{TH.currency(o.tax)}</td>
+                <td className="px-4 py-3 text-[#FFB800] font-semibold">{TH.currency(o.commission)}</td>
+                <td className="px-4 py-3 font-mono text-xs">{o.receipt}</td>
+                <td className="px-4 py-3"><StatusBadge status={o.escrow} /></td>
+                <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{o.date}</td>
               </tr>
             ))}
           </tbody>
@@ -900,7 +953,7 @@ function Section_06_Escrow() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Held', 'Released', 'Pending Release', 'Problem'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Escrow Management" icon="🔒" actions={<><ActionBtn label="📤 Export Log" variant="secondary" size="sm" /><ActionBtn label="+ ปล่อย Escrow" variant="primary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Escrow Held" value={TH.currency(5840000)} change={5.4} />
@@ -909,26 +962,26 @@ function Section_06_Escrow() {
         <KPICard label="Problem Funds" value={TH.currency(35000)} change={22.1} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'Order', 'มูลค่า (฿)', 'สถานะ', 'วันที่ถือ', 'วันปล่อย', 'เหตุผล', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockEscrow.map((e, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{e.id}</td>
-                <td className="px-3 py-2 font-mono text-xs">{e.order}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(e.amount)}</td>
-                <td className="px-3 py-2"><StatusBadge status={e.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.heldAt}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.releasedAt}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.reason}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{e.id}</td>
+                <td className="px-4 py-3 font-mono text-xs">{e.order}</td>
+                <td className="px-4 py-3 font-bold text-xs text-[#3D2C00]">{TH.currency(e.amount)}</td>
+                <td className="px-4 py-3"><StatusBadge status={e.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{e.heldAt}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{e.releasedAt}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{e.reason}</td>
+                <td className="px-4 py-3">
                   {e.status === 'held' && <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">ปล่อย</button>}
                   {e.status === 'problem' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">แก้ไข</button>}
                   {e.status === 'pending_release' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">รอ...</button>}
@@ -947,7 +1000,7 @@ function Section_07_Withdrawal() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Pending', 'Approved', 'Rejected'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Withdrawal Management" icon="🏧" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="⚙️ ตั้งค่าค่าธรรมเนียม" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="รอดำเนินการ" value={TH.currency(80000)} change={8} />
@@ -956,28 +1009,28 @@ function Section_07_Withdrawal() {
         <KPICard label="ค่าธรรมเนียมรวม" value={TH.currency(65)} change={3} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ผู้ขาย', 'ธนาคาร', 'เลขบัญชี', 'จำนวน (฿)', 'ค่าธรรมเนียม (฿)', 'วิธี', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockWithdrawals.map((w, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{w.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{w.seller}</td>
-                <td className="px-3 py-2 text-xs">{w.bank}</td>
-                <td className="px-3 py-2 font-mono text-xs">{w.account}</td>
-                <td className="px-3 py-2 font-bold text-[#3D2C00]">{TH.currency(w.amount)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(w.fee)}</td>
-                <td className="px-3 py-2 text-xs"><StatusBadge status={w.method} /></td>
-                <td className="px-3 py-2"><StatusBadge status={w.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{w.date}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{w.id}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{w.seller}</td>
+                <td className="px-4 py-3 text-xs">{w.bank}</td>
+                <td className="px-4 py-3 font-mono text-xs">{w.account}</td>
+                <td className="px-4 py-3 font-bold text-[#3D2C00]">{TH.currency(w.amount)}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{TH.currency(w.fee)}</td>
+                <td className="px-4 py-3 text-xs"><StatusBadge status={w.method} /></td>
+                <td className="px-4 py-3"><StatusBadge status={w.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{w.date}</td>
+                <td className="px-4 py-3">
                   {w.status === 'pending' && (
                     <div className="flex gap-1">
                       <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>
@@ -999,7 +1052,7 @@ function Section_08_Payments() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Credit Card', 'QR PromptPay', 'Bank Transfer', 'Wallet', 'Failed', 'Chargeback'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Payment Management" icon="💳" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="+ ทดสอบ Payment" variant="primary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Success (วันนี้)" value={TH.currency(8500 + 12000 + 2500 + 15000)} change={8.2} />
@@ -1008,26 +1061,26 @@ function Section_08_Payments() {
         <KPICard label="Pending" value={TH.currency(35000)} change={12} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ประเภท', 'มูลค่า (฿)', 'สถานะ', 'Gateway', 'Card/Account', 'วันที่', 'รายละเอียด'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockPayments.map((p, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
-                <td className="px-3 py-2 text-xs font-semibold">{p.type.replace('_', ' ')}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(p.amount)}</td>
-                <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
-                <td className="px-3 py-2 text-xs">{p.gateway}</td>
-                <td className="px-3 py-2 font-mono text-xs">{p.card}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{p.date}</td>
-                <td className="px-3 py-2 text-xs text-red-500">{p.error || '-'}</td>
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
+                <td className="px-4 py-3 text-xs font-semibold">{p.type.replace('_', ' ')}</td>
+                <td className="px-4 py-3 font-bold text-xs text-[#3D2C00]">{TH.currency(p.amount)}</td>
+                <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
+                <td className="px-4 py-3 text-xs">{p.gateway}</td>
+                <td className="px-4 py-3 font-mono text-xs">{p.card}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{p.date}</td>
+                <td className="px-4 py-3 text-xs text-red-500">{p.error || '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -1041,7 +1094,7 @@ function Section_09_Promotions() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Coupon', 'Flash Sale', 'Campaign', 'Referral', 'Cashback', 'Voucher', 'Expired'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Promotion Management" icon="🎟️" actions={<><ActionBtn label="+ สร้างโปรโมชัน" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Active Promotions" value="4" change={0} />
@@ -1050,26 +1103,26 @@ function Section_09_Promotions() {
         <KPICard label="Expired" value="1" change={0} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ประเภท', 'ชื่อ/Code', 'ส่วนลด', 'ใช้ไป/จำกัด', 'Status', 'หมดอายุ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockPromotions.map((p, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
-                <td className="px-3 py-2"><StatusBadge status={p.type} /></td>
-                <td className="px-3 py-2 font-semibold text-xs">{p.code || p.name}</td>
-                <td className="px-3 py-2 font-bold text-[#FFB800]">{p.discount || p.bonus || p.cashback}</td>
-                <td className="px-3 py-2 text-xs">{p.usage}{p.limit ? `/${p.limit}` : ''}</td>
-                <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{p.exp}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
+                <td className="px-4 py-3"><StatusBadge status={p.type} /></td>
+                <td className="px-4 py-3 font-semibold text-xs">{p.code || p.name}</td>
+                <td className="px-4 py-3 font-bold text-[#FFB800]">{p.discount || p.bonus || p.cashback}</td>
+                <td className="px-4 py-3 text-xs">{p.usage}{p.limit ? `/${p.limit}` : ''}</td>
+                <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{p.exp}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button>
@@ -1090,13 +1143,13 @@ function Section_10_Notifications() {
   const channelIcons: Record<string, string> = { 'Email': '📧', 'SMS': '📱', 'Push': '🔔', 'In-App': '💬', 'Broadcast Seller': '📢', 'Broadcast Buyer': '📢' };
   const channels = ['Email', 'SMS', 'Push', 'In-App', 'Broadcast Seller', 'Broadcast Buyer'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Notification Center" icon="📢" />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">📤 ส่งการแจ้งเตือน</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             <div>
               <label className="block text-xs font-semibold text-[#8B7355] mb-1">ช่องทาง</label>
               <div className="flex gap-2 flex-wrap">
@@ -1128,9 +1181,9 @@ function Section_10_Notifications() {
             <button className="btn-primary w-auto px-6">📤 ส่งการแจ้งเตือน</button>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">📋 ประวัติการส่งล่าสุด</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {[
               { ch: '📧', title: 'แจ้งเตือนเตือนรีวิว', target: '342 คน', status: 'sent', time: '2 ชม. ที่แล้ว' },
               { ch: '📱', title: 'SMS ยืนยันการชำระ', target: '28 คน', status: 'sent', time: '4 ชม. ที่แล้ว' },
@@ -1163,7 +1216,7 @@ function Section_11_Support() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Open', 'Pending', 'Closed', 'Dispute', 'Refund', 'Complaint'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Support Center" icon="🎧" actions={<><ActionBtn label="+ สร้าง Ticket" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Open" value="2" change={0} />
@@ -1172,27 +1225,27 @@ function Section_11_Support() {
         <KPICard label="SLA Breach" value="0" change={0} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'หัวข้อ', 'ผู้ใช้', 'ประเภท', 'Priority', 'มอบหมาย', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockTickets.map((t, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{t.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{t.subject}</td>
-                <td className="px-3 py-2 text-xs">{t.user}</td>
-                <td className="px-3 py-2"><StatusBadge status={t.type} /></td>
-                <td className="px-3 py-2"><StatusBadge status={t.priority} /></td>
-                <td className="px-3 py-2 text-xs">{t.assigned}</td>
-                <td className="px-3 py-2"><StatusBadge status={t.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{t.date}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{t.id}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{t.subject}</td>
+                <td className="px-4 py-3 text-xs">{t.user}</td>
+                <td className="px-4 py-3"><StatusBadge status={t.type} /></td>
+                <td className="px-4 py-3"><StatusBadge status={t.priority} /></td>
+                <td className="px-4 py-3 text-xs">{t.assigned}</td>
+                <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{t.date}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>
@@ -1211,7 +1264,7 @@ function Section_12_Reviews() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Visible', 'Hidden', 'Reported', 'Suspicious'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Review Management" icon="⭐" actions={<><ActionBtn label="🤖 AI Detection" variant="secondary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Total Reviews" value="38,420" change={12.4} />
@@ -1220,28 +1273,28 @@ function Section_12_Reviews() {
         <KPICard label="Avg Rating" value="4.7" change={0.1} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'จาก', 'ถึง', 'งาน', 'Rating', 'Comment', 'AI Score', 'Status', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockReviews.map((r, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
-                <td className="px-3 py-2 text-xs">{r.from}</td>
-                <td className="px-3 py-2 text-xs">{r.to}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{r.job}</td>
-                <td className="px-3 py-2"><div className="flex text-yellow-400 text-xs">{Array.from({ length: r.rating }).map((_, j) => '⭐').join('')}</div></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px] truncate">{r.comment}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={r.fakeScore * 100} max={100} color={r.fakeScore > 0.7 ? '#EF4444' : r.fakeScore > 0.3 ? '#FFB800' : '#22C55E'} /><span className="text-xs font-semibold">{r.fakeScore}</span></div></td>
-                <td className="px-3 py-2"><StatusBadge status={r.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{r.date}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{r.id}</td>
+                <td className="px-4 py-3 text-xs">{r.from}</td>
+                <td className="px-4 py-3 text-xs">{r.to}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{r.job}</td>
+                <td className="px-4 py-3"><div className="flex text-yellow-400 text-xs">{Array.from({ length: r.rating }).map((_, j) => '⭐').join('')}</div></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[200px] truncate">{r.comment}</td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={r.fakeScore * 100} max={100} color={r.fakeScore > 0.7 ? '#EF4444' : r.fakeScore > 0.3 ? '#FFB800' : '#22C55E'} /><span className="text-xs font-semibold">{r.fakeScore}</span></div></td>
+                <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{r.date}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     {r.status === 'visible' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🙈</button>}
                     {r.status === 'reported' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔍</button>}
@@ -1261,28 +1314,28 @@ function Section_13_CMS() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Banner', 'Blog', 'FAQ', 'Terms', 'Privacy', 'Help Center'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Content Management (CMS)" icon="📄" actions={<><ActionBtn label="+ สร้างเนื้อหา" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ประเภท', 'ชื่อเรื่อง', 'เนื้อหา', 'Status', 'อัปเดต', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockCMS.map((c, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{c.id}</td>
-                <td className="px-3 py-2"><StatusBadge status={c.type} /></td>
-                <td className="px-3 py-2 font-semibold text-xs">{c.title}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px] truncate">{c.content}</td>
-                <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{c.updated}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{c.id}</td>
+                <td className="px-4 py-3"><StatusBadge status={c.type} /></td>
+                <td className="px-4 py-3 font-semibold text-xs">{c.title}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[200px] truncate">{c.content}</td>
+                <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{c.updated}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">👁️</button>
@@ -1302,29 +1355,29 @@ function Section_14_Categories() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Active', 'Warning', 'Inactive'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Category Management" icon="🏷️" actions={<><ActionBtn label="+ สร้าง Category" variant="primary" size="sm" /><ActionBtn label="+ สร้าง Tag" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ไอคอน', 'ชื่อ Category', 'Tags', 'Skills', 'Jobs', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockCategories.map((c, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{c.id}</td>
-                <td className="px-3 py-2 text-xl">{c.icon}</td>
-                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{c.name}</td>
-                <td className="px-3 py-2"><div className="flex flex-wrap gap-1">{c.tags.slice(0, 2).map(t => <span key={t} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-2 py-0.5 rounded-full">{t}</span>)}</div></td>
-                <td className="px-3 py-2 font-semibold text-xs">{TH.number(c.skills)}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{TH.number(c.jobs)}</td>
-                <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{c.id}</td>
+                <td className="px-4 py-3 text-xl">{c.icon}</td>
+                <td className="px-4 py-3 font-bold text-xs text-[#3D2C00]">{c.name}</td>
+                <td className="px-4 py-3"><div className="flex flex-wrap gap-1">{c.tags.slice(0, 2).map(t => <span key={t} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-2 py-0.5 rounded-full">{t}</span>)}</div></td>
+                <td className="px-4 py-3 font-semibold text-xs">{TH.number(c.skills)}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{TH.number(c.jobs)}</td>
+                <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 font-semibold">📋</button>
@@ -1343,31 +1396,31 @@ function Section_15_Search() {
   const [tab, setTab] = useState('Keywords');
   const tabs = ['Keywords', 'Ranking', 'Trending', 'Popular Services'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Search Management" icon="🔍" actions={<><ActionBtn label="+ เพิ่ม Keyword" variant="primary" size="sm" /><ActionBtn label="🔄 Sync Search Index" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['Keyword', 'การค้นหา/วัน', 'ผลลัพธ์', 'CTR', 'แนวโน้ม', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockSearchKeywords.map((k, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{k.keyword}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{TH.number(k.searches)}</td>
-                <td className="px-3 py-2 text-xs">{k.results}</td>
-                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={k.ctr} color={k.ctr >= 60 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{k.ctr}%</span></div></td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{k.keyword}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{TH.number(k.searches)}</td>
+                <td className="px-4 py-3 text-xs">{k.results}</td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={k.ctr} color={k.ctr >= 60 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{k.ctr}%</span></div></td>
+                <td className="px-4 py-3">
                   {k.trending === 'up' && <span className="text-green-500 font-bold">↑</span>}
                   {k.trending === 'down' && <span className="text-red-500 font-bold">↓</span>}
                   {k.trending === 'stable' && <span className="text-gray-400 font-bold">→</span>}
                 </td>
-                <td className="px-3 py-2">
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🚫</button>
@@ -1386,7 +1439,7 @@ function Section_16_Analytics() {
   const [tab, setTab] = useState('Overview');
   const tabs = ['Overview', 'DAU/WAU/MAU', 'GMV & Revenue', 'Funnel', 'Top Sellers', 'Buyer Spending'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Analytics" icon="📈" actions={<><DateRangePicker /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
@@ -1395,9 +1448,9 @@ function Section_16_Analytics() {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">👥 User Growth</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {[{ label: 'DAU', val: 8420 }, { label: 'WAU', val: 32100 }, { label: 'MAU', val: 98400 }].map((u, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
@@ -1409,9 +1462,9 @@ function Section_16_Analytics() {
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">💰 Revenue Mix</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {[{ label: 'GMV', val: 48200000, color: '#FFB800' }, { label: 'Revenue', val: 4820000, color: '#E5A500' }, { label: 'Commission', val: 964000, color: '#8B6914' }, { label: 'Profit', val: 3200000, color: '#22C55E' }].map((r, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
@@ -1423,7 +1476,7 @@ function Section_16_Analytics() {
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">🔄 Conversion Funnel</h3>
           <div className="space-y-2">
             {[['เข้าชม', 12400, '#FFB800'], ['สนใจ', 8200, '#FFE066'], ['ติดต่อ', 3400, '#F0C040'], ['จ้างงาน', 1240, '#22C55E']].map(([label, val, color], i) => (
@@ -1448,7 +1501,7 @@ function Section_17_Fraud() {
   const tabs = ['All', 'Bot', 'Fake Account', 'Chargeback', 'Fake Review', 'VPN/Proxy', 'Spam'];
   const severityColor: Record<string, string> = { high: 'bg-red-100 text-red-600', medium: 'bg-orange-100 text-orange-600', low: 'bg-yellow-100 text-yellow-700' };
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Fraud Detection" icon="🚨" actions={<><ActionBtn label="🤖 AI Settings" variant="secondary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Total Alerts (วันนี้)" value="7" change={2} />
@@ -1457,26 +1510,26 @@ function Section_17_Fraud() {
         <KPICard label="False Positive Rate" value="4.2%" change={-0.8} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ประเภท', 'ระดับ', 'ผู้ใช้', 'รายละเอียด', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFraudAlerts.map((f, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{f.id}</td>
-                <td className="px-3 py-2 text-xs font-semibold">{f.type.replace('_', ' ')}</td>
-                <td className="px-3 py-2"><span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${severityColor[f.severity]}`}>{f.severity.toUpperCase()}</span></td>
-                <td className="px-3 py-2 font-mono text-xs">{f.user}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px]">{f.detail}</td>
-                <td className="px-3 py-2"><StatusBadge status={f.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{f.date}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{f.id}</td>
+                <td className="px-4 py-3 text-xs font-semibold">{f.type.replace('_', ' ')}</td>
+                <td className="px-4 py-3"><span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${severityColor[f.severity]}`}>{f.severity.toUpperCase()}</span></td>
+                <td className="px-4 py-3 font-mono text-xs">{f.user}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[200px]">{f.detail}</td>
+                <td className="px-4 py-3"><StatusBadge status={f.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{f.date}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     {f.status === 'investigating' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button>}
                     {f.status === 'flagged' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔍</button>}
@@ -1496,7 +1549,7 @@ function Section_18_AI() {
   const [tab, setTab] = useState('Overview');
   const tabs = ['Overview', 'Matching', 'Chat', 'Recommendations', 'Cost'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="AI Monitor" icon="🤖" actions={<><ActionBtn label="⚙️ AI Settings" variant="secondary" size="sm" /><ActionBtn label="📤 Report" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
         {mockAIMonitor.map((a, i) => (
@@ -1505,7 +1558,7 @@ function Section_18_AI() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">🎯 Matching Accuracy Trend (7 วัน)</h3>
           <div className="flex items-end gap-2 h-32">
             {[91.2, 92.5, 93.1, 92.8, 94.0, 93.7, 94.2].map((v, i) => (
@@ -1519,7 +1572,7 @@ function Section_18_AI() {
           </div>
           <div className="mt-3 text-center text-sm font-semibold text-[#3D2C00]">Current: <span className="text-[#FFB800]">94.2%</span> ↑ +0.8%</div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">💬 Chat Usage (7 วัน)</h3>
           <div className="flex items-end gap-2 h-32">
             {[38200, 41000, 39500, 44200, 46800, 45200, 48200].map((v, i) => (
@@ -1540,7 +1593,7 @@ function Section_19_Marketing() {
   const [tab, setTab] = useState('All Channels');
   const tabs = ['All Channels', 'Google Ads', 'Facebook Ads', 'TikTok Ads', 'SEO', 'Affiliate', 'Referral'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Marketing Dashboard" icon="📣" actions={<><ActionBtn label="+ เพิ่ม Campaign" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
@@ -1551,12 +1604,12 @@ function Section_19_Marketing() {
         <KPICard label="Total CPA" value={TH.currency(189)} change={-4.2} />
         <KPICard label="Conversions" value="2,250" change={15.3} />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['Channel', 'Spend (฿)', 'Revenue (฿)', 'ROI %', 'ROAS', 'CPA (฿)', 'Conversions', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
@@ -1565,16 +1618,16 @@ function Section_19_Marketing() {
               <tr key={m.channel}
                 className="border-b border-[#F0E4C8] hover:bg-[#FFF8E7]/60"
               >
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{m.channel}</td>
-                <td className="px-3 py-2">{TH.currency(m.spend)}</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(m.revenue)}</td>
-                <td className="px-3 py-2">
+                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{m.channel}</td>
+                <td className="px-4 py-3">{TH.currency(m.spend)}</td>
+                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{TH.currency(m.revenue)}</td>
+                <td className="px-4 py-3">
                   <span className="text-green-600 font-bold">{m.roi}%</span>
                 </td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{m.roas.toFixed(1)}x</td>
-                <td className="px-3 py-2 font-semibold text-[#3D2C00]">{TH.currency(m.cpa)}</td>
-                <td className="px-3 py-2 font-semibold">{TH.number(m.conversions)}</td>
-                <td className="px-3 py-2">
+                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{m.roas.toFixed(1)}x</td>
+                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{TH.currency(m.cpa)}</td>
+                <td className="px-4 py-3 font-semibold">{TH.number(m.conversions)}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">📊</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">✏️</button>
@@ -1593,7 +1646,7 @@ function Section_20_ServerMonitor() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Compute', 'Database', 'Cache', 'Network', 'SSL'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Server Monitor" icon="🖥️" actions={<><ActionBtn label="🔄 Refresh" variant="secondary" size="sm" /><ActionBtn label="📤 Server Report" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
         <KPICard label="Uptime (30 วัน)" value="99.97%" change={0.01} />
@@ -1603,35 +1656,35 @@ function Section_20_ServerMonitor() {
         <KPICard label="API Latency (ms)" value="124" change={-8} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['Resource', 'Usage', 'Status', 'Details', 'Last Checked'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockServer.map((s, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{s.resource}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{s.resource}</td>
+                <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <MiniBar value={s.usage} max={100} color={s.usage >= 80 ? '#EF4444' : s.usage >= 60 ? '#FFB800' : '#22C55E'} />
                     <span className="text-xs font-bold">{typeof s.usage === 'number' && s.usage < 100 ? `${s.usage}%` : s.usage}{s.suffix || ''}</span>
                   </div>
                 </td>
-                <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{s.expiry ? `หมดอายุ: ${s.expiry}` : '-'}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">2 วินาทีที่แล้ว</td>
+                <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{s.expiry ? `หมดอายุ: ${s.expiry}` : '-'}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">2 วินาทีที่แล้ว</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">⚡ API Latency (ms)</h3>
           <div className="flex items-end gap-2 h-24">
             {[120, 135, 118, 142, 128, 115, 124].map((v, i) => (
@@ -1642,7 +1695,7 @@ function Section_20_ServerMonitor() {
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">💾 Memory Usage</h3>
           <div className="flex items-end gap-2 h-24">
             {[58, 62, 65, 61, 68, 70, 68].map((v, i) => (
@@ -1653,7 +1706,7 @@ function Section_20_ServerMonitor() {
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">📊 Storage Breakdown</h3>
           <div className="space-y-2">
             {[{ label: 'Images', val: 42, color: '#FFB800' }, { label: 'Videos', val: 28, color: '#E5A500' }, { label: 'Documents', val: 18, color: '#8B6914' }, { label: 'Others', val: 12, color: '#F0E4C8' }].map((s, i) => (
@@ -1673,29 +1726,29 @@ function Section_21_Logs() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Admin', 'Activity', 'Login', 'API', 'Payment', 'Email', 'Security'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Logs" icon="📜" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="⚙️ Log Settings" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'Type', 'Action', 'Admin', 'Target', 'IP', 'Date & Time', 'Status'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockLogs.map((l, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{l.id}</td>
-                <td className="px-3 py-2"><StatusBadge status={l.type} /></td>
-                <td className="px-3 py-2 text-xs font-semibold text-[#3D2C00]">{l.action}</td>
-                <td className="px-3 py-2 text-xs">{l.admin}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{l.target}</td>
-                <td className="px-3 py-2 font-mono text-xs text-[#8B7355]">{l.ip}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{l.date}</td>
-                <td className="px-3 py-2"><StatusBadge status={l.status} /></td>
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{l.id}</td>
+                <td className="px-4 py-3"><StatusBadge status={l.type} /></td>
+                <td className="px-4 py-3 text-xs font-semibold text-[#3D2C00]">{l.action}</td>
+                <td className="px-4 py-3 text-xs">{l.admin}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{l.target}</td>
+                <td className="px-4 py-3 font-mono text-xs text-[#8B7355]">{l.ip}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{l.date}</td>
+                <td className="px-4 py-3"><StatusBadge status={l.status} /></td>
               </tr>
             ))}
           </tbody>
@@ -1709,7 +1762,7 @@ function Section_22_Security() {
   const [tab, setTab] = useState('Overview');
   const tabs = ['Overview', '2FA', 'Sessions', 'Login History', 'Devices', 'Permissions', 'API Keys', 'OAuth'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Security" icon="🔐" actions={<><ActionBtn label="🔄 Force Logout All" variant="danger" size="sm" /><ActionBtn label="⚙️ Security Settings" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Active Sessions" value="14" change={3} />
@@ -1719,9 +1772,9 @@ function Section_22_Security() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">👥 Active Admin Sessions</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {[
               { name: 'สุรชัย ใจดี', email: 'surachai@beefix.com', device: 'Chrome / macOS', ip: '1.46.234.18', location: 'Bangkok, TH', time: '2 ชม. ที่แล้ว', current: true },
               { name: 'ณิชารีย์ เจริญ', email: 'nitcharee@beefix.com', device: 'Safari / iOS', ip: '49.228.17.93', location: 'Chiang Mai, TH', time: '5 ชม. ที่แล้ว', current: false },
@@ -1751,9 +1804,9 @@ function Section_22_Security() {
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">🔑 API Key Management</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {[
               { name: 'Beefix iOS App', key: 'bfx_live_************k92m', perms: 'Read, Write', calls: '4.8M', status: 'active' },
               { name: 'Stripe Webhook', key: 'bfx_live_************w38x', perms: 'Read', calls: '892K', status: 'active' },
@@ -1783,7 +1836,7 @@ function Section_23_AdminManagement() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Super Admin', 'Finance', 'Support', 'Content', 'Operations'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Admin Management" icon="👔" actions={<><ActionBtn label="+ เพิ่ม Admin" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Total Admins" value="5" change={0} />
@@ -1792,27 +1845,27 @@ function Section_23_AdminManagement() {
         <KPICard label="Departments" value="4" change={0} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['ID', 'ชื่อ', 'อีเมล', 'Role', 'แผนก', 'Sessions', 'สถานะ', 'เข้าล่าสุด', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAdmins.map((a, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-mono text-xs">{a.id}</td>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
-                <td className="px-3 py-2 text-xs">{a.email}</td>
-                <td className="px-3 py-2"><StatusBadge status={a.role} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.department}</td>
-                <td className="px-3 py-2"><span className="font-bold text-xs text-[#3D2C00]">{a.sessions}</span></td>
-                <td className="px-3 py-2"><StatusBadge status={a.status} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.lastLogin}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-mono text-xs">{a.id}</td>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
+                <td className="px-4 py-3 text-xs">{a.email}</td>
+                <td className="px-4 py-3"><StatusBadge status={a.role} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{a.department}</td>
+                <td className="px-4 py-3"><span className="font-bold text-xs text-[#3D2C00]">{a.sessions}</span></td>
+                <td className="px-4 py-3"><StatusBadge status={a.status} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{a.lastLogin}</td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     {a.status === 'active' ? <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>}
@@ -1831,7 +1884,7 @@ function Section_24_FileManagement() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Images', 'Videos', 'Documents', 'Storage'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="File Management" icon="📁" actions={<><ActionBtn label="🧹 Find Duplicates" variant="secondary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Total Files" value="184,420" change={128} />
@@ -1840,26 +1893,26 @@ function Section_24_FileManagement() {
         <KPICard label="Videos" value="220 GB" change={1.6} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['File Name', 'Type', 'Size', 'Owner', 'Uploads', 'Storage', 'Status', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFiles.map((f, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00] max-w-[180px] truncate">{f.name}</td>
-                <td className="px-3 py-2"><StatusBadge status={f.type} /></td>
-                <td className="px-3 py-2 font-semibold text-xs">{f.size}</td>
-                <td className="px-3 py-2 text-xs">{f.owner}</td>
-                <td className="px-3 py-2 text-xs">{TH.number(f.uploads)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{f.storage}</td>
-                <td className="px-3 py-2"><StatusBadge status={f.status} /></td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00] max-w-[180px] truncate">{f.name}</td>
+                <td className="px-4 py-3"><StatusBadge status={f.type} /></td>
+                <td className="px-4 py-3 font-semibold text-xs">{f.size}</td>
+                <td className="px-4 py-3 text-xs">{f.owner}</td>
+                <td className="px-4 py-3 text-xs">{TH.number(f.uploads)}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{f.storage}</td>
+                <td className="px-4 py-3"><StatusBadge status={f.status} /></td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🗑️</button>
@@ -1878,7 +1931,7 @@ function Section_25_APIManagement() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Active', 'Inactive', 'Rate Limited'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="API Management" icon="🔌" actions={<><ActionBtn label="+ สร้าง API Key" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Active Keys" value="5" change={0} />
@@ -1887,26 +1940,26 @@ function Section_25_APIManagement() {
         <KPICard label="Error Rate" value="0.12%" change={-0.03} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['Name', 'API Key', 'Permissions', 'Rate Limit', 'Total Calls', 'Last Used', 'Status', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAPIKeys.map((k, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{k.name}</td>
-                <td className="px-3 py-2 font-mono text-xs text-[#8B7355]">{k.key}</td>
-                <td className="px-3 py-2"><div className="flex gap-1 flex-wrap">{k.permissions.map(p => <span key={p} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-1.5 py-0.5 rounded">{p}</span>)}</div></td>
-                <td className="px-3 py-2 text-xs">{k.rateLimit}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{TH.number(k.calls)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{k.lastUsed}</td>
-                <td className="px-3 py-2"><StatusBadge status={k.status} /></td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{k.name}</td>
+                <td className="px-4 py-3 font-mono text-xs text-[#8B7355]">{k.key}</td>
+                <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">{k.permissions.map(p => <span key={p} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-1.5 py-0.5 rounded">{p}</span>)}</div></td>
+                <td className="px-4 py-3 text-xs">{k.rateLimit}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{TH.number(k.calls)}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{k.lastUsed}</td>
+                <td className="px-4 py-3"><StatusBadge status={k.status} /></td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔄</button>
@@ -1926,7 +1979,7 @@ function Section_26_FinancialReport() {
   const [tab, setTab] = useState('Daily');
   const tabs = ['Daily', 'Monthly', 'Yearly'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Financial Report" icon="💰" actions={<><ActionBtn label="📊 Export Excel" variant="secondary" size="sm" /><ActionBtn label="📄 Export PDF" variant="secondary" size="sm" /></>} />
       <div className="flex items-center justify-between">
         <TabPills tabs={tabs} active={tab} onChange={setTab} />
@@ -1939,43 +1992,43 @@ function Section_26_FinancialReport() {
         <KPICard label="VAT" value={TH.currency(33600)} change={6.8} />
         <KPICard label="Net Profit" value={TH.currency(239600)} change={12.1} />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['วันที่', 'GMV (฿)', 'Revenue (฿)', 'Commission (฿)', 'VAT (฿)', 'Cost (฿)', 'Profit (฿)'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFinancialReports.map((r, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{r.period}</td>
-                <td className="px-3 py-2 font-semibold text-xs">{TH.currency(r.gmv)}</td>
-                <td className="px-3 py-2 text-xs">{TH.currency(r.revenue)}</td>
-                <td className="px-3 py-2 text-[#FFB800] font-semibold">{TH.currency(r.commission)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(r.vat)}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(r.cost)}</td>
-                <td className="px-3 py-2 font-bold text-green-600 text-xs">{TH.currency(r.profit)}</td>
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{r.period}</td>
+                <td className="px-4 py-3 font-semibold text-xs">{TH.currency(r.gmv)}</td>
+                <td className="px-4 py-3 text-xs">{TH.currency(r.revenue)}</td>
+                <td className="px-4 py-3 text-[#FFB800] font-semibold">{TH.currency(r.commission)}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{TH.currency(r.vat)}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{TH.currency(r.cost)}</td>
+                <td className="px-4 py-3 font-bold text-green-600 text-xs">{TH.currency(r.profit)}</td>
               </tr>
             ))}
             <tr className="border-t-2 border-[#FFB800] bg-[#FFF8E7] font-bold">
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">รวม</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.gmv, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.revenue, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#FFB800]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.commission, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.vat, 0))}</td>
-              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.cost, 0))}</td>
-              <td className="px-3 py-2 text-green-600 text-xs">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.profit, 0))}</td>
+              <td className="px-4 py-3 text-xs text-[#3D2C00]">รวม</td>
+              <td className="px-4 py-3 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.gmv, 0))}</td>
+              <td className="px-4 py-3 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.revenue, 0))}</td>
+              <td className="px-4 py-3 text-xs text-[#FFB800]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.commission, 0))}</td>
+              <td className="px-4 py-3 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.vat, 0))}</td>
+              <td className="px-4 py-3 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.cost, 0))}</td>
+              <td className="px-4 py-3 text-green-600 text-xs">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.profit, 0))}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">💵 P&L Breakdown</h3>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {[
               { label: 'Revenue', val: 482000, color: '#FFB800' },
               { label: 'Commission', val: 96400, color: '#E5A500' },
@@ -1995,7 +2048,7 @@ function Section_26_FinancialReport() {
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
           <h3 className="font-bold text-[#3D2C00] mb-3">📊 Cash Flow</h3>
           <div className="flex items-end gap-2 h-40">
             {[
@@ -2033,7 +2086,7 @@ function Section_27_Automation() {
   const [tab, setTab] = useState('All');
   const tabs = ['All', 'Active', 'Paused', 'Failed'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Automation" icon="⚡" actions={<><ActionBtn label="+ สร้าง Automation" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <KPICard label="Active Automations" value="7" change={0} />
@@ -2042,30 +2095,30 @@ function Section_27_Automation() {
         <KPICard label="Failed (วันนี้)" value="3" change={-2} />
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#FFF8E7]">
+            <tr className="bg-[#FAFAFA] border-b border-gray-100">
               {['Name', 'Trigger', 'Schedule', 'Last Run', 'Success Rate', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAutomations.map((a, i) => (
-              <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
-                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[160px] truncate">{a.trigger}</td>
-                <td className="px-3 py-2 text-xs"><StatusBadge status={a.schedule} /></td>
-                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.lastRun}</td>
-                <td className="px-3 py-2">
+              <tr key={i} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <td className="px-4 py-3 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
+                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[160px] truncate">{a.trigger}</td>
+                <td className="px-4 py-3 text-xs"><StatusBadge status={a.schedule} /></td>
+                <td className="px-4 py-3 text-xs text-[#8B7355]">{a.lastRun}</td>
+                <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <MiniBar value={a.successRate} max={100} color={a.successRate >= 95 ? '#22C55E' : a.successRate >= 85 ? '#FFB800' : '#EF4444'} />
                     <span className="text-xs font-bold text-[#3D2C00]">{a.successRate}%</span>
                   </div>
                 </td>
-                <td className="px-3 py-2"><StatusBadge status={a.status} /></td>
-                <td className="px-3 py-2">
+                <td className="px-4 py-3"><StatusBadge status={a.status} /></td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">▶️</button>
@@ -2085,11 +2138,11 @@ function Section_28_Settings() {
   const [tab, setTab] = useState('General');
   const tabs = ['General', 'Language', 'Currency', 'Tax', 'Payment Gateway', 'SMTP', 'Cloud Storage', 'Maintenance'];
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Settings" icon="⚙️" actions={<><ActionBtn label="💾 Save All" variant="primary" size="sm" /><ActionBtn label="🔄 Reset" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] space-y-3">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 space-y-5">
           <h3 className="font-bold text-[#3D2C00]">🌐 General Settings</h3>
           <div>
             <label className="block text-xs font-semibold text-[#8B7355] mb-1">Site Name</label>
@@ -2122,7 +2175,7 @@ function Section_28_Settings() {
             <input type="number" className="form-input" defaultValue="7" />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] space-y-3">
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 space-y-5">
           <h3 className="font-bold text-[#3D2C00]">💳 Payment Gateway</h3>
           <div className="flex items-center justify-between p-3 bg-[#FFF8E7] rounded-xl">
             <div className="flex items-center gap-3">
@@ -2186,7 +2239,7 @@ function Section_29_Widgets() {
   const [widgets, setWidgets] = useState(mockWidgets);
   const toggle = (id: string) => setWidgets(prev => prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w));
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <SectionHeader title="Dashboard Widgets" icon="🧩" actions={<><ActionBtn label="🔄 Reset to Default" variant="secondary" size="sm" /><ActionBtn label="💾 Save Layout" variant="primary" size="sm" /></>} />
       <p className="text-sm text-[#8B7355]">คลิกเพื่อเปิด/ปิด widget — ลากเพื่อจัดเรียงใหม่ (drag-to-reorder)</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3">
@@ -2281,10 +2334,10 @@ export default function AdminDashboard() {
   const closeMobile = () => setMobileMenuOpen(false);
 
   return (
-    <div className="min-h-screen bg-[#FFF8E7] flex">
+    <div className="min-h-screen bg-[#F5F5F5] flex">
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[100] bg-white border-r border-[#F0E4C8]
+        fixed inset-y-0 left-0 z-[100] bg-white border-r border-gray-100
         flex flex-col transition-transform duration-300 overflow-y-auto
         w-[220px] max-w-full
         ${sidebarCollapsed ? '-translate-x-full lg:translate-x-0 lg:w-[60px]' : '-translate-x-full lg:translate-x-0'}
@@ -2295,7 +2348,7 @@ export default function AdminDashboard() {
           <div className="fixed inset-0 bg-black/40 z-[-1] lg:hidden" onClick={closeMobile} />
         )}
         {/* Logo */}
-        <div className="flex items-center gap-2 px-3 py-3 border-b border-[#F0E4C8]">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
           <div className="w-8 h-8 bg-[#FFB800] rounded-lg flex items-center justify-center text-sm shadow-sm flex-shrink-0">
             🐝
           </div>
@@ -2317,7 +2370,7 @@ export default function AdminDashboard() {
             <div key={group.group} className="mb-1">
               <button
                 onClick={() => toggleGroup(group.group)}
-                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#8B7355] hover:bg-[#FFF8E7] transition-colors"
+                className="w-full flex items-center gap-2 px-4 py-2 text-[11px] font-bold text-[#B8A882] hover:bg-[#FFF8E7] transition-colors uppercase tracking-widest"
               >
                 {!sidebarCollapsed && (
                   <>
@@ -2335,7 +2388,7 @@ export default function AdminDashboard() {
                       onClick={() => { setActiveSection(item.id); closeMobile(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
                         activeSection === item.id
-                          ? 'bg-[#FFF0B3] text-[#3D2C00] border-r-4 border-[#FFB800] font-bold'
+                          ? 'bg-[#FFF8E7] text-[#3D2C00] border-l-[3px] border-[#FFB800] font-bold'
                           : 'text-[#8B7355] hover:bg-[#FFF8E7]'
                       }`}
                     >
@@ -2350,7 +2403,7 @@ export default function AdminDashboard() {
         </nav>
 
         {/* Admin profile */}
-        <div className="border-t border-[#F0E4C8] p-3">
+        <div className="border-t border-gray-100 p-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-[#FFB800] rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">A</div>
             {!sidebarCollapsed && (
@@ -2366,7 +2419,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className={`flex-1 min-w-0 transition-all duration-300`}>
         {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-3 py-2.5 flex items-center justify-between shadow-sm gap-2">
+        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {/* Mobile hamburger */}
             <button
@@ -2392,7 +2445,7 @@ export default function AdminDashboard() {
 
         {/* Page Content */}
         <div className="lg:ml-[60px] min-h-[calc(100vh-57px)]">
-          <div className="p-3 sm:p-5 lg:p-6">
+          <div className="p-5 lg:p-8">
             {renderSection()}
           </div>
         </div>
@@ -2403,7 +2456,7 @@ export default function AdminDashboard() {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`px-3 py-2 rounded-xl shadow-lg text-sm font-semibold animate-[fadeIn_0.3s_ease] border ${
+            className={`px-4 py-3 rounded-xl shadow-lg text-sm font-semibold animate-[fadeIn_0.3s_ease] border ${
               toast.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
               toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
               toast.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
