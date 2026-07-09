@@ -379,7 +379,7 @@ function KPICard({ label, value, change, prefix = '', suffix = '', trend }: {
   return (
     <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] hover:shadow-md transition-shadow">
       <div className="text-xs text-[#8B7355] font-medium mb-1">{label}</div>
-      <div className="text-xl font-bold text-[#3D2C00]">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
+      <div className="text-lg font-bold text-[#3D2C00]">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
       {change !== undefined && (
         <div className={`text-xs font-semibold mt-1 ${color}`}>{arrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}${typeof change === 'number' && Math.abs(change) < 100 ? '%' : ''}` : change}</div>
       )}
@@ -439,7 +439,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function SectionHeader({ title, icon, actions }: { title: string; icon?: string; actions?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between mb-3">
       <h2 className="text-lg font-bold text-[#3D2C00] flex items-center gap-2">
         {icon && <span>{icon}</span>}{title}
       </h2>
@@ -474,7 +474,7 @@ function TabPills({ tabs, active, onChange }: { tabs: string[]; active: string; 
 function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode[][] }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-[#F0E4C8]">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs">
         <thead>
           <tr className="bg-[#FFF8E7]">
             {headers.map((h, i) => (
@@ -486,7 +486,7 @@ function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode
           {rows.map((row, ri) => (
             <tr key={ri} className={`border-t border-[#F0E4C8] ${ri % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-4 py-3 text-sm text-[#3D2C00]">{cell}</td>
+                <td key={ci} className="px-3 py-2 text-xs text-[#3D2C00]">{cell}</td>
               ))}
             </tr>
           ))}
@@ -603,7 +603,7 @@ function Section_02_Buyers() {
       <SectionHeader title="Buyers Management" icon="🛒" actions={<><ActionBtn label="+ เพิ่ม Buyer" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ชื่อ', 'อีเมล', 'ใช้จ่าย (฿)', 'ออเดอร์', 'Trust Score', 'KYC', 'สถานะ', 'จัดการ'].map(h => (
@@ -646,7 +646,7 @@ function Section_03_Sellers() {
       <SectionHeader title="Sellers Management" icon="🛠️" actions={<><ActionBtn label="+ เพิ่ม Seller" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ชื่อ', 'สกิล', 'รายได้ (฿)', 'ถอนแล้ว (฿)', 'Rating', 'Response', 'Completion', 'On-Time', 'สถานะ', 'จัดการ'].map(h => (
@@ -698,7 +698,7 @@ function Section_04_Jobs() {
         <input type="text" placeholder="🔍 ค้นหางาน..." className="form-input flex-1 min-w-[200px]" />
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ชื่องาน', 'ผู้ว่าจ้าง', 'ช่าง', 'ราคา (฿)', 'สถานะ', 'Timeline', 'สร้างเมื่อ', 'แชท', 'จัดการ'].map(h => (
@@ -741,7 +741,7 @@ function Section_05_Orders() {
       <SectionHeader title="Order Management" icon="🧾" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="+ สร้างออเดอร์" variant="primary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ลูกค้า', 'บริการ', 'มูลค่า (฿)', 'ภาษี (฿)', 'ค่าคอม (฿)', 'ใบเสร็จ', 'Escrow', 'สถานะ', 'วันที่'].map(h => (
@@ -785,7 +785,7 @@ function Section_06_Escrow() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'Order', 'มูลค่า (฿)', 'สถานะ', 'วันที่ถือ', 'วันปล่อย', 'เหตุผล', 'จัดการ'].map(h => (
@@ -832,7 +832,7 @@ function Section_07_Withdrawal() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ผู้ขาย', 'ธนาคาร', 'เลขบัญชี', 'จำนวน (฿)', 'ค่าธรรมเนียม (฿)', 'วิธี', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
@@ -884,7 +884,7 @@ function Section_08_Payments() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'มูลค่า (฿)', 'สถานะ', 'Gateway', 'Card/Account', 'วันที่', 'รายละเอียด'].map(h => (
@@ -926,7 +926,7 @@ function Section_09_Promotions() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'ชื่อ/Code', 'ส่วนลด', 'ใช้ไป/จำกัด', 'Status', 'หมดอายุ', 'จัดการ'].map(h => (
@@ -1048,7 +1048,7 @@ function Section_11_Support() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'หัวข้อ', 'ผู้ใช้', 'ประเภท', 'Priority', 'มอบหมาย', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
@@ -1096,7 +1096,7 @@ function Section_12_Reviews() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'จาก', 'ถึง', 'งาน', 'Rating', 'Comment', 'AI Score', 'Status', 'วันที่', 'จัดการ'].map(h => (
@@ -1140,7 +1140,7 @@ function Section_13_CMS() {
       <SectionHeader title="Content Management (CMS)" icon="📄" actions={<><ActionBtn label="+ สร้างเนื้อหา" variant="primary" size="sm" /><ActionBtn label="📤 Export" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'ชื่อเรื่อง', 'เนื้อหา', 'Status', 'อัปเดต', 'จัดการ'].map(h => (
@@ -1181,7 +1181,7 @@ function Section_14_Categories() {
       <SectionHeader title="Category Management" icon="🏷️" actions={<><ActionBtn label="+ สร้าง Category" variant="primary" size="sm" /><ActionBtn label="+ สร้าง Tag" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ไอคอน', 'ชื่อ Category', 'Tags', 'Skills', 'Jobs', 'สถานะ', 'จัดการ'].map(h => (
@@ -1222,7 +1222,7 @@ function Section_15_Search() {
       <SectionHeader title="Search Management" icon="🔍" actions={<><ActionBtn label="+ เพิ่ม Keyword" variant="primary" size="sm" /><ActionBtn label="🔄 Sync Search Index" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Keyword', 'การค้นหา/วัน', 'ผลลัพธ์', 'CTR', 'แนวโน้ม', 'จัดการ'].map(h => (
@@ -1242,7 +1242,7 @@ function Section_15_Search() {
                   {k.trending === 'down' && <span className="text-red-500 font-bold">↓</span>}
                   {k.trending === 'stable' && <span className="text-gray-400 font-bold">→</span>}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🚫</button>
@@ -1333,7 +1333,7 @@ function Section_17_Fraud() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'ระดับ', 'ผู้ใช้', 'รายละเอียด', 'สถานะ', 'วันที่', 'จัดการ'].map(h => (
@@ -1427,7 +1427,7 @@ function Section_19_Marketing() {
         <KPICard label="Conversions" value="2,250" change={15.3} />
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Channel', 'Spend (฿)', 'Revenue (฿)', 'ROI %', 'ROAS', 'CPA (฿)', 'Conversions', 'จัดการ'].map(h => (
@@ -1479,7 +1479,7 @@ function Section_20_ServerMonitor() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Resource', 'Usage', 'Status', 'Details', 'Last Checked'].map(h => (
@@ -1552,7 +1552,7 @@ function Section_21_Logs() {
       <SectionHeader title="Logs" icon="📜" actions={<><ActionBtn label="📤 Export" variant="secondary" size="sm" /><ActionBtn label="⚙️ Log Settings" variant="secondary" size="sm" /></>} />
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'Type', 'Action', 'Admin', 'Target', 'IP', 'Date & Time', 'Status'].map(h => (
@@ -1668,7 +1668,7 @@ function Section_23_AdminManagement() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ชื่อ', 'อีเมล', 'Role', 'แผนก', 'Sessions', 'สถานะ', 'เข้าล่าสุด', 'จัดการ'].map(h => (
@@ -1716,7 +1716,7 @@ function Section_24_FileManagement() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['File Name', 'Type', 'Size', 'Owner', 'Uploads', 'Storage', 'Status', 'จัดการ'].map(h => (
@@ -1763,7 +1763,7 @@ function Section_25_APIManagement() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Name', 'API Key', 'Permissions', 'Rate Limit', 'Total Calls', 'Last Used', 'Status', 'จัดการ'].map(h => (
@@ -1815,7 +1815,7 @@ function Section_26_FinancialReport() {
         <KPICard label="Net Profit" value={TH.currency(239600)} change={12.1} />
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['วันที่', 'GMV (฿)', 'Revenue (฿)', 'Commission (฿)', 'VAT (฿)', 'Cost (฿)', 'Profit (฿)'].map(h => (
@@ -1918,7 +1918,7 @@ function Section_27_Automation() {
       </div>
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
       <div className="bg-white rounded-2xl shadow-sm border border-[#F0E4C8] overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Name', 'Trigger', 'Schedule', 'Last Run', 'Success Rate', 'สถานะ', 'จัดการ'].map(h => (
@@ -2278,7 +2278,7 @@ export default function AdminDashboard() {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`px-4 py-3 rounded-xl shadow-lg text-sm font-semibold animate-[fadeIn_0.3s_ease] border ${
+            className={`px-3 py-2 rounded-xl shadow-lg text-sm font-semibold animate-[fadeIn_0.3s_ease] border ${
               toast.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
               toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
               toast.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
