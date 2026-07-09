@@ -2099,8 +2099,6 @@ function Section_29_Widgets() {
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState<SectionId>('executive');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(['📊 ภาพรวมธุรกิจ']));
 
@@ -2153,22 +2151,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const closeMobile = () => setMobileMenuOpen(false);
 
   return (
     <div className="min-h-screen bg-[#FFF8E7] flex">
       {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-[100] bg-white border-r border-[#F0E4C8]
-        flex flex-col transition-transform duration-300 overflow-y-auto
-        w-[220px] max-w-full
-        ${sidebarCollapsed ? '-translate-x-full lg:translate-x-0 lg:w-[60px]' : '-translate-x-full lg:translate-x-0'}
-        ${mobileMenuOpen ? 'translate-x-0' : ''}
-      `}>
-        {/* Mobile overlay backdrop */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 bg-black/40 z-[-1] lg:hidden" onClick={closeMobile} />
-        )}
+      {/* Sidebar — flex, always visible on desktop, hidden on mobile */}
+      <aside className="w-[220px] flex-shrink-0 bg-white border-r border-[#F0E4C8] flex flex-col overflow-y-auto hidden lg:flex">
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 py-3 border-b border-[#F0E4C8]">
           <div className="w-8 h-8 bg-[#FFB800] rounded-lg flex items-center justify-center text-sm shadow-sm flex-shrink-0">
@@ -2178,12 +2166,6 @@ export default function AdminDashboard() {
             <div className="font-bold text-[#3D2C00] text-xs truncate">Beefix Admin</div>
             <div className="text-[10px] text-[#8B7355] truncate">Control Panel</div>
           </div>
-          <button
-            onClick={closeMobile}
-            className="lg:hidden text-[#8B7355] hover:text-[#3D2C00] text-lg p-1"
-          >
-            ✕
-          </button>
         </div>
 
         {/* Nav */}
@@ -2193,21 +2175,15 @@ export default function AdminDashboard() {
               <button
                 onClick={() => toggleGroup(group.group)}
                 className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#8B7355] hover:bg-[#FFF8E7] transition-colors"
-              >
-                {!sidebarCollapsed && (
-                  <>
-                    <span>{openGroups.has(group.group) ? '▼' : '▶'}</span>
-                    <span>{group.group}</span>
-                  </>
-                )}
-                {sidebarCollapsed && <span className="text-xs">{group.group.split(' ')[0]}</span>}
+              >                <span>{openGroups.has(group.group) ? '▼' : '▶'}</span>
+                <span>{group.group}</span>
               </button>
               {openGroups.has(group.group) && (
                 <div>
                   {group.items.map(item => (
                     <button
                       key={item.id}
-                      onClick={() => { setActiveSection(item.id); closeMobile(); }}
+                      onClick={() => setActiveSection(item.id)}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
                         activeSection === item.id
                           ? 'bg-[#FFF0B3] text-[#3D2C00] border-r-4 border-[#FFB800] font-bold'
@@ -2215,7 +2191,6 @@ export default function AdminDashboard() {
                       }`}
                     >
                       <span className="text-lg flex-shrink-0">{item.icon}</span>
-                      {!sidebarCollapsed && <span className="text-xs">{item.label}</span>}
                     </button>
                   ))}
                 </div>
@@ -2228,28 +2203,19 @@ export default function AdminDashboard() {
         <div className="border-t border-[#F0E4C8] p-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-[#FFB800] rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">A</div>
-            {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold text-[#3D2C00] truncate">Admin</div>
                 <div className="text-xs text-[#8B7355] truncate">superadmin@beefix.com</div>
               </div>
-            )}
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 min-w-0 lg:pl-[220px] transition-all duration-300`}>
+      <main className="flex-1 min-w-0">
         {/* Top Header */}
         <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-4 py-2.5 flex items-center justify-between shadow-sm gap-2">
           <div className="flex items-center gap-2">
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors"
-            >
-              ☰
-            </button>
             <div className="bg-[#FFB800] rounded-lg w-8 h-8 flex items-center justify-center text-sm">🐝</div>
             <div className="hidden sm:block">
               <h1 className="font-bold text-[#3D2C00] text-sm">Beefix Admin</h1>
