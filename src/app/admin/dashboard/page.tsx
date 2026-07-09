@@ -478,7 +478,7 @@ function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode
         <thead>
           <tr className="bg-[#FFF8E7]">
             {headers.map((h, i) => (
-              <th key={i} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase tracking-wider">{h}</th>
+              <th key={i} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase tracking-wider">{h}</th>
             ))}
           </tr>
         </thead>
@@ -607,22 +607,22 @@ function Section_02_Buyers() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ชื่อ', 'อีเมล', 'ใช้จ่าย (฿)', 'ออเดอร์', 'Trust Score', 'KYC', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockBuyers.map((b, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{b.id}</td>
-                <td className="px-4 py-3 font-semibold">{b.name}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{b.email}</td>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{TH.currency(b.spend)}</td>
-                <td className="px-4 py-3">{b.orders}</td>
-                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={b.trustScore} color={b.trustScore >= 90 ? '#22C55E' : b.trustScore >= 70 ? '#FFB800' : '#EF4444'} /><span className="text-xs font-semibold">{b.trustScore}</span></div></td>
-                <td className="px-4 py-3"><StatusBadge status={b.kyc} /></td>
-                <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs">{b.id}</td>
+                <td className="px-3 py-2 font-semibold text-xs">{b.name}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{b.email}</td>
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{TH.currency(b.spend)}</td>
+                <td className="px-3 py-2 text-xs">{b.orders}</td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={b.trustScore} color={b.trustScore >= 90 ? '#22C55E' : b.trustScore >= 70 ? '#FFB800' : '#EF4444'} /><span className="text-xs font-semibold">{b.trustScore}</span></div></td>
+                <td className="px-3 py-2"><StatusBadge status={b.kyc} /></td>
+                <td className="px-3 py-2"><StatusBadge status={b.status} /></td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔑</button>
@@ -745,23 +745,23 @@ function Section_05_Orders() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ลูกค้า', 'บริการ', 'มูลค่า (฿)', 'ภาษี (฿)', 'ค่าคอม (฿)', 'ใบเสร็จ', 'Escrow', 'สถานะ', 'วันที่'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockOrders.map((o, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{o.id}</td>
-                <td className="px-4 py-3 font-semibold text-sm">{o.customer}</td>
-                <td className="px-4 py-3 text-sm text-[#8B7355] max-w-[160px] truncate">{o.service}</td>
-                <td className="px-4 py-3 font-bold text-[#3D2C00]">{TH.currency(o.amount)}</td>
-                <td className="px-4 py-3 text-[#8B7355]">{TH.currency(o.tax)}</td>
-                <td className="px-4 py-3 text-[#FFB800] font-semibold">{TH.currency(o.commission)}</td>
-                <td className="px-4 py-3 font-mono text-xs">{o.receipt}</td>
-                <td className="px-4 py-3"><StatusBadge status={o.escrow} /></td>
-                <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{o.date}</td>
+                <td className="px-3 py-2 font-mono text-xs">{o.id}</td>
+                <td className="px-3 py-2 font-semibold text-xs">{o.customer}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[160px] truncate">{o.service}</td>
+                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(o.amount)}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(o.tax)}</td>
+                <td className="px-3 py-2 text-[#FFB800] font-semibold">{TH.currency(o.commission)}</td>
+                <td className="px-3 py-2 font-mono text-xs">{o.receipt}</td>
+                <td className="px-3 py-2"><StatusBadge status={o.escrow} /></td>
+                <td className="px-3 py-2"><StatusBadge status={o.status} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{o.date}</td>
               </tr>
             ))}
           </tbody>
@@ -789,21 +789,21 @@ function Section_06_Escrow() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'Order', 'มูลค่า (฿)', 'สถานะ', 'วันที่ถือ', 'วันปล่อย', 'เหตุผล', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockEscrow.map((e, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{e.id}</td>
-                <td className="px-4 py-3 font-mono text-xs">{e.order}</td>
-                <td className="px-4 py-3 font-bold text-[#3D2C00]">{TH.currency(e.amount)}</td>
-                <td className="px-4 py-3"><StatusBadge status={e.status} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{e.heldAt}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{e.releasedAt}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{e.reason}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs">{e.id}</td>
+                <td className="px-3 py-2 font-mono text-xs">{e.order}</td>
+                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(e.amount)}</td>
+                <td className="px-3 py-2"><StatusBadge status={e.status} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.heldAt}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.releasedAt}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{e.reason}</td>
+                <td className="px-3 py-2">
                   {e.status === 'held' && <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">ปล่อย</button>}
                   {e.status === 'problem' && <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">แก้ไข</button>}
                   {e.status === 'pending_release' && <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">รอ...</button>}
@@ -888,21 +888,21 @@ function Section_08_Payments() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'มูลค่า (฿)', 'สถานะ', 'Gateway', 'Card/Account', 'วันที่', 'รายละเอียด'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockPayments.map((p, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
-                <td className="px-4 py-3 text-sm font-semibold">{p.type.replace('_', ' ')}</td>
-                <td className="px-4 py-3 font-bold text-[#3D2C00]">{TH.currency(p.amount)}</td>
-                <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
-                <td className="px-4 py-3 text-xs">{p.gateway}</td>
-                <td className="px-4 py-3 font-mono text-xs">{p.card}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{p.date}</td>
-                <td className="px-4 py-3 text-xs text-red-500">{p.error || '-'}</td>
+                <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
+                <td className="px-3 py-2 text-xs font-semibold">{p.type.replace('_', ' ')}</td>
+                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{TH.currency(p.amount)}</td>
+                <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
+                <td className="px-3 py-2 text-xs">{p.gateway}</td>
+                <td className="px-3 py-2 font-mono text-xs">{p.card}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{p.date}</td>
+                <td className="px-3 py-2 text-xs text-red-500">{p.error || '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -930,21 +930,21 @@ function Section_09_Promotions() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'ชื่อ/Code', 'ส่วนลด', 'ใช้ไป/จำกัด', 'Status', 'หมดอายุ', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockPromotions.map((p, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
-                <td className="px-4 py-3"><StatusBadge status={p.type} /></td>
-                <td className="px-4 py-3 font-semibold text-sm">{p.code || p.name}</td>
-                <td className="px-4 py-3 font-bold text-[#FFB800]">{p.discount || p.bonus || p.cashback}</td>
-                <td className="px-4 py-3 text-sm">{p.usage}{p.limit ? `/${p.limit}` : ''}</td>
-                <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{p.exp}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
+                <td className="px-3 py-2"><StatusBadge status={p.type} /></td>
+                <td className="px-3 py-2 font-semibold text-xs">{p.code || p.name}</td>
+                <td className="px-3 py-2 font-bold text-[#FFB800]">{p.discount || p.bonus || p.cashback}</td>
+                <td className="px-3 py-2 text-xs">{p.usage}{p.limit ? `/${p.limit}` : ''}</td>
+                <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{p.exp}</td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button>
@@ -1144,20 +1144,20 @@ function Section_13_CMS() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ประเภท', 'ชื่อเรื่อง', 'เนื้อหา', 'Status', 'อัปเดต', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockCMS.map((c, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{c.id}</td>
-                <td className="px-4 py-3"><StatusBadge status={c.type} /></td>
-                <td className="px-4 py-3 font-semibold">{c.title}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[200px] truncate">{c.content}</td>
-                <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{c.updated}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs">{c.id}</td>
+                <td className="px-3 py-2"><StatusBadge status={c.type} /></td>
+                <td className="px-3 py-2 font-semibold text-xs">{c.title}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[200px] truncate">{c.content}</td>
+                <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{c.updated}</td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">👁️</button>
@@ -1185,21 +1185,21 @@ function Section_14_Categories() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ไอคอน', 'ชื่อ Category', 'Tags', 'Skills', 'Jobs', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockCategories.map((c, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{c.id}</td>
-                <td className="px-4 py-3 text-2xl">{c.icon}</td>
-                <td className="px-4 py-3 font-bold text-[#3D2C00]">{c.name}</td>
-                <td className="px-4 py-3"><div className="flex flex-wrap gap-1">{c.tags.slice(0, 2).map(t => <span key={t} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-2 py-0.5 rounded-full">{t}</span>)}</div></td>
-                <td className="px-4 py-3 font-semibold">{TH.number(c.skills)}</td>
-                <td className="px-4 py-3 font-semibold">{TH.number(c.jobs)}</td>
-                <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs">{c.id}</td>
+                <td className="px-3 py-2 text-xl">{c.icon}</td>
+                <td className="px-3 py-2 font-bold text-xs text-[#3D2C00]">{c.name}</td>
+                <td className="px-3 py-2"><div className="flex flex-wrap gap-1">{c.tags.slice(0, 2).map(t => <span key={t} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-2 py-0.5 rounded-full">{t}</span>)}</div></td>
+                <td className="px-3 py-2 font-semibold text-xs">{TH.number(c.skills)}</td>
+                <td className="px-3 py-2 font-semibold text-xs">{TH.number(c.jobs)}</td>
+                <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 font-semibold">📋</button>
@@ -1226,18 +1226,18 @@ function Section_15_Search() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Keyword', 'การค้นหา/วัน', 'ผลลัพธ์', 'CTR', 'แนวโน้ม', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockSearchKeywords.map((k, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{k.keyword}</td>
-                <td className="px-4 py-3 font-semibold">{TH.number(k.searches)}</td>
-                <td className="px-4 py-3">{k.results}</td>
-                <td className="px-4 py-3"><div className="flex items-center gap-2"><MiniBar value={k.ctr} color={k.ctr >= 60 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{k.ctr}%</span></div></td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{k.keyword}</td>
+                <td className="px-3 py-2 font-semibold text-xs">{TH.number(k.searches)}</td>
+                <td className="px-3 py-2 text-xs">{k.results}</td>
+                <td className="px-3 py-2"><div className="flex items-center gap-2"><MiniBar value={k.ctr} color={k.ctr >= 60 ? '#22C55E' : '#FFB800'} /><span className="text-xs font-semibold">{k.ctr}%</span></div></td>
+                <td className="px-3 py-2">
                   {k.trending === 'up' && <span className="text-green-500 font-bold">↑</span>}
                   {k.trending === 'down' && <span className="text-red-500 font-bold">↓</span>}
                   {k.trending === 'stable' && <span className="text-gray-400 font-bold">→</span>}
@@ -1483,23 +1483,23 @@ function Section_20_ServerMonitor() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Resource', 'Usage', 'Status', 'Details', 'Last Checked'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockServer.map((s, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{s.resource}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{s.resource}</td>
+                <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <MiniBar value={s.usage} max={100} color={s.usage >= 80 ? '#EF4444' : s.usage >= 60 ? '#FFB800' : '#22C55E'} />
                     <span className="text-xs font-bold">{typeof s.usage === 'number' && s.usage < 100 ? `${s.usage}%` : s.usage}{s.suffix || ''}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{s.expiry ? `หมดอายุ: ${s.expiry}` : '-'}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">2 วินาทีที่แล้ว</td>
+                <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{s.expiry ? `หมดอายุ: ${s.expiry}` : '-'}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">2 วินาทีที่แล้ว</td>
               </tr>
             ))}
           </tbody>
@@ -1556,21 +1556,21 @@ function Section_21_Logs() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'Type', 'Action', 'Admin', 'Target', 'IP', 'Date & Time', 'Status'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockLogs.map((l, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{l.id}</td>
-                <td className="px-4 py-3"><StatusBadge status={l.type} /></td>
-                <td className="px-4 py-3 text-sm font-semibold text-[#3D2C00]">{l.action}</td>
-                <td className="px-4 py-3 text-xs">{l.admin}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{l.target}</td>
-                <td className="px-4 py-3 font-mono text-xs text-[#8B7355]">{l.ip}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{l.date}</td>
-                <td className="px-4 py-3"><StatusBadge status={l.status} /></td>
+                <td className="px-3 py-2 font-mono text-xs">{l.id}</td>
+                <td className="px-3 py-2"><StatusBadge status={l.type} /></td>
+                <td className="px-3 py-2 text-xs font-semibold text-[#3D2C00]">{l.action}</td>
+                <td className="px-3 py-2 text-xs">{l.admin}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{l.target}</td>
+                <td className="px-3 py-2 font-mono text-xs text-[#8B7355]">{l.ip}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{l.date}</td>
+                <td className="px-3 py-2"><StatusBadge status={l.status} /></td>
               </tr>
             ))}
           </tbody>
@@ -1672,22 +1672,22 @@ function Section_23_AdminManagement() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['ID', 'ชื่อ', 'อีเมล', 'Role', 'แผนก', 'Sessions', 'สถานะ', 'เข้าล่าสุด', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAdmins.map((a, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-mono text-xs">{a.id}</td>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{a.name}</td>
-                <td className="px-4 py-3 text-xs">{a.email}</td>
-                <td className="px-4 py-3"><StatusBadge status={a.role} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{a.department}</td>
-                <td className="px-4 py-3"><span className="font-bold text-[#3D2C00]">{a.sessions}</span></td>
-                <td className="px-4 py-3"><StatusBadge status={a.status} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{a.lastLogin}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-mono text-xs">{a.id}</td>
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
+                <td className="px-3 py-2 text-xs">{a.email}</td>
+                <td className="px-3 py-2"><StatusBadge status={a.role} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.department}</td>
+                <td className="px-3 py-2"><span className="font-bold text-xs text-[#3D2C00]">{a.sessions}</span></td>
+                <td className="px-3 py-2"><StatusBadge status={a.status} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.lastLogin}</td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     {a.status === 'active' ? <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">⛔</button> : <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 font-semibold">✓</button>}
@@ -1720,21 +1720,21 @@ function Section_24_FileManagement() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['File Name', 'Type', 'Size', 'Owner', 'Uploads', 'Storage', 'Status', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFiles.map((f, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00] max-w-[180px] truncate">{f.name}</td>
-                <td className="px-4 py-3"><StatusBadge status={f.type} /></td>
-                <td className="px-4 py-3 font-semibold">{f.size}</td>
-                <td className="px-4 py-3 text-sm">{f.owner}</td>
-                <td className="px-4 py-3">{TH.number(f.uploads)}</td>
-                <td className="px-4 py-3 text-[#8B7355]">{f.storage}</td>
-                <td className="px-4 py-3"><StatusBadge status={f.status} /></td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00] max-w-[180px] truncate">{f.name}</td>
+                <td className="px-3 py-2"><StatusBadge status={f.type} /></td>
+                <td className="px-3 py-2 font-semibold text-xs">{f.size}</td>
+                <td className="px-3 py-2 text-xs">{f.owner}</td>
+                <td className="px-3 py-2 text-xs">{TH.number(f.uploads)}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{f.storage}</td>
+                <td className="px-3 py-2"><StatusBadge status={f.status} /></td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">👁️</button>
                     <button className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 font-semibold">🗑️</button>
@@ -1767,21 +1767,21 @@ function Section_25_APIManagement() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Name', 'API Key', 'Permissions', 'Rate Limit', 'Total Calls', 'Last Used', 'Status', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAPIKeys.map((k, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{k.name}</td>
-                <td className="px-4 py-3 font-mono text-xs text-[#8B7355]">{k.key}</td>
-                <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">{k.permissions.map(p => <span key={p} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-1.5 py-0.5 rounded">{p}</span>)}</div></td>
-                <td className="px-4 py-3 text-xs">{k.rateLimit}</td>
-                <td className="px-4 py-3 font-semibold">{TH.number(k.calls)}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{k.lastUsed}</td>
-                <td className="px-4 py-3"><StatusBadge status={k.status} /></td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{k.name}</td>
+                <td className="px-3 py-2 font-mono text-xs text-[#8B7355]">{k.key}</td>
+                <td className="px-3 py-2"><div className="flex gap-1 flex-wrap">{k.permissions.map(p => <span key={p} className="text-xs bg-[#FFF0B3] text-[#8B6914] px-1.5 py-0.5 rounded">{p}</span>)}</div></td>
+                <td className="px-3 py-2 text-xs">{k.rateLimit}</td>
+                <td className="px-3 py-2 font-semibold text-xs">{TH.number(k.calls)}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{k.lastUsed}</td>
+                <td className="px-3 py-2"><StatusBadge status={k.status} /></td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">🔄</button>
@@ -1819,30 +1819,30 @@ function Section_26_FinancialReport() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['วันที่', 'GMV (฿)', 'Revenue (฿)', 'Commission (฿)', 'VAT (฿)', 'Cost (฿)', 'Profit (฿)'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockFinancialReports.map((r, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{r.period}</td>
-                <td className="px-4 py-3 font-semibold">{TH.currency(r.gmv)}</td>
-                <td className="px-4 py-3">{TH.currency(r.revenue)}</td>
-                <td className="px-4 py-3 text-[#FFB800] font-semibold">{TH.currency(r.commission)}</td>
-                <td className="px-4 py-3 text-[#8B7355]">{TH.currency(r.vat)}</td>
-                <td className="px-4 py-3 text-[#8B7355]">{TH.currency(r.cost)}</td>
-                <td className="px-4 py-3 font-bold text-green-600">{TH.currency(r.profit)}</td>
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{r.period}</td>
+                <td className="px-3 py-2 font-semibold text-xs">{TH.currency(r.gmv)}</td>
+                <td className="px-3 py-2 text-xs">{TH.currency(r.revenue)}</td>
+                <td className="px-3 py-2 text-[#FFB800] font-semibold">{TH.currency(r.commission)}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(r.vat)}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{TH.currency(r.cost)}</td>
+                <td className="px-3 py-2 font-bold text-green-600 text-xs">{TH.currency(r.profit)}</td>
               </tr>
             ))}
             <tr className="border-t-2 border-[#FFB800] bg-[#FFF8E7] font-bold">
-              <td className="px-4 py-3 text-[#3D2C00]">รวม</td>
-              <td className="px-4 py-3 text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.gmv, 0))}</td>
-              <td className="px-4 py-3 text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.revenue, 0))}</td>
-              <td className="px-4 py-3 text-[#FFB800]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.commission, 0))}</td>
-              <td className="px-4 py-3 text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.vat, 0))}</td>
-              <td className="px-4 py-3 text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.cost, 0))}</td>
-              <td className="px-4 py-3 text-green-600">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.profit, 0))}</td>
+              <td className="px-3 py-2 text-xs text-[#3D2C00]">รวม</td>
+              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.gmv, 0))}</td>
+              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.revenue, 0))}</td>
+              <td className="px-3 py-2 text-xs text-[#FFB800]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.commission, 0))}</td>
+              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.vat, 0))}</td>
+              <td className="px-3 py-2 text-xs text-[#3D2C00]">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.cost, 0))}</td>
+              <td className="px-3 py-2 text-green-600 text-xs">{TH.currency(mockFinancialReports.reduce((a, b) => a + b.profit, 0))}</td>
             </tr>
           </tbody>
         </table>
@@ -1922,25 +1922,25 @@ function Section_27_Automation() {
           <thead>
             <tr className="bg-[#FFF8E7]">
               {['Name', 'Trigger', 'Schedule', 'Last Run', 'Success Rate', 'สถานะ', 'จัดการ'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
+                <th key={h} className="px-3 py-2 text-left text-xs font-bold text-[#8B7355] uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockAutomations.map((a, i) => (
               <tr key={i} className={`border-t border-[#F0E4C8] ${i % 2 === 0 ? 'bg-white' : 'bg-[#FFFDF5]'}`}>
-                <td className="px-4 py-3 font-semibold text-[#3D2C00]">{a.name}</td>
-                <td className="px-4 py-3 text-xs text-[#8B7355] max-w-[160px] truncate">{a.trigger}</td>
-                <td className="px-4 py-3 text-xs"><StatusBadge status={a.schedule} /></td>
-                <td className="px-4 py-3 text-xs text-[#8B7355]">{a.lastRun}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2 font-semibold text-xs text-[#3D2C00]">{a.name}</td>
+                <td className="px-3 py-2 text-xs text-[#8B7355] max-w-[160px] truncate">{a.trigger}</td>
+                <td className="px-3 py-2 text-xs"><StatusBadge status={a.schedule} /></td>
+                <td className="px-3 py-2 text-xs text-[#8B7355]">{a.lastRun}</td>
+                <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <MiniBar value={a.successRate} max={100} color={a.successRate >= 95 ? '#22C55E' : a.successRate >= 85 ? '#FFB800' : '#EF4444'} />
                     <span className="text-xs font-bold text-[#3D2C00]">{a.successRate}%</span>
                   </div>
                 </td>
-                <td className="px-4 py-3"><StatusBadge status={a.status} /></td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2"><StatusBadge status={a.status} /></td>
+                <td className="px-3 py-2">
                   <div className="flex gap-1">
                     <button className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-semibold">✏️</button>
                     <button className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded hover:bg-yellow-100 font-semibold">▶️</button>
@@ -2100,6 +2100,7 @@ function Section_29_Widgets() {
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState<SectionId>('executive');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(['📊 ภาพรวมธุรกิจ']));
 
@@ -2152,26 +2153,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const closeMobile = () => setMobileMenuOpen(false);
+
   return (
     <div className="min-h-screen bg-[#FFF8E7] flex">
       {/* Sidebar */}
-      <aside className={`${sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'} bg-white border-r border-[#F0E4C8] flex flex-col fixed left-0 top-0 h-full z-50 transition-all duration-300 overflow-y-auto`}>
+      <aside className={`
+        fixed inset-y-0 left-0 z-[100] bg-white border-r border-[#F0E4C8]
+        flex flex-col transition-transform duration-300 overflow-y-auto
+        w-[220px] max-w-full
+        ${sidebarCollapsed ? '-translate-x-full lg:translate-x-0 lg:w-[60px]' : '-translate-x-full lg:translate-x-0'}
+        ${mobileMenuOpen ? 'translate-x-0' : ''}
+      `}>
+        {/* Mobile overlay backdrop */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 bg-black/40 z-[-1] lg:hidden" onClick={closeMobile} />
+        )}
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-[#F0E4C8]">
-          <div className="w-10 h-10 bg-[#FFB800] rounded-xl flex items-center justify-center text-lg shadow-sm flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-3 border-b border-[#F0E4C8]">
+          <div className="w-8 h-8 bg-[#FFB800] rounded-lg flex items-center justify-center text-sm shadow-sm flex-shrink-0">
             🐝
           </div>
-          {!sidebarCollapsed && (
-            <div>
-              <div className="font-bold text-[#3D2C00] text-sm">Beefix Admin</div>
-              <div className="text-xs text-[#8B7355]">Control Panel</div>
-            </div>
-          )}
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-[#3D2C00] text-xs truncate">Beefix Admin</div>
+            <div className="text-[10px] text-[#8B7355] truncate">Control Panel</div>
+          </div>
           <button
-            onClick={() => setSidebarCollapsed(c => !c)}
-            className="ml-auto text-[#8B7355] hover:text-[#3D2C00] text-lg transition-colors"
+            onClick={closeMobile}
+            className="lg:hidden text-[#8B7355] hover:text-[#3D2C00] text-lg p-1"
           >
-            {sidebarCollapsed ? '→' : '←'}
+            ✕
           </button>
         </div>
 
@@ -2196,7 +2207,7 @@ export default function AdminDashboard() {
                   {group.items.map(item => (
                     <button
                       key={item.id}
-                      onClick={() => setActiveSection(item.id)}
+                      onClick={() => { setActiveSection(item.id); closeMobile(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
                         activeSection === item.id
                           ? 'bg-[#FFF0B3] text-[#3D2C00] border-r-4 border-[#FFB800] font-bold'
@@ -2228,28 +2239,37 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 ${sidebarCollapsed ? 'ml-[60px]' : 'ml-[220px]'} transition-all duration-300`}>
+      <main className={`flex-1 min-w-0 transition-all duration-300`}>
         {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-6 py-3 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#FFB800] rounded-xl w-9 h-9 flex items-center justify-center text-lg">🐝</div>
-            <div>
-              <h1 className="font-bold text-[#3D2C00] text-base">Beefix Admin Dashboard</h1>
-              <p className="text-xs text-[#8B7355]">Panel · {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-3 py-2.5 flex items-center justify-between shadow-sm gap-2">
+          <div className="flex items-center gap-2">
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors"
+            >
+              ☰
+            </button>
+            <div className="bg-[#FFB800] rounded-lg w-8 h-8 flex items-center justify-center text-sm">🐝</div>
+            <div className="hidden sm:block">
+              <h1 className="font-bold text-[#3D2C00] text-sm">Beefix Admin</h1>
+              <p className="text-[10px] text-[#8B7355]">Panel · {new Date().toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors">
-              🔔<span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-1.5 sm:p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">
+              🔔<span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
             </button>
-            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors">⚙️</button>
-            <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-4 py-2 bg-[#FFF8E7] text-[#3D2C00] rounded-lg text-sm font-semibold hover:bg-[#FFF0B3] transition-colors">ออก</button>
+            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-1.5 sm:p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">⚙️</button>
+            <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-2 sm:px-3 py-1.5 sm:py-2 bg-[#FFF8E7] text-[#3D2C00] rounded-lg text-xs font-semibold hover:bg-[#FFF0B3] transition-colors hidden sm:block">ออก</button>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="p-5 max-w-[1440px] mx-auto">
-          {renderSection()}
+        <div className="p-3 sm:p-4 max-w-[1440px] mx-auto overflow-x-auto">
+          <div className="min-w-[600px]">
+            {renderSection()}
+          </div>
         </div>
       </main>
 
