@@ -35,26 +35,47 @@ const TH = {
 
 const mockKPI = {
   gmv: 48200000,
+  gmvSpark: [28, 35, 31, 42, 38, 48, 45],
   revenue: 4820000,
+  revenueSpark: [26, 33, 29, 40, 36, 46, 43],
   commission: 964000,
+  commissionSpark: [5, 7, 6, 9, 8, 10, 9],
   grossProfit: 3200000,
+  grossProfitSpark: [18, 22, 20, 28, 25, 32, 30],
   activeUsers: 18420,
+  activeUsersSpark: [12000, 13500, 14200, 15800, 16500, 17800, 18420],
   newUsersToday: 312,
+  newUsersSpark: [180, 220, 250, 280, 240, 300, 312],
   newBuyers: 180,
+  newBuyersSpark: [100, 130, 140, 160, 150, 175, 180],
   newSellers: 132,
+  newSellersSpark: [80, 95, 100, 110, 105, 125, 132],
   todaysJobs: 847,
+  todaysJobsSpark: [500, 620, 580, 720, 680, 810, 847],
   inProgress: 1240,
+  inProgressSpark: [800, 900, 950, 1100, 1050, 1180, 1240],
   completed: 38291,
+  completedSpark: [25000, 28000, 29500, 32000, 33500, 36500, 38291],
   cancelled: 892,
+  cancelledSpark: [600, 720, 680, 800, 750, 860, 892],
   tickets: 34,
+  ticketsSpark: [45, 40, 38, 35, 42, 30, 34],
   disputes: 12,
+  disputesSpark: [8, 10, 9, 11, 10, 13, 12],
   escrowHeld: 5840000,
+  escrowHeldSpark: [3200000, 3800000, 4100000, 4500000, 4900000, 5400000, 5840000],
   pendingWithdrawal: 1280000,
+  pendingWithdrawalSpark: [800000, 900000, 850000, 1000000, 1100000, 1200000, 1280000],
   conversionRate: 3.8,
+  conversionRateSpark: [3.2, 3.4, 3.3, 3.6, 3.5, 3.7, 3.8],
   aov: 4850,
+  aovSpark: [4200, 4400, 4300, 4600, 4500, 4750, 4850],
   ltv: 12400,
+  ltvSpark: [10000, 10500, 10800, 11200, 11600, 12000, 12400],
   cac: 820,
+  cacSpark: [920, 900, 880, 860, 840, 830, 820],
   retentionRate: 78.5,
+  retentionRateSpark: [72, 73, 74, 75, 76, 77, 78.5],
 };
 
 const mockBuyers = [
@@ -370,18 +391,45 @@ const navGroups: { group: string; items: NavItem[] }[] = [
 
 // ─── Components ───────────────────────────────────────────────────────────────
 
-function KPICard({ label, value, change, prefix = '', suffix = '', trend }: {
-  label: string; value: string | number; change?: number | string; prefix?: string; suffix?: string; trend?: 'up' | 'down' | 'neutral';
-}) {
-  const isUp = typeof change === 'number' ? change >= 0 : trend === 'up' || trend === 'neutral';
-  const color = typeof change === 'number' ? (change >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-500';
-  const arrow = typeof change === 'number' ? (change >= 0 ? '↑' : '↓') : (trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→');
+function MiniSparkline({ data, color = '#FFB800', height = 32 }: { data: number[]; color?: string; height?: number }) {
+  if (!data || data.length < 2) return <div style={{ width: 56, height }} />;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const w = 56;
+  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${height - ((v - min) / range) * height}`).join(' ');
   return (
-    <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8] hover:shadow-md transition-shadow">
-      <div className="text-xs text-[#8B7355] font-medium mb-1">{label}</div>
-      <div className="text-lg font-bold text-[#3D2C00]">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
-      {change !== undefined && (
-        <div className={`text-xs font-semibold mt-1 ${color}`}>{arrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}${typeof change === 'number' && Math.abs(change) < 100 ? '%' : ''}` : change}</div>
+    <svg width={w} height={height} className="inline-block">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function KPICard({ label, value, change, prefix = '', suffix = '', trend, sparkline, icon }: {
+  label: string; value: string | number; change?: number | string;
+  prefix?: string; suffix?: string; trend?: 'up' | 'down' | 'neutral';
+  sparkline?: number[]; icon?: string;
+}) {
+  const isPositive = typeof change === 'number' ? change >= 0 : trend === 'up' || trend === 'neutral';
+  const changeColor = typeof change === 'number' ? (change >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-400';
+  const arrow = typeof change === 'number' ? (change >= 0 ? '↑' : '↓') : (trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→');
+  const sparkColor = isPositive ? '#22C55E' : '#EF4444';
+  return (
+    <div className="bg-white rounded-xl p-4 shadow-sm border border-[#F0E4C8] hover:shadow-md transition-shadow flex items-center gap-3">
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] text-[#8B7355] font-medium mb-0.5 uppercase tracking-wide">{label}</div>
+        <div className="text-lg font-bold text-[#3D2C00] leading-tight">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
+        {change !== undefined && (
+          <div className={`text-[11px] font-semibold mt-0.5 ${changeColor}`}>
+            {arrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}${typeof change === 'number' && Math.abs(change) < 100 ? '%' : ''}` : change}
+          </div>
+        )}
+      </div>
+      {sparkline && (
+        <MiniSparkline data={sparkline} color={sparkColor} height={36} />
+      )}
+      {!sparkline && icon && (
+        <div className="text-2xl opacity-60">{icon}</div>
       )}
     </div>
   );
@@ -505,19 +553,6 @@ function MiniBar({ value, max = 100, color = '#FFB800' }: { value: number; max?:
   );
 }
 
-function MiniSparkline({ data, color = '#FFB800' }: { data: number[]; color?: string }) {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const w = 80;
-  const h = 28;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(' ');
-  return (
-    <svg width={w} height={h} className="inline-block">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function DateRangePicker() {
   return (
@@ -534,60 +569,150 @@ function DateRangePicker() {
 function Section_01_ExecutiveDashboard() {
   const [tab, setTab] = useState('Today');
   const tabs = ['Today', '7 Days', '30 Days', '90 Days', 'Year'];
+
+  // Line chart data
+  const chartData = [
+    { day: 'จ.', gmv: 28, rev: 26 },
+    { day: 'อ.', gmv: 35, rev: 33 },
+    { day: 'พ.', gmv: 31, rev: 29 },
+    { day: 'พฤ.', gmv: 42, rev: 40 },
+    { day: 'ศ.', gmv: 38, rev: 36 },
+    { day: 'ส.', gmv: 48, rev: 46 },
+    { day: 'อา.', gmv: 45, rev: 43 },
+  ];
+  const maxVal = Math.max(...chartData.map(d => d.gmv));
+
+  // Job donut
+  const jobStats = [
+    { label: 'Completed', value: 38291, color: '#22C55E' },
+    { label: 'In Progress', value: 1240, color: '#8B5CF6' },
+    { label: 'Pending', value: 847, color: '#F59E0B' },
+    { label: 'Cancelled', value: 892, color: '#9CA3AF' },
+    { label: 'Disputed', value: 12, color: '#EF4444' },
+  ];
+  const totalJobs = jobStats.reduce((s, j) => s + j.value, 0);
+  const radius = 44;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+  const donut = jobStats.map(j => {
+    const pct = j.value / totalJobs;
+    const dash = circumference * pct;
+    const gap = circumference - dash;
+    const seg = { ...j, dash, gap, offset };
+    offset += dash;
+    return seg;
+  });
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <SectionHeader title="Executive Dashboard KPIs" icon="📊" />
-        <div className="flex items-center gap-3">
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <SectionHeader title="Overview" icon="📊" />
+        <div className="flex items-center gap-2">
           <DateRangePicker />
           <ActionBtn label="📤 Export" variant="secondary" />
         </div>
       </div>
+
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3">
-        <KPICard label="GMV" value={TH.currency(mockKPI.gmv)} change={12.4} />
-        <KPICard label="Revenue" value={TH.currency(mockKPI.revenue)} change={12.4} />
-        <KPICard label="Commission" value={TH.currency(mockKPI.commission)} change={11.8} />
-        <KPICard label="Gross Profit" value={TH.currency(mockKPI.grossProfit)} change={15.2} />
-        <KPICard label="Active Users" value={TH.number(mockKPI.activeUsers)} change={8.1} />
-        <KPICard label="New Users (Today)" value={TH.number(mockKPI.newUsersToday)} change={12.3} />
-        <KPICard label="New Buyers" value={TH.number(mockKPI.newBuyers)} change={9.5} />
-        <KPICard label="New Sellers" value={TH.number(mockKPI.newSellers)} change={15.7} />
-        <KPICard label="Today's Jobs" value={TH.number(mockKPI.todaysJobs)} change={8.1} />
-        <KPICard label="In Progress" value={TH.number(mockKPI.inProgress)} change={-2.4} />
-        <KPICard label="Completed" value={TH.number(mockKPI.completed)} change={18.2} />
-        <KPICard label="Cancelled" value={TH.number(mockKPI.cancelled)} change={3.1} />
-        <KPICard label="Tickets" value={TH.number(mockKPI.tickets)} change={-12.5} />
-        <KPICard label="Disputes" value={TH.number(mockKPI.disputes)} change={8.3} />
-        <KPICard label="Escrow Held" value={TH.currency(mockKPI.escrowHeld)} change={5.4} />
-        <KPICard label="Pending Withdrawal" value={TH.currency(mockKPI.pendingWithdrawal)} change={22.1} />
-        <KPICard label="Conversion Rate" value={`${mockKPI.conversionRate}%`} change={-0.2} />
-        <KPICard label="AOV" value={TH.currency(mockKPI.aov)} change={6.5} />
-        <KPICard label="LTV" value={TH.currency(mockKPI.ltv)} change={9.1} />
-        <KPICard label="CAC" value={TH.currency(mockKPI.cac)} change={-3.2} />
-        <KPICard label="Retention Rate" value={`${mockKPI.retentionRate}%`} change={1.3} />
+
+      {/* KPI Row 1 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <KPICard label="GMV" value={TH.currency(mockKPI.gmv)} change={12.4} sparkline={mockKPI.gmvSpark} />
+        <KPICard label="Revenue" value={TH.currency(mockKPI.revenue)} change={12.4} sparkline={mockKPI.revenueSpark} />
+        <KPICard label="Commission" value={TH.currency(mockKPI.commission)} change={11.8} sparkline={mockKPI.commissionSpark} />
+        <KPICard label="Active Users" value={TH.number(mockKPI.activeUsers)} change={8.1} sparkline={mockKPI.activeUsersSpark} />
+        <KPICard label="New Users" value={TH.number(mockKPI.newUsersToday)} change={12.3} sparkline={mockKPI.newUsersSpark} />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">💰 Revenue Overview (7 วันล่าสุด)</h3>
-          <div className="flex items-end gap-2 h-32">
-            {[42, 55, 48, 63, 58, 71, 68].map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.45}px`, background: i === 6 ? '#FFB800' : '#FFE066' }} />
-                <span className="text-xs text-[#8B7355]">วัน {i + 1}</span>
-              </div>
-            ))}
+
+      {/* KPI Row 2 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <KPICard label="New Buyers" value={TH.number(mockKPI.newBuyers)} change={9.5} sparkline={mockKPI.newBuyersSpark} />
+        <KPICard label="New Sellers" value={TH.number(mockKPI.newSellers)} change={15.7} sparkline={mockKPI.newSellersSpark} />
+        <KPICard label="Jobs Today" value={TH.number(mockKPI.todaysJobs)} change={8.1} sparkline={mockKPI.todaysJobsSpark} />
+        <KPICard label="Completed" value={TH.number(mockKPI.completed)} change={18.2} sparkline={mockKPI.completedSpark} />
+        <KPICard label="In Progress" value={TH.number(mockKPI.inProgress)} change={-2.4} sparkline={mockKPI.inProgressSpark} />
+      </div>
+
+      {/* KPI Row 3 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <KPICard label="Cancelled" value={TH.number(mockKPI.cancelled)} change={3.1} sparkline={mockKPI.cancelledSpark} />
+        <KPICard label="Tickets" value={TH.number(mockKPI.tickets)} change={-12.5} sparkline={mockKPI.ticketsSpark} />
+        <KPICard label="Disputes" value={TH.number(mockKPI.disputes)} change={8.3} sparkline={mockKPI.disputesSpark} />
+        <KPICard label="Escrow Held" value={TH.currency(mockKPI.escrowHeld)} change={5.4} sparkline={mockKPI.escrowHeldSpark} />
+        <KPICard label="Pending Withdraw" value={TH.currency(mockKPI.pendingWithdrawal)} change={22.1} sparkline={mockKPI.pendingWithdrawalSpark} />
+      </div>
+
+      {/* KPI Row 4 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <KPICard label="Conversion Rate" value={`${mockKPI.conversionRate}%`} change={-0.2} sparkline={mockKPI.conversionRateSpark} />
+        <KPICard label="AOV" value={TH.currency(mockKPI.aov)} change={6.5} sparkline={mockKPI.aovSpark} />
+        <KPICard label="LTV" value={TH.currency(mockKPI.ltv)} change={9.1} sparkline={mockKPI.ltvSpark} />
+        <KPICard label="CAC" value={TH.currency(mockKPI.cac)} change={-3.2} sparkline={mockKPI.cacSpark} />
+        <KPICard label="Retention Rate" value={`${mockKPI.retentionRate}%`} change={1.3} sparkline={mockKPI.retentionRateSpark} />
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Line Chart */}
+        <div className="lg:col-span-2 bg-white rounded-xl p-4 shadow-sm border border-[#F0E4C8]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-[#3D2C00] text-sm">GMV & Revenue Trend</h3>
+            <div className="flex items-center gap-4 text-[11px]">
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#FFB800] inline-block"/>GMV</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500 inline-block"/>Revenue</span>
+            </div>
+          </div>
+          <div className="relative h-40">
+            <svg viewBox="0 0 420 100" className="w-full h-full" preserveAspectRatio="none">
+              {[25, 50, 75].map(y => (
+                <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#F0E4C8" strokeWidth="0.5" />
+              ))}
+              <polyline
+                points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.gmv / maxVal) * 80}`).join(' ')}
+                fill="none" stroke="#FFB800" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+              />
+              <polyline
+                points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.rev / maxVal) * 80}`).join(' ')}
+                fill="none" stroke="#22C55E" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+              />
+              {chartData.map((d, i) => (
+                <circle key={i} cx={i * 60 + 30} cy={100 - (d.gmv / maxVal) * 80} r="3" fill="#FFB800" />
+              ))}
+            </svg>
+            <div className="flex justify-between mt-1 px-2">
+              {chartData.map((d, i) => (
+                <span key={i} className="text-[10px] text-[#8B7355]">{d.day}</span>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-[#F0E4C8]">
-          <h3 className="font-bold text-[#3D2C00] mb-3">📈 GMV Trend (7 วันล่าสุด)</h3>
-          <div className="flex items-end gap-2 h-32">
-            {[38, 52, 45, 60, 55, 70, 65].map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg" style={{ height: `${v * 0.45}px`, background: i === 6 ? '#FFB800' : '#FFF0B3' }} />
-                <span className="text-xs text-[#8B7355]">วัน {i + 1}</span>
-              </div>
-            ))}
+
+        {/* Donut Chart */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-[#F0E4C8]">
+          <h3 className="font-bold text-[#3D2C00] text-sm mb-4">Jobs Summary</h3>
+          <div className="flex flex-col items-center">
+            <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90">
+              {donut.map((seg, i) => (
+                <circle key={i} cx="60" cy="60" r={radius} fill="none" stroke={seg.color} strokeWidth="16" strokeDasharray={`${seg.dash} ${seg.gap}`} strokeDashoffset={-seg.offset} />
+              ))}
+              <circle cx="60" cy="60" r="28" fill="white" />
+            </svg>
+            <div className="text-center -mt-2">
+              <div className="text-lg font-bold text-[#3D2C00]">{TH.number(totalJobs)}</div>
+              <div className="text-[10px] text-[#8B7355]">Total Jobs</div>
+            </div>
+            <div className="mt-3 space-y-1 w-full">
+              {jobStats.map((j, i) => (
+                <div key={i} className="flex items-center justify-between text-[11px]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: j.color }} />
+                    <span className="text-[#3D2C00]">{j.label}</span>
+                  </span>
+                  <span className="font-semibold text-[#3D2C00]">{TH.number(j.value)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
