@@ -2444,7 +2444,7 @@ export default function AdminDashboard() {
         </header>
 
         {/* Page Content */}
-        <div className="lg:ml-[60px] min-h-[calc(100vh-57px)]">
+        <div className="lg:ml-[220px] min-h-[calc(100vh-57px)]">
           <div className="p-5 lg:p-8">
             {renderSection()}
           </div>
