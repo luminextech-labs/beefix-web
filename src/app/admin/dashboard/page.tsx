@@ -405,155 +405,124 @@ function MiniSparkline({ data, color = '#FFB800', height = 32 }: { data: number[
   );
 }
 
-function KPICard({ label, value, change, prefix = '', suffix = '', trend, sparkline, icon }: {
+function KPICard({ label, value, change, sparkline, icon }: {
   label: string; value: string | number; change?: number | string;
-  prefix?: string; suffix?: string; trend?: 'up' | 'down' | 'neutral';
   sparkline?: number[]; icon?: string;
 }) {
-  const isPositive = typeof change === 'number' ? change >= 0 : trend === 'up' || trend === 'neutral';
-  const changeBg = typeof change === 'number' ? (change >= 0 ? 'bg-green-500' : 'bg-red-500') : 'bg-gray-100';
-  const changeText = typeof change === 'number' ? (change >= 0 ? 'text-white' : 'text-white') : 'text-gray-500';
-  const arrow = typeof change === 'number' ? (change >= 0 ? '↑' : '↓') : (trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→');
+  const isPositive = typeof change === 'number' ? change >= 0 : true;
+  const changeColor = typeof change === 'number'
+    ? (change >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
+    : 'bg-gray-100 text-gray-500';
+  const changeArrow = typeof change === 'number'
+    ? (change >= 0 ? '↑' : '↓')
+    : '';
   const sparkColor = isPositive ? '#22C55E' : '#EF4444';
+  const iconBg = isPositive ? 'bg-green-100' : 'bg-red-100';
+
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 flex items-center gap-4">
-      <div className="flex-1 min-w-0">
-        <div className="text-[10px] text-[#B8A882] font-semibold mb-1 uppercase tracking-wider">{label}</div>
-        <div className="text-xl font-bold text-[#1a1a1a] leading-tight">{prefix}{typeof value === 'number' ? value.toLocaleString('th-TH') : value}{suffix}</div>
-        {change !== undefined && (
-          <div className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full mt-1.5 ${changeBg} ${changeText}`}>
-            {arrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}${typeof change === 'number' && Math.abs(change) < 100 ? '%' : ''}` : change}
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col gap-3">
+      <div className="flex items-start justify-between">
+        <div className="text-[11px] text-[#64748B] font-medium uppercase tracking-wide">{label}</div>
+        {icon && (
+          <div className={`w-9 h-9 ${iconBg} rounded-lg flex items-center justify-center text-base`}>
+            {icon}
           </div>
         )}
       </div>
-      {sparkline && (
-        <MiniSparkline data={sparkline} color={sparkColor} height={40} />
-      )}
-      {!sparkline && icon && (
-        <div className="text-2xl opacity-50">{icon}</div>
-      )}
+      <div className="text-2xl font-bold text-[#1E293B] leading-tight">
+        {typeof value === 'number' ? value.toLocaleString('th-TH') : value}
+      </div>
+      <div className="flex items-center justify-between">
+        {change !== undefined && (
+          <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${changeColor}`}>
+            {changeArrow} {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change}%` : change}
+          </span>
+        )}
+        {sparkline && (
+          <MiniSparkline data={sparkline} color={sparkColor} height={28} />
+        )}
+      </div>
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
-    active: { label: 'Active', className: 'bg-emerald-50 text-emerald-700' },
-    completed: { label: 'Completed', className: 'bg-emerald-50 text-emerald-700' },
-    success: { label: 'Success', className: 'bg-emerald-50 text-emerald-700' },
-    approved: { label: 'Approved', className: 'bg-emerald-50 text-emerald-700' },
-    published: { label: 'Published', className: 'bg-emerald-50 text-emerald-700' },
-    visible: { label: 'Visible', className: 'bg-emerald-50 text-emerald-700' },
-    healthy: { label: 'Healthy', className: 'bg-emerald-50 text-emerald-700' },
-    confirmed: { label: 'Confirmed', className: 'bg-emerald-50 text-emerald-700' },
-    in_progress: { label: 'In Progress', className: 'bg-violet-50 text-violet-700' },
-    delivered: { label: 'Delivered', className: 'bg-sky-50 text-sky-700' },
-    pending: { label: 'Pending', className: 'bg-amber-50 text-amber-700' },
-    warning: { label: 'Warning', className: 'bg-amber-50 text-amber-700' },
-    paused: { label: 'Paused', className: 'bg-amber-50 text-amber-700' },
-    draft: { label: 'Draft', className: 'bg-gray-100 text-gray-500' },
-    inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-500' },
-    suspended: { label: 'Suspended', className: 'bg-red-50 text-red-600' },
-    cancelled: { label: 'Cancelled', className: 'bg-gray-100 text-gray-500' },
-    rejected: { label: 'Rejected', className: 'bg-red-50 text-red-600' },
-    failed: { label: 'Failed', className: 'bg-red-50 text-red-600' },
-    error: { label: 'Error', className: 'bg-red-50 text-red-600' },
-    disputed: { label: 'Disputed', className: 'bg-orange-50 text-orange-700' },
-    refunded: { label: 'Refunded', className: 'bg-orange-50 text-orange-700' },
-    chargeback: { label: 'Chargeback', className: 'bg-red-50 text-red-600' },
-    held: { label: 'Held', className: 'bg-sky-50 text-sky-700' },
-    problem: { label: 'Problem', className: 'bg-red-50 text-red-600' },
-    pending_release: { label: 'Pending Release', className: 'bg-amber-50 text-amber-700' },
-    released: { label: 'Released', className: 'bg-emerald-50 text-emerald-700' },
-    open: { label: 'Open', className: 'bg-red-50 text-red-600' },
-    reported: { label: 'Reported', className: 'bg-orange-50 text-orange-700' },
-    hidden: { label: 'Hidden', className: 'bg-gray-100 text-gray-500' },
-    banned: { label: 'Banned', className: 'bg-red-50 text-red-600' },
-    flagged: { label: 'Flagged', className: 'bg-orange-50 text-orange-700' },
-    investigating: { label: 'Investigating', className: 'bg-amber-50 text-amber-700' },
-    pending_review: { label: 'Pending Review', className: 'bg-amber-50 text-amber-700' },
-    high: { label: 'High', className: 'bg-red-50 text-red-600' },
-    medium: { label: 'Medium', className: 'bg-orange-50 text-orange-700' },
-    low: { label: 'Low', className: 'bg-amber-50 text-amber-700' },
-    expired: { label: 'Expired', className: 'bg-gray-100 text-gray-500' },
-    super_admin: { label: 'Super Admin', className: 'bg-violet-50 text-violet-700' },
-    finance_manager: { label: 'Finance', className: 'bg-sky-50 text-sky-700' },
-    support_manager: { label: 'Support', className: 'bg-emerald-50 text-emerald-700' },
-    content_manager: { label: 'Content', className: 'bg-amber-50 text-amber-700' },
-    operations: { label: 'Operations', className: 'bg-orange-50 text-orange-700' },
-    bank_transfer: { label: 'Bank Transfer', className: 'bg-sky-50 text-sky-700' },
-    promptpay: { label: 'PromptPay', className: 'bg-emerald-50 text-emerald-700' },
-    image: { label: 'Image', className: 'bg-sky-50 text-sky-700' },
-    video: { label: 'Video', className: 'bg-violet-50 text-violet-700' },
-    document: { label: 'Document', className: 'bg-amber-50 text-amber-700' },
-    banner: { label: 'Banner', className: 'bg-pink-50 text-pink-700' },
-    blog: { label: 'Blog', className: 'bg-sky-50 text-sky-700' },
-    faq: { label: 'FAQ', className: 'bg-emerald-50 text-emerald-700' },
-    terms: { label: 'Terms', className: 'bg-gray-100 text-gray-500' },
-    privacy: { label: 'Privacy', className: 'bg-blue-50 text-blue-700' },
-    help: { label: 'Help', className: 'bg-sky-50 text-sky-700' },
-    referral: { label: 'Referral', className: 'bg-emerald-50 text-emerald-700' },
-    cashback: { label: 'Cashback', className: 'bg-green-50 text-green-700' },
-    campaign: { label: 'Campaign', className: 'bg-pink-50 text-pink-700' },
-    voucher: { label: 'Voucher', className: 'bg-amber-50 text-amber-700' },
-    coupon: { label: 'Coupon', className: 'bg-amber-50 text-amber-700' },
-    flash_sale: { label: 'Flash Sale', className: 'bg-red-50 text-red-600' },
-    credit_card: { label: 'Credit Card', className: 'bg-sky-50 text-sky-700' },
-    qr_promptpay: { label: 'QR PromptPay', className: 'bg-emerald-50 text-emerald-700' },
-    wallet: { label: 'Wallet', className: 'bg-violet-50 text-violet-700' },
-    admin: { label: 'Admin', className: 'bg-violet-50 text-violet-700' },
-    payment: { label: 'Payment', className: 'bg-sky-50 text-sky-700' },
-    login: { label: 'Login', className: 'bg-sky-50 text-sky-700' },
-    api: { label: 'API', className: 'bg-amber-50 text-amber-700' },
-    email: { label: 'Email', className: 'bg-sky-50 text-sky-700' },
-    security: { label: 'Security', className: 'bg-red-50 text-red-600' },
-    activity: { label: 'Activity', className: 'bg-gray-100 text-gray-500' },
-    Instant: { label: 'Instant', className: 'bg-emerald-50 text-emerald-700' },
-    'Every 6h': { label: 'Every 6h', className: 'bg-sky-50 text-sky-700' },
-    'Daily 09:00': { label: 'Daily 09:00', className: 'bg-amber-50 text-amber-700' },
-    'Daily 02:00': { label: 'Daily 02:00', className: 'bg-violet-50 text-violet-700' },
-    'Daily 06:00': { label: 'Daily 06:00', className: 'bg-orange-50 text-orange-700' },
-    complaint: { label: 'Complaint', className: 'bg-orange-50 text-orange-700' },
-    refund: { label: 'Refund', className: 'bg-orange-50 text-orange-700' },
-    general: { label: 'General', className: 'bg-gray-100 text-gray-500' },
-    bot: { label: 'Bot', className: 'bg-red-50 text-red-600' },
-    fake_account: { label: 'Fake Account', className: 'bg-orange-50 text-orange-700' },
-    multiple_login: { label: 'Multiple Login', className: 'bg-orange-50 text-orange-700' },
-    fake_review: { label: 'Fake Review', className: 'bg-red-50 text-red-600' },
-    vpn_proxy: { label: 'VPN/Proxy', className: 'bg-orange-50 text-orange-700' },
-    spam: { label: 'Spam', className: 'bg-amber-50 text-amber-700' },
+    active: { label: 'Active', className: 'bg-green-100 text-green-700' },
+    completed: { label: 'Completed', className: 'bg-green-100 text-green-700' },
+    success: { label: 'Success', className: 'bg-green-100 text-green-700' },
+    approved: { label: 'Approved', className: 'bg-green-100 text-green-700' },
+    pending: { label: 'Pending', className: 'bg-amber-100 text-amber-700' },
+    open: { label: 'Open', className: 'bg-blue-100 text-blue-700' },
+    suspended: { label: 'Suspended', className: 'bg-red-100 text-red-600' },
+    cancelled: { label: 'Cancelled', className: 'bg-red-100 text-red-600' },
+    refunded: { label: 'Refunded', className: 'bg-red-100 text-red-600' },
+    failed: { label: 'Failed', className: 'bg-red-100 text-red-600' },
+    disputed: { label: 'Disputed', className: 'bg-purple-100 text-purple-700' },
+    processing: { label: 'Processing', className: 'bg-purple-100 text-purple-700' },
+    'in-progress': { label: 'In Progress', className: 'bg-purple-100 text-purple-700' },
+    delivered: { label: 'Delivered', className: 'bg-yellow-100 text-yellow-700' },
+    'kyc-pending': { label: 'KYC Pending', className: 'bg-amber-100 text-amber-700' },
+    'kyc-approved': { label: 'KYC Approved', className: 'bg-green-100 text-green-700' },
+    'kyc-rejected': { label: 'KYC Rejected', className: 'bg-red-100 text-red-600' },
+    'kyc': { label: 'KYC', className: 'bg-green-100 text-green-700' },
+    'kyc_pending': { label: 'KYC Pending', className: 'bg-amber-100 text-amber-700' },
+    closed: { label: 'Closed', className: 'bg-gray-100 text-gray-600' },
+    expired: { label: 'Expired', className: 'bg-gray-100 text-gray-600' },
+    used: { label: 'Used', className: 'bg-gray-100 text-gray-600' },
+    inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-600' },
+    banned: { label: 'Banned', className: 'bg-red-100 text-red-600' },
+    spam: { label: 'Spam', className: 'bg-red-100 text-red-600' },
+    resolved: { label: 'Resolved', className: 'bg-green-100 text-green-700' },
   };
-  const cfg = map[status] || { label: status, className: 'bg-gray-100 text-gray-500' };
-  return <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</span>;
+  const cfg = map[status] || { label: status, className: 'bg-gray-100 text-gray-600' };
+  return <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</span>;
 }
 
 function SectionHeader({ title, icon, actions }: { title: string; icon?: string; actions?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
-      <h2 className="text-base font-bold text-[#1a1a1a] flex items-center gap-2">
-        {icon && <span className="text-lg">{icon}</span>}
-        <span>{title}</span>
+    <div className="flex items-center justify-between mb-5">
+      <h2 className="text-base font-bold text-[#1E293B] flex items-center gap-2">
+        {icon && <span>{icon}</span>}
+        {title}
       </h2>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions}
     </div>
   );
 }
 
-function ActionBtn({ label, variant = 'primary', size = 'sm' }: { label: string; variant?: 'primary' | 'secondary' | 'danger'; size?: 'sm' | 'md' }) {
-  const base = 'rounded-lg font-semibold cursor-pointer transition-all font-Prompt inline-flex items-center gap-1.5';
-  const sizeCls = size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm';
-  const variantCls = variant === 'primary' ? 'bg-[#FFB800] text-[#3D2C00] hover:bg-[#E5A500] shadow-sm' : variant === 'danger' ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm' : 'bg-gray-50 text-[#3D2C00] border border-gray-200 hover:bg-gray-100';
-  return <button className={`${base} ${sizeCls} ${variantCls}`}>{label}</button>;
+function ActionBtn({ label, variant = 'secondary', size = 'md', onClick }: {
+  label: string; variant?: 'primary' | 'secondary' | 'danger'; size?: 'sm' | 'md'; onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 font-semibold rounded-lg transition-colors text-xs
+        ${size === 'sm' ? 'px-3 py-1.5' : 'px-4 py-2'}
+        ${variant === 'primary'
+          ? 'bg-[#FFB800] text-[#3D2C00] hover:bg-[#E5A500]'
+          : variant === 'danger'
+          ? 'bg-red-500 text-white hover:bg-red-600'
+          : 'bg-white text-[#1E293B] border border-gray-200 hover:bg-gray-50'
+        }`}
+    >
+      {label}
+    </button>
+  );
 }
 
 function TabPills({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) {
   return (
-    <div className="flex gap-1 mb-5 flex-wrap">
+    <div className="flex items-center gap-1.5 mb-5 flex-wrap">
       {tabs.map(tab => (
         <button
           key={tab}
           onClick={() => onChange(tab)}
-          className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${active === tab ? 'bg-[#FFB800] text-[#3D2C00] font-bold' : 'bg-transparent text-[#8B7355] hover:bg-[#FFF8E7]'}`}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            active === tab
+              ? 'bg-[#1E293B] text-white'
+              : 'bg-white text-[#64748B] border border-gray-200 hover:bg-gray-50'
+          }`}
         >
           {tab}
         </button>
@@ -599,11 +568,9 @@ function MiniBar({ value, max = 100, color = '#FFB800' }: { value: number; max?:
 
 function DateRangePicker() {
   return (
-    <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-4 py-3">
-      <span className="text-sm">📅</span>
-      <span className="text-xs text-[#8B7355]">09 ก.ค. 2026 – 09 ก.ค. 2026</span>
-      <span className="text-xs text-[#FFB800] font-semibold cursor-pointer ml-1">เปลี่ยน</span>
-    </div>
+    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-[#64748B] hover:bg-gray-50 hover:text-[#1E293B] transition-colors">
+      📅 1 – 31 ก.ค. 2569
+    </button>
   );
 }
 
@@ -613,7 +580,6 @@ function Section_01_ExecutiveDashboard() {
   const [tab, setTab] = useState('Today');
   const tabs = ['Today', '7 Days', '30 Days', '90 Days', 'Year'];
 
-  // Line chart data
   const chartData = [
     { day: 'จ.', gmv: 28, rev: 26 },
     { day: 'อ.', gmv: 35, rev: 33 },
@@ -625,7 +591,6 @@ function Section_01_ExecutiveDashboard() {
   ];
   const maxVal = Math.max(...chartData.map(d => d.gmv));
 
-  // Job donut
   const jobStats = [
     { label: 'Completed', value: 38291, color: '#22C55E' },
     { label: 'In Progress', value: 1240, color: '#8B5CF6' },
@@ -634,7 +599,7 @@ function Section_01_ExecutiveDashboard() {
     { label: 'Disputed', value: 12, color: '#EF4444' },
   ];
   const totalJobs = jobStats.reduce((s, j) => s + j.value, 0);
-  const radius = 44;
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
   const donut = jobStats.map(j => {
@@ -648,121 +613,111 @@ function Section_01_ExecutiveDashboard() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <SectionHeader title="Overview" icon="📊" />
         <div className="flex items-center gap-2">
           <DateRangePicker />
           <ActionBtn label="📤 Export" variant="secondary" />
         </div>
       </div>
-
       <TabPills tabs={tabs} active={tab} onChange={setTab} />
 
-      {/* KPI Row 1 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <KPICard label="GMV" value={TH.currency(mockKPI.gmv)} change={12.4} sparkline={mockKPI.gmvSpark} />
-        <KPICard label="Revenue" value={TH.currency(mockKPI.revenue)} change={12.4} sparkline={mockKPI.revenueSpark} />
-        <KPICard label="Commission" value={TH.currency(mockKPI.commission)} change={11.8} sparkline={mockKPI.commissionSpark} />
-        <KPICard label="Active Users" value={TH.number(mockKPI.activeUsers)} change={8.1} sparkline={mockKPI.activeUsersSpark} />
-        <KPICard label="New Users" value={TH.number(mockKPI.newUsersToday)} change={12.3} sparkline={mockKPI.newUsersSpark} />
+      {/* KPI Grid - 4 columns */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard label="GMV" value={TH.currency(mockKPI.gmv)} change={12.4} sparkline={mockKPI.gmvSpark} icon="💰" />
+        <KPICard label="Revenue" value={TH.currency(mockKPI.revenue)} change={12.4} sparkline={mockKPI.revenueSpark} icon="💵" />
+        <KPICard label="Commission" value={TH.currency(mockKPI.commission)} change={11.8} sparkline={mockKPI.commissionSpark} icon="📊" />
+        <KPICard label="Active Users" value={TH.number(mockKPI.activeUsers)} change={8.1} sparkline={mockKPI.activeUsersSpark} icon="👥" />
       </div>
-
-      {/* KPI Row 2 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <KPICard label="New Buyers" value={TH.number(mockKPI.newBuyers)} change={9.5} sparkline={mockKPI.newBuyersSpark} />
-        <KPICard label="New Sellers" value={TH.number(mockKPI.newSellers)} change={15.7} sparkline={mockKPI.newSellersSpark} />
-        <KPICard label="Jobs Today" value={TH.number(mockKPI.todaysJobs)} change={8.1} sparkline={mockKPI.todaysJobsSpark} />
-        <KPICard label="Completed" value={TH.number(mockKPI.completed)} change={18.2} sparkline={mockKPI.completedSpark} />
-        <KPICard label="In Progress" value={TH.number(mockKPI.inProgress)} change={-2.4} sparkline={mockKPI.inProgressSpark} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard label="New Users" value={TH.number(mockKPI.newUsersToday)} change={12.3} sparkline={mockKPI.newUsersSpark} icon="🆕" />
+        <KPICard label="New Buyers" value={TH.number(mockKPI.newBuyers)} change={9.5} sparkline={mockKPI.newBuyersSpark} icon="🛒" />
+        <KPICard label="New Sellers" value={TH.number(mockKPI.newSellers)} change={15.7} sparkline={mockKPI.newSellersSpark} icon="🏪" />
+        <KPICard label="Jobs Today" value={TH.number(mockKPI.todaysJobs)} change={8.1} sparkline={mockKPI.todaysJobsSpark} icon="📋" />
       </div>
-
-      {/* KPI Row 3 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <KPICard label="Cancelled" value={TH.number(mockKPI.cancelled)} change={3.1} sparkline={mockKPI.cancelledSpark} />
-        <KPICard label="Tickets" value={TH.number(mockKPI.tickets)} change={-12.5} sparkline={mockKPI.ticketsSpark} />
-        <KPICard label="Disputes" value={TH.number(mockKPI.disputes)} change={8.3} sparkline={mockKPI.disputesSpark} />
-        <KPICard label="Escrow Held" value={TH.currency(mockKPI.escrowHeld)} change={5.4} sparkline={mockKPI.escrowHeldSpark} />
-        <KPICard label="Pending Withdraw" value={TH.currency(mockKPI.pendingWithdrawal)} change={22.1} sparkline={mockKPI.pendingWithdrawalSpark} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard label="Completed" value={TH.number(mockKPI.completed)} change={18.2} sparkline={mockKPI.completedSpark} icon="✅" />
+        <KPICard label="In Progress" value={TH.number(mockKPI.inProgress)} change={-2.4} sparkline={mockKPI.inProgressSpark} icon="⏳" />
+        <KPICard label="Cancelled" value={TH.number(mockKPI.cancelled)} change={3.1} sparkline={mockKPI.cancelledSpark} icon="❌" />
+        <KPICard label="Escrow Held" value={TH.currency(mockKPI.escrowHeld)} change={5.4} sparkline={mockKPI.escrowHeldSpark} icon="🔒" />
       </div>
-
-      {/* KPI Row 4 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <KPICard label="Conversion Rate" value={`${mockKPI.conversionRate}%`} change={-0.2} sparkline={mockKPI.conversionRateSpark} />
-        <KPICard label="AOV" value={TH.currency(mockKPI.aov)} change={6.5} sparkline={mockKPI.aovSpark} />
-        <KPICard label="LTV" value={TH.currency(mockKPI.ltv)} change={9.1} sparkline={mockKPI.ltvSpark} />
-        <KPICard label="CAC" value={TH.currency(mockKPI.cac)} change={-3.2} sparkline={mockKPI.cacSpark} />
-        <KPICard label="Retention Rate" value={`${mockKPI.retentionRate}%`} change={1.3} sparkline={mockKPI.retentionRateSpark} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard label="Conversion Rate" value={`${mockKPI.conversionRate}%`} change={-0.2} sparkline={mockKPI.conversionRateSpark} icon="📈" />
+        <KPICard label="AOV" value={TH.currency(mockKPI.aov)} change={6.5} sparkline={mockKPI.aovSpark} icon="🛍️" />
+        <KPICard label="LTV" value={TH.currency(mockKPI.ltv)} change={9.1} sparkline={mockKPI.ltvSpark} icon="💎" />
+        <KPICard label="CAC" value={TH.currency(mockKPI.cac)} change={-3.2} sparkline={mockKPI.cacSpark} icon="🎯" />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Line Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-bold text-[#1a1a1a] text-sm">GMV & Revenue Trend</h3>
-            <div className="flex items-center gap-4 text-[11px]">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#FFB800] inline-block rounded-full"/>GMV</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-green-500 inline-block rounded-full"/>Revenue</span>
+            <h3 className="font-bold text-[#1E293B] text-sm">GMV & Revenue Trend</h3>
+            <div className="flex items-center gap-4 text-[11px] text-[#64748B]">
+              <span className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-[#FFB800] inline-block rounded"/>GMV</span>
+              <span className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-[#22C55E] inline-block rounded"/>Revenue</span>
             </div>
           </div>
           <div className="relative h-44">
-            <svg viewBox="0 0 420 100" className="w-full h-full" preserveAspectRatio="none">
+            <svg viewBox="0 0 420 110" className="w-full h-full" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="gmvGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FFB800" stopOpacity="0.15"/>
+                  <stop offset="0%" stopColor="#FFB800" stopOpacity="0.2"/>
                   <stop offset="100%" stopColor="#FFB800" stopOpacity="0"/>
                 </linearGradient>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22C55E" stopOpacity="0.1"/>
+                  <stop offset="0%" stopColor="#22C55E" stopOpacity="0.15"/>
                   <stop offset="100%" stopColor="#22C55E" stopOpacity="0"/>
                 </linearGradient>
               </defs>
               {[25, 50, 75].map(y => (
-                <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#F0F0F0" strokeWidth="0.5" />
+                <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#F1F5F9" strokeWidth="1" />
               ))}
-              <polyline
-                points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.gmv / maxVal) * 80}`).join(' ')}
-                fill="none" stroke="#FFB800" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"
+              {/* GMV area fill */}
+              <polygon
+                points={`0,100 ${chartData.map((d, i) => `${i * 60 + 30},${100 - (d.gmv / maxVal) * 80}`).join(' ')} 420,100`}
+                fill="url(#gmvGrad)"
               />
-              <polyline
-                points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.rev / maxVal) * 80}`).join(' ')}
-                fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"
+              {/* Revenue area fill */}
+              <polygon
+                points={`0,100 ${chartData.map((d, i) => `${i * 60 + 30},${100 - (d.rev / maxVal) * 80}`).join(' ')} 420,100`}
+                fill="url(#revGrad)"
               />
+              <polyline points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.gmv / maxVal) * 80}`).join(' ')} fill="none" stroke="#FFB800" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+              <polyline points={chartData.map((d, i) => `${i * 60 + 30},${100 - (d.rev / maxVal) * 80}`).join(' ')} fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
               {chartData.map((d, i) => (
-                <circle key={i} cx={i * 60 + 30} cy={100 - (d.gmv / maxVal) * 80} r="3.5" fill="#FFB800" />
+                <circle key={i} cx={i * 60 + 30} cy={100 - (d.gmv / maxVal) * 80} r="3.5" fill="#FFB800"/>
               ))}
             </svg>
-            <div className="flex justify-between mt-2 px-2">
+            <div className="flex justify-between px-3 mt-1">
               {chartData.map((d, i) => (
-                <span key={i} className="text-[11px] text-[#8B7355]">{d.day}</span>
+                <span key={i} className="text-[11px] text-[#94A3B8]">{d.day}</span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Donut Chart */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h3 className="font-bold text-[#1a1a1a] text-sm mb-5">Jobs Summary</h3>
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 className="font-bold text-[#1E293B] text-sm mb-4">Jobs Summary</h3>
           <div className="flex flex-col items-center">
             <svg width="140" height="140" viewBox="0 0 140 140" className="-rotate-90">
               {donut.map((seg, i) => (
-                <circle key={i} cx="70" cy="70" r={radius + 4} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${seg.dash * 1.2} ${seg.gap * 1.2}`} strokeDashoffset={-seg.offset * 1.2} />
+                <circle key={i} cx="70" cy="70" r={radius} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${seg.dash} ${seg.gap}`} strokeDashoffset={-seg.offset}/>
               ))}
-              <circle cx="70" cy="70" r="32" fill="white" />
+              <circle cx="70" cy="70" r="34" fill="white"/>
             </svg>
-            <div className="text-center -mt-4">
-              <div className="text-2xl font-bold text-[#1a1a1a]">{TH.number(totalJobs)}</div>
-              <div className="text-[11px] text-[#8B7355] font-medium">Total Jobs</div>
+            <div className="-mt-3 text-center">
+              <div className="text-2xl font-bold text-[#1E293B]">{TH.number(totalJobs)}</div>
+              <div className="text-[11px] text-[#64748B]">Total Jobs</div>
             </div>
-            <div className="mt-4 space-y-2 w-full">
+            <div className="mt-3 space-y-1.5 w-full">
               {jobStats.map((j, i) => (
                 <div key={i} className="flex items-center justify-between text-[12px]">
                   <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: j.color }} />
-                    <span className="text-[#3D2C00]">{j.label}</span>
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: j.color }}/>
+                    <span className="text-[#64748B]">{j.label}</span>
                   </span>
-                  <span className="font-semibold text-[#3D2C00]">{TH.number(j.value)}</span>
+                  <span className="font-semibold text-[#1E293B]">{TH.number(j.value)}</span>
                 </div>
               ))}
             </div>
@@ -2278,20 +2233,11 @@ function Section_29_Widgets() {
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState<SectionId>('executive');
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(['📊 ภาพรวมธุรกิจ']));
 
   const addToast = (message: string, type: Toast['type'] = 'info') => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
-  };
-
-  const toggleGroup = (group: string) => {
-    setOpenGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(group)) next.delete(group); else next.add(group);
-      return next;
-    });
   };
 
   const renderSection = () => {
@@ -2331,56 +2277,48 @@ export default function AdminDashboard() {
 
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex">
-      {/* Sidebar — always visible on desktop (lg+), hidden on mobile */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-[100] bg-white border-r border-gray-100 flex-col overflow-y-auto w-[220px]">
+    <div className="min-h-screen bg-[#F4F6F9] flex">
+      {/* Sidebar — dark theme */}
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-[100] bg-[#1E293B] flex-col w-[220px] overflow-y-auto">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-2.5 px-4 py-4 border-b border-[#334155]">
           <div className="w-8 h-8 bg-[#FFB800] rounded-lg flex items-center justify-center text-sm shadow-sm flex-shrink-0">🐝</div>
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-[#3D2C00] text-xs truncate">Beefix Admin</div>
-            <div className="text-[10px] text-[#8B7355] truncate">Control Panel</div>
+            <div className="font-bold text-white text-xs truncate">Beefix Admin</div>
+            <div className="text-[10px] text-[#94A3B8] truncate">Control Panel</div>
           </div>
         </div>
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-2">
+        <nav className="flex-1 overflow-y-auto py-3 px-2">
           {navGroups.map(group => (
-            <div key={group.group} className="mb-1">
-              <button
-                onClick={() => toggleGroup(group.group)}
-                className="w-full flex items-center gap-2 px-4 py-2 text-[11px] font-bold text-[#B8A882] hover:bg-[#FFF8E7] transition-colors uppercase tracking-widest"
-              >
-                <span>{openGroups.has(group.group) ? '▼' : '▶'}</span>
-                <span>{group.group}</span>
-              </button>
-              {openGroups.has(group.group) && (
-                <div>
-                  {group.items.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveSection(item.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
-                        activeSection === item.id
-                          ? 'bg-[#FFF8E7] text-[#3D2C00] border-l-[3px] border-[#FFB800] font-bold'
-                          : 'text-[#8B7355] hover:bg-[#FFF8E7]'
-                      }`}
-                    >
-                      <span className="text-lg flex-shrink-0">{item.icon}</span>
-                      <span className="text-xs">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div key={group.group} className="mb-4">
+              <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest px-2 mb-1.5">
+                {group.group}
+              </div>
+              {group.items.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-all mb-0.5 ${
+                    activeSection === item.id
+                      ? 'bg-[#3B82F6] text-white font-semibold shadow-sm'
+                      : 'text-[#CBD5E1] hover:bg-[#334155] hover:text-white'
+                  }`}
+                >
+                  <span className="text-sm flex-shrink-0">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
             </div>
           ))}
         </nav>
         {/* Admin profile */}
-        <div className="border-t border-gray-100 p-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#FFB800] rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">A</div>
+        <div className="border-t border-[#334155] p-3">
+          <div className="flex items-center gap-2.5 px-2 py-1.5">
+            <div className="w-8 h-8 bg-[#FFB800] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-[#3D2C00]">A</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-[#3D2C00] truncate">Admin</div>
-              <div className="text-xs text-[#8B7355] truncate">superadmin@beefix.com</div>
+              <div className="text-xs font-semibold text-white truncate">Admin</div>
+              <div className="text-[10px] text-[#94A3B8] truncate">superadmin@beefix.com</div>
             </div>
           </div>
         </div>
@@ -2388,26 +2326,26 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 min-w-0">
-        {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 lg:pl-5 py-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="bg-[#FFB800] rounded-lg w-8 h-8 flex items-center justify-center text-sm">🐝</div>
+        {/* Main Header */}
+        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-5 lg:pl-5 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="bg-[#FFB800] rounded-lg w-9 h-9 flex items-center justify-center text-base font-bold text-[#3D2C00]">🐝</div>
             <div>
-              <h1 className="font-bold text-[#3D2C00] text-sm">Beefix Admin</h1>
-              <p className="text-[10px] text-[#8B7355]">Panel · {new Date().toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</p>
+              <h1 className="font-bold text-[#1E293B] text-sm">Beefix Admin Dashboard</h1>
+              <p className="text-[11px] text-[#64748B]">{new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">
-              🔔<span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-2 text-[#64748B] hover:text-[#1E293B] hover:bg-gray-50 rounded-lg transition-colors text-sm">
+              🔔<span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
             </button>
-            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">⚙️</button>
-            <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-3 py-1.5 bg-[#FFF8E7] text-[#3D2C00] rounded-lg text-xs font-semibold hover:bg-[#FFF0B3] transition-colors">ออก</button>
+            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-2 text-[#64748B] hover:text-[#1E293B] hover:bg-gray-50 rounded-lg transition-colors text-sm">⚙️</button>
+            <button className="px-3 py-1.5 bg-[#1E293B] text-white rounded-lg text-xs font-semibold hover:bg-[#334155] transition-colors">ออก</button>
           </div>
         </header>
         {/* Page Content */}
         <div className="lg:ml-[220px] min-h-[calc(100vh-57px)]">
-          <div className="p-5 lg:p-8">
+          <div className="p-5 lg:p-6">
             {renderSection()}
           </div>
         </div>
