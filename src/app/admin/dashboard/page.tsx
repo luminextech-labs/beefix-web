@@ -2239,9 +2239,9 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 min-w-0 transition-all duration-300`}>
+      <main className={`flex-1 min-w-0 lg:pl-[220px] transition-all duration-300`}>
         {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-3 py-2.5 flex items-center justify-between shadow-sm gap-2">
+        <header className="sticky top-0 z-40 bg-white border-b border-[#F0E4C8] px-4 py-2.5 flex items-center justify-between shadow-sm gap-2">
           <div className="flex items-center gap-2">
             {/* Mobile hamburger */}
             <button
@@ -2256,17 +2256,17 @@ export default function AdminDashboard() {
               <p className="text-[10px] text-[#8B7355]">Panel · {new Date().toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-1.5 sm:p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">
-              🔔<span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
+          <div className="flex items-center gap-2">
+            <button onClick={() => addToast('🔔 3 การแจ้งเตือนใหม่', 'info')} className="relative p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">
+              🔔<span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
             </button>
-            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-1.5 sm:p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">⚙️</button>
-            <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-2 sm:px-3 py-1.5 sm:py-2 bg-[#FFF8E7] text-[#3D2C00] rounded-lg text-xs font-semibold hover:bg-[#FFF0B3] transition-colors hidden sm:block">ออก</button>
+            <button onClick={() => addToast('⚙️ การตั้งค่าถูกบันทึกแล้ว', 'success')} className="p-2 text-[#8B7355] hover:text-[#3D2C00] hover:bg-[#FFF8E7] rounded-lg transition-colors text-sm">⚙️</button>
+            <button onClick={() => addToast('ออกจากระบบสำเร็จ 👋', 'warning')} className="px-3 py-1.5 bg-[#FFF8E7] text-[#3D2C00] rounded-lg text-xs font-semibold hover:bg-[#FFF0B3] transition-colors hidden sm:block">ออก</button>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="p-4 lg:pl-[220px] min-h-[calc(100vh-57px)]">
+        <div className="p-5 min-h-[calc(100vh-57px)]">
           <div className="max-w-[1440px] mx-auto">
             {renderSection()}
           </div>
