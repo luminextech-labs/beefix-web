@@ -67,9 +67,10 @@ export const categoriesApi = {
 
 // Technicians
 export const techniciansApi = {
-  getAll: (params?: { subCategoryId?: string; page?: number }) => {
+  getAll: (params?: { subCategoryId?: string; q?: string; page?: number }) => {
     const query = new URLSearchParams()
     if (params?.subCategoryId) query.set('subCategoryId', params.subCategoryId)
+    if (params?.q) query.set('q', params.q)
     if (params?.page) query.set('page', String(params.page))
     return api.get<{ success: boolean; technicians: any[]; pagination: any }>(`/api/technicians?${query}`)
   },
@@ -89,6 +90,18 @@ export const ordersApi = {
   getOne: (id: string) => api.get<{ success: boolean; order: any }>(`/api/orders/${id}`),
   create: (data: any) => api.post<{ success: boolean; order: any }>('/api/orders', data),
   update: (id: string, data: any) => api.patch<{ success: boolean; order?: any }>(`/api/orders/${id}`, data),
+}
+
+// Quotations
+export const quotationsApi = {
+  list: (role: 'customer' | 'technician', status?: string) => {
+    const q = new URLSearchParams({ role })
+    if (status) q.set('status', status)
+    return api.get<{ success: boolean; quotations: any[] }>(`/api/quotations?${q}`)
+  },
+  getOne: (id: string) => api.get<{ success: boolean; quotation: any }>(`/api/quotations/${id}`),
+  create: (data: any) => api.post<{ success: boolean; quotation: any }>('/api/quotations', data),
+  update: (id: string, data: any) => api.patch<{ success: boolean; quotation: any }>(`/api/quotations/${id}`, data),
 }
 
 // Addresses

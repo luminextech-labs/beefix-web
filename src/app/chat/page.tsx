@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
+import { api } from '@/lib/api'
 
 interface ChatRoom {
   id: string
@@ -29,11 +30,8 @@ export default function ChatListPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/chat/rooms')
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) setRooms(data.rooms)
-      })
+    api.get<{ success: boolean; rooms: ChatRoom[] }>('/api/chat/rooms')
+      .then(data => { if (data.success) setRooms(data.rooms) })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -113,10 +111,10 @@ export default function ChatListPage() {
           <span className="nav-icon">🏠</span>หน้าแรก
         </Link>
         <Link href="/orders" className="nav-item">
-          <span className="nav-icon">📋</span>แชท
+          <span className="nav-icon">📋</span>รายการ
         </Link>
         <Link href="/booking" className="nav-item">
-          <span className="nav-icon">📅</span>แชท
+          <span className="nav-icon">📅</span>จอง
         </Link>
         <Link href="/chat" className="nav-item active">
           <span className="nav-icon">💬</span>แชท

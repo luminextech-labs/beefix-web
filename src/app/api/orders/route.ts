@@ -125,8 +125,10 @@ export async function POST(req: NextRequest) {
     const travelCost = data.travelCost || 0
     const materialCost = data.materialCost || 0
     const subtotal = laborCost + travelCost + materialCost
-    const platformFee = Math.round(subtotal * 0.10 * 100) / 100 // 10%
-    const totalAmount = subtotal + platformFee
+    // ใหม่: ลูกค้าจ่าย +5%, ช่างได้ -5%, แพลตฟอร์มเก็บ 10%
+    const platformFee = Math.round(subtotal * 0.10 * 100) / 100 // 10% total (5% จากลูกค้า + 5% จากช่าง)
+    const technicianEarning = Math.round(subtotal * 0.95 * 100) / 100 // ช่างได้ 95%
+    const totalAmount = Math.round(subtotal * 1.05 * 100) / 100 // ลูกค้าจ่าย 105%
 
     // Validate technician exists and is available
     const technician = await prisma.technician.findUnique({
@@ -182,6 +184,7 @@ export async function POST(req: NextRequest) {
         travelCost,
         materialCost,
         platformFee,
+        technicianEarning,
         totalAmount: finalTotal,
         paymentMethod: data.paymentMethod,
         couponId,
@@ -223,14 +226,29 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Create chat room
-    await prisma.chatRoom.create({
-      data: {
-        orderId: order.id,
+    // Create or reuse chat room for this customer-technician pair
+    const existingRoom = await prisma.chatRoom.findFirst({
+      where: {
         customerId: auth.user.userId,
         technicianId: data.technicianId,
       },
     })
+    if (existingRoom) {
+      // Link order to existing room
+      await prisma.chatRoom.update({
+        where: { id: existingRoom.id },
+        data: { orderId: order.id },
+      })
+    } else {
+      // Create new room
+      await prisma.chatRoom.create({
+        data: {
+          orderId: order.id,
+          customerId: auth.user.userId,
+          technicianId: data.technicianId,
+        },
+      })
+    }
 
     // Create notification for technician
     await prisma.notification.create({

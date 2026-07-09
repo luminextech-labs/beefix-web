@@ -16,6 +16,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<any[]>([])
   const [technicians, setTechnicians] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -74,16 +75,20 @@ export default function HomePage() {
             <span style={{ fontSize: 20, opacity: 0.5 }}>🔍</span>
             <input
               type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') router.push(`/booking${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`) }}
               placeholder="ค้นหาช่างหรือบริการ..."
               style={{ flex: 1, border: 'none', outline: 'none', fontSize: 15, fontFamily: 'Prompt, sans-serif', background: 'transparent' }}
-              onKeyDown={e => { if (e.key === 'Enter') router.push('/booking') }}
             />
-            <button style={{
-              background: 'var(--primary)', color: 'white', border: 'none',
-              borderRadius: 50, padding: '8px 16px', fontSize: 13, fontWeight: 600,
-              fontFamily: 'Prompt, sans-serif', cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(255,184,0,0.3)',
-            }}>≋ กรอง</button>
+            <button
+              onClick={() => router.push(`/booking${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`)}
+              style={{
+                background: 'var(--primary)', color: 'white', border: 'none',
+                borderRadius: 50, padding: '8px 16px', fontSize: 13, fontWeight: 600,
+                fontFamily: 'Prompt, sans-serif', cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(255,184,0,0.3)',
+              }}>🔍 ค้นหา</button>
           </div>
         </div>
       </div>
@@ -184,52 +189,172 @@ export default function HomePage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {technicians.slice(0, 5).map((tech: any) => (
-                <div
-                  key={tech.id}
-                  className="card-shadow"
-                  style={{ padding: 16, display: 'flex', gap: 14, cursor: 'pointer' }}
-                  onClick={() => router.push(`/booking?tech=${tech.id}`)}
-                >
+              {technicians.slice(0, 5).map((tech: any) => {
+                const isAvailable = tech.isAvailable !== false
+                const basePrice = Number(tech.services?.[0]?.basePrice || 0)
+
+                return (
                   <div
-                    className="tech-avatar"
-                    style={{ cursor: 'pointer', flexShrink: 0 }}
-                    onClick={e => { e.stopPropagation(); router.push(`/technicians/${tech.id}`) }}
-                  >👨‍🔧</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>{tech.user?.fullName || 'ช่าง'}</span>
-                      {tech.verifiedAt && <span style={{ fontSize: 12 }}>✅</span>}
+                    key={tech.id}
+                    style={{
+                      padding: 16,
+                      borderRadius: 18,
+                      border: '1.5px solid var(--border)',
+                      background: 'white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      transition: 'all 0.2s',
+                    }}
+                    onClick={() => router.push(`/booking?tech=${tech.id}`)}
+                  >
+                    {/* Top row: Avatar + Info */}
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 12 }}>
+                      {/* Avatar with online dot */}
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div
+                          style={{
+                            width: 58, height: 58, borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #FFF0B3 0%, #FFE066 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 26,
+                            border: '2px solid var(--border)',
+                            cursor: 'pointer',
+                            overflow: 'hidden',
+                          }}
+                          onClick={e => { e.stopPropagation(); router.push(`/technicians/${tech.id}`) }}
+                        >
+                          {tech.user?.avatarUrl ? (
+                            <img src={tech.user.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : '👨\u200d🔧'}
+                        </div>
+                        {/* Online dot */}
+                        {isAvailable && (
+                          <div style={{
+                            position: 'absolute', bottom: 2, right: 2,
+                            width: 14, height: 14, borderRadius: '50%',
+                            background: '#22C55E',
+                            border: '2px solid white',
+                          }} />
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                          <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>
+                            {tech.user?.fullName || 'ช่าง'}
+                          </span>
+                          {tech.verifiedAt && (
+                            <span style={{
+                              background: '#22C55E', color: 'white',
+                              fontSize: 9, fontWeight: 700,
+                              padding: '2px 6px', borderRadius: 20,
+                            }}>✓ ยืนยันตัวตน</span>
+                          )}
+                        </div>
+                        {tech.headline && (
+                          <div style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {tech.headline}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 14, color: '#F59E0B', fontWeight: 800 }}>⭐ {Number(tech.ratingAvg || 0).toFixed(1)}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-light)' }}>({tech.ratingCount || 0} รีวิว)</span>
+                          {tech.distanceKm != null && (
+                            <span style={{ fontSize: 12, color: '#059669', fontWeight: 700 }}>
+                              📍 {tech.distanceKm} กม.
+                            </span>
+                          )}
+                          <span style={{
+                            fontSize: 10, fontWeight: 700,
+                            background: isAvailable ? '#D1FAE5' : '#F3F4F6',
+                            color: isAvailable ? '#059669' : '#9CA3AF',
+                            padding: '2px 8px', borderRadius: 20,
+                          }}>● {isAvailable ? 'ว่าง' : 'ไม่ว่าง'}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 6 }}>
-                      {tech.headline || 'ช่างทั่วไป'}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, marginBottom: 6 }}>
-                      <span style={{ color: '#FBBF24' }}>⭐</span>
-                      <span style={{ fontWeight: 700 }}>{Number(tech.ratingAvg || 0).toFixed(1)}</span>
-                      <span style={{ fontSize: 11, color: 'var(--text-light)' }}>({tech.ratingCount || 0} รีวิว)</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {tech.services?.slice(0, 3).map((s: any) => (
-                        <span key={s.id} className="tech-tag">{s.subCategory?.icon || ''} {s.subCategory?.name}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                    <span className={`tech-status-badge ${!tech.isAvailable ? 'offline' : ''}`}>
-                      {tech.isAvailable ? '● ว่าง' : '● ไม่ว่าง'}
-                    </span>
-                    {tech.services?.[0]?.basePrice && (
-                      <>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
-                          ฿{Number(tech.services[0].basePrice).toLocaleString()}
-                        </span>
-                        <span style={{ fontSize: 10, color: 'var(--text-light)' }}>บาท/ชม.</span>
-                      </>
+
+                    {/* Tags */}
+                    {tech.services?.length > 0 && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                        {tech.services.slice(0, 3).map((s: any) => (
+                          <span key={s.id} style={{
+                            background: 'var(--primary-light)',
+                            color: '#8B6914',
+                            fontSize: 10, fontWeight: 600,
+                            padding: '3px 8px', borderRadius: 20,
+                          }}>
+                            {s.subCategory?.icon} {s.subCategory?.name}
+                          </span>
+                        ))}
+                      </div>
                     )}
+
+                    {/* Buttons */}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={e => { e.stopPropagation(); router.push(`/technicians/${tech.id}`) }}
+                        style={{
+                          flex: 1,
+                          padding: '7px 0',
+                          borderRadius: 12,
+                          border: '1.5px solid var(--border)',
+                          background: 'white',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: 'var(--text)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 4,
+                          fontFamily: 'Prompt, sans-serif',
+                        }}
+                      >
+                        👁 ดูโปรไฟล์ช่าง
+                      </button>
+                      <button
+                        onClick={e => { e.stopPropagation(); router.push(`/booking?tech=${tech.id}`) }}
+                        style={{
+                          flex: 1,
+                          padding: '7px 0',
+                          borderRadius: 12,
+                          border: 'none',
+                          background: isAvailable ? 'var(--primary)' : '#E5E7EB',
+                          color: isAvailable ? '#3D2C00' : '#9CA3AF',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: isAvailable ? 'pointer' : 'not-allowed',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 4,
+                          fontFamily: 'Prompt, sans-serif',
+                        }}
+                      >
+                        {isAvailable ? '✅ จองช่างนี้' : 'ไม่ว่าง'}
+                      </button>
+                    </div>
+
+                    {/* Price */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                      <div>
+                        {basePrice ? (
+                          <>
+                            <span style={{ fontSize: 11, color: 'var(--text-light)' }}>เริ่มต้น </span>
+                            <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary)', fontFamily: 'monospace' }}>
+                              ฿{Number(basePrice).toLocaleString()}
+                            </span>
+                            <span style={{ fontSize: 11, color: 'var(--text-light)' }}> บาท</span>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 13, color: 'var(--text-light)' }}>ราคาตามงาน</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -245,8 +370,8 @@ export default function HomePage() {
         <Link href="/orders" className="nav-item">
           <span className="nav-icon">📋</span>รายการ
         </Link>
-        <Link href="/booking" className="nav-item">
-          <span className="nav-icon">💬</span>จอง
+        <Link href="/chat" className="nav-item">
+          <span className="nav-icon">💬</span>แชท
         </Link>
         <Link href="/wallet" className="nav-item">
           <span className="nav-icon">💳</span>กระเป๋า

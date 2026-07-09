@@ -9,6 +9,31 @@ const sendMessageSchema = z.object({
   messageType: z.enum(['text', 'image', 'location', 'system']).default('text'),
 })
 
+// Helper: verify user has access to a chat room
+// ChatRoom.technicianId is the technician PROFILE id, not user id
+async function verifyRoomAccess(roomId: string, userId: string, userRole: string): Promise<{ hasAccess: boolean; room: any }> {
+  const room = await prisma.chatRoom.findUnique({
+    where: { id: roomId },
+    select: { customerId: true, technicianId: true, orderId: true },
+  })
+  if (!room) return { hasAccess: false, room: null }
+
+  if (room.customerId === userId) {
+    return { hasAccess: true, room }
+  }
+
+  // Check if user is the technician (by profile userId)
+  const techProfile = await prisma.technician.findUnique({
+    where: { id: room.technicianId },
+    select: { userId: true },
+  })
+  if (techProfile?.userId === userId) {
+    return { hasAccess: true, room }
+  }
+
+  return { hasAccess: false, room }
+}
+
 // GET /api/chat/rooms/[id]/messages
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = authGuard(req)
@@ -20,18 +45,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    // Verify user has access to this room
-    const room = await prisma.chatRoom.findUnique({
-      where: { id: roomId },
-      select: { customerId: true, technicianId: true },
-    })
-
-    if (!room) {
+    const { hasAccess, room } = await verifyRoomAccess(roomId, auth.user.userId, auth.user.role)
+    if (!hasAccess || !room) {
       return NextResponse.json({ success: false, message: 'ไม่พบห้องแชท' }, { status: 404 })
-    }
-
-    if (room.customerId !== auth.user.userId && room.technicianId !== auth.user.userId) {
-      return NextResponse.json({ success: false, message: 'ไม่มีสิทธิ์' }, { status: 403 })
     }
 
     const [messages, total] = await Promise.all([
@@ -84,18 +100,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: false, message: 'ข้อความไม่ถูกต้อง' }, { status: 400 })
     }
 
-    // Verify user has access to this room
-    const room = await prisma.chatRoom.findUnique({
-      where: { id: roomId },
-      select: { customerId: true, technicianId: true },
-    })
-
-    if (!room) {
+    const { hasAccess, room } = await verifyRoomAccess(roomId, auth.user.userId, auth.user.role)
+    if (!hasAccess || !room) {
       return NextResponse.json({ success: false, message: 'ไม่พบห้องแชท' }, { status: 404 })
-    }
-
-    if (room.customerId !== auth.user.userId && room.technicianId !== auth.user.userId) {
-      return NextResponse.json({ success: false, message: 'ไม่มีสิทธิ์' }, { status: 403 })
     }
 
     const { message, messageType } = result.data
@@ -124,28 +131,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     // Create notification for the other party
-    const recipientId = room.customerId === auth.user.userId ? room.technicianId : room.customerId
+    const techProfile = await prisma.technician.findUnique({
+      where: { id: room.technicianId },
+      select: { userId: true },
+    })
+    const recipientId = room.customerId === auth.user.userId
+      ? (techProfile?.userId || '')
+      : room.customerId
     const senderName = auth.user.fullName || 'ลูกค้า'
-    try {
-      await prisma.notification.create({
-        data: {
-          userId: recipientId,
-          type: 'new_message',
-          title: 'ข้อความใหม่',
-          body: `${senderName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 50)}`,
-          data: { roomId, messageId: chatMessage.id },
-        },
-      })
-    } catch (notifErr) {
-      console.error('Notification create error:', notifErr)
-    }
 
-    // Push notification (non-blocking)
-    sendPushToUser(recipientId, {
-      title: 'ข้อความใหม่',
-      body: `${senderName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 80)}`,
-      data: { type: 'new_message', roomId, messageId: chatMessage.id, link: `/chat/${roomId}` },
-    }, prisma).catch(() => {})
+    if (recipientId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: recipientId,
+            type: 'new_message',
+            title: 'ข้อความใหม่',
+            body: `${senderName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 50)}`,
+            data: { roomId, messageId: chatMessage.id },
+          },
+        })
+      } catch (notifErr) {
+        console.error('Notification create error:', notifErr)
+      }
+
+      // Push notification (non-blocking)
+      sendPushToUser(recipientId, {
+        title: 'ข้อความใหม่',
+        body: `${senderName}: ${messageType === 'image' ? '[รูปภาพ]' : message.slice(0, 80)}`,
+        data: { type: 'new_message', roomId, messageId: chatMessage.id, link: `/chat/${roomId}` },
+      }, prisma).catch(() => {})
+    }
 
     return NextResponse.json({ success: true, message: chatMessage }, { status: 201 })
   } catch (error) {

@@ -31,6 +31,7 @@ enum OrderStatus {
   pending
   confirmed
   in_progress
+  customer_pending
   completed
   cancelled
 }
@@ -168,6 +169,7 @@ model Technician {
   services        TechnicianService[]
   categories      TechnicianCategory[]
   customCategories CustomCategory[]
+  serviceAreas    TechnicianServiceArea[]
   servicePackages ServicePackage[]
   orders          Order[]
   reviews         Review[]
@@ -301,6 +303,7 @@ model Order {
   discountAmount Decimal @default(0) @map("discount_amount") @db.Decimal(10, 2)
   totalAmount    Decimal @default(0) @map("total_amount") @db.Decimal(10, 2)
   platformFee    Decimal @default(0) @map("platform_fee") @db.Decimal(10, 2)
+  technicianEarning Decimal @default(0) @map("technician_earning") @db.Decimal(10, 2)
 
   // Payment
   paymentMethod PaymentMethod @default(wallet) @map("payment_method")
@@ -351,21 +354,25 @@ model Quotation {
   orderId        String?         @unique @map("order_id")
   customerId     String          @map("customer_id")
   technicianId   String          @map("technician_id")
-  packageId      String?         @map("package_id")
+  subCategoryId  String?         @map("sub_category_id")
+  addressId      String?         @map("address_id")  // Not a relation — store as FK only
   title          String
   description    String?
-  price          Decimal         @map("price") @db.Decimal(10, 2)
+  price          Decimal         @default(0) @map("price") @db.Decimal(10, 2)
   status         QuotationStatus @default(pending) @map("status")
   validUntil     DateTime?       @map("valid_until")
   customerNote   String?         @map("customer_note")
   technicianNote String?         @map("technician_note")
+  images         String?         @map("images")  // JSON array of URLs
+  documents      String?         @map("documents")  // JSON array of URLs
+  jobDate        DateTime?       @map("job_date")
+  jobTime        String?         @map("job_time")
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
 
-  order      Order?          @relation(fields: [orderId], references: [id])
-  customer   User            @relation(fields: [customerId], references: [id])
-  technician Technician      @relation(fields: [technicianId], references: [id])
-  package    ServicePackage? @relation(fields: [packageId], references: [id])
+  order      Order?      @relation(fields: [orderId], references: [id])
+  customer   User        @relation(fields: [customerId], references: [id])
+  technician Technician  @relation(fields: [technicianId], references: [id])
 
   @@index([technicianId, status])
   @@index([customerId])
@@ -607,7 +614,7 @@ model CouponUsage {
 
 model ChatRoom {
   id            String    @id @default(uuid())
-  orderId       String    @unique @map("order_id")
+  orderId       String?   @unique @map("order_id")
   customerId    String    @map("customer_id")
   technicianId  String    @map("technician_id")
   lastMessage   String?   @map("last_message")
@@ -615,7 +622,7 @@ model ChatRoom {
   createdAt     DateTime  @default(now()) @map("created_at")
 
   // Relations
-  order      Order         @relation(fields: [orderId], references: [id])
+  order      Order?        @relation(fields: [orderId], references: [id])
   customer   User          @relation(fields: [customerId], references: [id])
   technician Technician    @relation("TechnicianChatRooms", fields: [technicianId], references: [id])
   messages   ChatMessage[]
@@ -685,6 +692,19 @@ model TechnicianCategory {
   @@map("technician_categories")
 }
 
+model TechnicianServiceArea {
+  id           String   @id @default(uuid())
+  technicianId String   @map("technician_id")
+  province     String   // ชื่อจังหวัด
+  district     String?  // ชื่ออำเภอ (ถ้าต้องการเจาะลึก)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  technician Technician @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@unique([technicianId, province, district])
+  @@map("technician_service_areas")
+}
+
 // Custom categories created by technicians
 model CustomCategory {
   id           String   @id @default(uuid())
@@ -719,7 +739,6 @@ model ServicePackage {
   // Relations
   technician  Technician   @relation(fields: [technicianId], references: [id], onDelete: Cascade)
   subCategory SubCategory? @relation(fields: [subCategoryId], references: [id])
-  quotations  Quotation[]
 
   @@map("service_packages")
 }

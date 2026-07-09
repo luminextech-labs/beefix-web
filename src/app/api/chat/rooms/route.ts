@@ -10,10 +10,21 @@ export async function GET(req: NextRequest) {
   try {
     const { userId, role } = auth.user
 
+    // Build where clause — technicianId in ChatRoom is the technician PROFILE id, not user id
+    // For technician role, find their profile id first
+    let whereClause: any
+    if (role === 'technician') {
+      const techProfile = await prisma.technician.findFirst({
+        where: { userId },
+        select: { id: true },
+      })
+      whereClause = { technicianId: techProfile?.id || '' }
+    } else {
+      whereClause = { customerId: userId }
+    }
+
     const rooms = await prisma.chatRoom.findMany({
-      where: role === 'technician'
-        ? { technicianId: userId }
-        : { customerId: userId },
+      where: whereClause,
       include: {
         order: {
           select: {
@@ -43,47 +54,85 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/chat/rooms - Create/get chat room for an order
+// POST /api/chat/rooms - Create or get chat room for a customer-technician pair
+// If orderId is provided, also link the order to the room
 export async function POST(req: NextRequest) {
   const auth = authGuard(req)
   if (auth instanceof NextResponse) return auth
 
   try {
-    const { orderId } = await req.json()
+    const { orderId, technicianId } = await req.json()
+    const { userId, role } = auth.user
 
-    if (!orderId) {
-      return NextResponse.json({ success: false, message: 'ต้องระบุ orderId' }, { status: 400 })
-    }
+    let customerId: string
+    let technicianIdFinal: string
+    let orderIdFinal: string | null = orderId || null
 
-    // Verify order belongs to user (customer or technician)
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      select: { customerId: true, technicianId: true },
-    })
-
-    if (!order) {
-      return NextResponse.json({ success: false, message: 'ไม่พบออร์เดอร์' }, { status: 404 })
-    }
-
-    const { userId } = auth.user
-    if (order.customerId !== userId && order.technicianId !== userId) {
-      return NextResponse.json({ success: false, message: 'ไม่มีสิทธิ์เข้าถึง' }, { status: 403 })
-    }
-
-    // Find existing or create new room
-    let room = await prisma.chatRoom.findUnique({
-      where: { orderId },
-    })
-
-    if (!room) {
-      room = await prisma.chatRoom.create({
-        data: {
-          orderId,
-          customerId: order.customerId,
-          technicianId: order.technicianId,
-        },
+    if (orderId) {
+      // Find by order
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: { customerId: true, technicianId: true },
       })
+      if (!order) {
+        return NextResponse.json({ success: false, message: 'ไม่พบออร์เดอร์' }, { status: 404 })
+      }
+      if (order.customerId !== userId && order.technicianId !== userId) {
+        return NextResponse.json({ success: false, message: 'ไม่มีสิทธิ์เข้าถึง' }, { status: 403 })
+      }
+      customerId = order.customerId
+      technicianIdFinal = order.technicianId
+
+      // Check if a room already exists for this customer-technician pair (with or without order)
+      const existingRoom = await prisma.chatRoom.findFirst({
+        where: { customerId, technicianId: technicianIdFinal },
+      })
+      if (existingRoom) {
+        // Link order to existing room if not already linked
+        if (!existingRoom.orderId) {
+          await prisma.chatRoom.update({
+            where: { id: existingRoom.id },
+            data: { orderId: orderIdFinal },
+          })
+          existingRoom.orderId = orderIdFinal
+        }
+        return NextResponse.json({ success: true, room: existingRoom }, { status: 200 })
+      }
+    } else if (technicianId) {
+      // Customer starts chat with technician directly (technicianId here is the technician's USER id)
+      if (role !== 'customer') {
+        return NextResponse.json({ success: false, message: 'เฉพาะลูกค้าเท่านั้น' }, { status: 403 })
+      }
+      // Find technician profile by user ID
+      const techProfile = await prisma.technician.findFirst({
+        where: { userId: technicianId },
+        select: { id: true },
+      })
+      if (!techProfile) {
+        return NextResponse.json({ success: false, message: 'ไม่พบโปรไฟล์ช่าง' }, { status: 404 })
+      }
+      customerId = userId
+      technicianIdFinal = techProfile.id
+
+      // Check if a room already exists for this pair
+      const existingRoom = await prisma.chatRoom.findFirst({
+        where: { customerId, technicianId: technicianIdFinal },
+      })
+      if (existingRoom) {
+        return NextResponse.json({ success: true, room: existingRoom }, { status: 200 })
+      }
+    } else {
+      return NextResponse.json({ success: false, message: 'ต้องระบุ orderId หรือ technicianId' }, { status: 400 })
     }
+
+    // Create new room
+    const room = await prisma.chatRoom.create({
+      data: {
+        orderId: orderIdFinal,
+        customerId,
+        technicianId: technicianIdFinal,
+      },
+    })
 
     return NextResponse.json({ success: true, room }, { status: 201 })
   } catch (error) {

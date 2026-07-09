@@ -5,11 +5,13 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const subCategoryId = searchParams.get('subCategoryId')
+    const q = searchParams.get('q')?.trim() || ''
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const lat = parseFloat(searchParams.get('lat') || '0')
     const lng = parseFloat(searchParams.get('lng') || '0')
     const maxKm = parseFloat(searchParams.get('maxKm') || '0')
+    const province = searchParams.get('province')?.trim() || ''
 
     const where: Record<string, unknown> = {
       isAvailable: true,
@@ -22,6 +24,14 @@ export async function GET(req: NextRequest) {
           subCategoryId,
         },
       }
+    }
+
+    if (q) {
+      where.OR = [
+        { user: { fullName: { contains: q } } },
+        { services: { some: { subCategory: { name: { contains: q } } } } },
+        { categories: { some: { category: { name: { contains: q } } } } },
+      ]
     }
 
     const technicians = await prisma.technician.findMany({
@@ -47,10 +57,11 @@ export async function GET(req: NextRequest) {
             category: true,
           },
         },
+        serviceAreas: true,
       },
     })
 
-    // Filter by distance if coordinates provided
+    // Filter by distance OR province match
     let filtered = technicians
     if (lat && lng && maxKm > 0) {
       filtered = technicians
@@ -62,8 +73,20 @@ export async function GET(req: NextRequest) {
           const km = haversineKm(lat, lng, tLat, tLng)
           return { ...tech, distanceKm: Math.round(km * 10) / 10 }
         })
-        .filter(tech => tech.distanceKm !== null && tech.distanceKm <= maxKm)
+        .filter(tech => {
+          // within distance
+          if (tech.distanceKm !== null && tech.distanceKm <= maxKm) return true
+          // OR serves the province
+          if (province && tech.serviceAreas?.some((a: any) => a.province === province)) return true
+          return false
+        })
         .sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0))
+    } else if (province) {
+      filtered = technicians
+        .map(tech => ({ ...tech, distanceKm: null }))
+        .filter(tech =>
+          tech.serviceAreas?.some((a: any) => a.province === province)
+        )
     } else {
       filtered = technicians.map(tech => ({ ...tech, distanceKm: null }))
     }

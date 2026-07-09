@@ -7,21 +7,33 @@ import { useAuth } from '@/contexts/AuthContext'
 export default function RegisterPage() {
   const router = useRouter()
   const { register } = useAuth()
-  const [form, setForm] = useState({ email: '', phone: '', password: '', fullName: '', role: 'customer' })
+  const [form, setForm] = useState({
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    fullName: '',
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (form.password !== form.confirmPassword) {
+      setError('รหัสผ่านไม่ตรงกัน')
+      return
+    }
+    if (form.password.length < 6) {
+      setError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร')
+      return
+    }
     setLoading(true)
     try {
-      await register(form)
-      if (form.role === 'technician') {
-        router.push('/technician/onboarding')
-      } else {
-        router.push('/')
-      }
+      await register({ ...form, role: 'customer' })
+      router.push('/')
     } catch (err: any) {
       setError(err.message || 'สมัครสมาชิกไม่สำเร็จ')
     } finally {
@@ -50,29 +62,6 @@ export default function RegisterPage() {
               {error}
             </div>
           )}
-
-          {/* Role selector */}
-          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            {[
-              { val: 'customer', label: '👤 ลูกค้า' },
-              { val: 'technician', label: '🔧 ช่าง' },
-            ].map(r => (
-              <button
-                key={r.val}
-                type="button"
-                onClick={() => setForm({ ...form, role: r.val })}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: 12, border: `2px solid ${form.role === r.val ? 'var(--primary)' : '#E5E7EB'}`,
-                  background: form.role === r.val ? 'var(--primary)' : 'white',
-                  color: form.role === r.val ? '#3D2C00' : '#9CA3AF',
-                  fontSize: 14, fontWeight: 700, fontFamily: 'Prompt, sans-serif',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
 
           <div style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>ชื่อ-นามสกุล</label>
@@ -110,23 +99,64 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>รหัสผ่าน</label>
-            <input
-              type="password"
-              className="form-input"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              required
-              minLength={6}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="form-input"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                required
+                minLength={6}
+                style={{ paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 18, color: 'var(--text-light)', padding: 0,
+                }}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>ยืนยันรหัสผ่าน</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                className="form-input"
+                placeholder="••••••••"
+                value={form.confirmPassword}
+                onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                required
+                style={{ paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(v => !v)}
+                style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 18, color: 'var(--text-light)', padding: 0,
+                }}
+              >
+                {showConfirm ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           <button
             className="btn-primary"
             onClick={handleSubmit}
             disabled={loading}
+            style={{ width: '100%' }}
           >
             {loading ? 'กำลังสมัคร…' : 'สมัครสมาชิก'}
           </button>

@@ -2,6 +2,8 @@
 import { useEffect, useState, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import dynamic from 'next/dynamic'
+const LocationMap = dynamic(() => import('@/components/LocationMap'), { ssr: false })
 import { categoriesApi, techniciansApi, ordersApi, addressesApi } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -313,6 +315,18 @@ function BookingPageInner() {
                 </div>
               </div>
             </div>
+
+            {/* Map (real) */}
+            {selectedAddress?.latitude && selectedAddress?.longitude ? (
+              <div style={{ marginBottom: 16, borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
+                <LocationMap
+                  lat={Number(selectedAddress.latitude)}
+                  lng={Number(selectedAddress.longitude)}
+                  radiusKm={maxKm}
+                  height={200}
+                />
+              </div>
+            ) : null}
 
             {/* Quick access popular services */}
             <div style={{ marginBottom: 8 }}>

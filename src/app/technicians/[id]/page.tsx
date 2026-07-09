@@ -33,6 +33,8 @@ function TechProfileInner() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [viewingImages, setViewingImages] = useState<string[] | null>(null)
+  const [viewingAvatar, setViewingAvatar] = useState<string | null>(null)
+  const [viewingCertImage, setViewingCertImage] = useState<string | null>(null)
 
   // Like / Comment state
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
@@ -43,7 +45,6 @@ function TechProfileInner() {
   const [commentLoading, setCommentLoading] = useState(false)
   const [showComments, setShowComments] = useState<string | null>(null)
   const [selectedService, setSelectedService] = useState<any>(null)
-  const [chatMsg, setChatMsg] = useState('')
 
   const commentInputRef = useRef<HTMLInputElement>(null)
 
@@ -76,17 +77,22 @@ function TechProfileInner() {
     if (!user) { alert('กรุณาเข้าสู่ระบบก่อน'); return }
     if (likingId) return
     setLikingId(item.id)
-    // Optimistic update
     setPortfolio(prev => prev.map(p =>
       p.id === item.id
         ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
         : p
     ))
     try {
-      const res = await fetch(`/api/portfolio/${item.id}/like`, { method: 'POST' })
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const res = await fetch(`/api/portfolio/${item.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
       const data = await res.json()
       if (!data.success) {
-        // Revert on failure
         setPortfolio(prev => prev.map(p =>
           p.id === item.id
             ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
@@ -95,10 +101,9 @@ function TechProfileInner() {
       }
     } catch (err) {
       console.error('Like error:', err)
-      alert('เกิดข้อผิดพลาด: ' + JSON.stringify(err))
       setPortfolio(prev => prev.map(p =>
         p.id === item.id
-          ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likedByUser ? p.likeCount + 1 : p.likeCount }
+          ? { ...p, likedByUser: !p.likedByUser, likeCount: p.likedByUser ? p.likeCount - 1 : p.likeCount + 1 }
           : p
       ))
     } finally {
@@ -140,9 +145,13 @@ function TechProfileInner() {
     if (!commentText.trim()) return
     setCommentLoading(true)
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
       const res = await fetch(`/api/portfolio/${itemId}/comment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ content: commentText }),
       })
       const data = await res.json()
@@ -195,6 +204,39 @@ function TechProfileInner() {
         </div>
       )}
 
+      {/* AVATAR VIEWER */}
+      {viewingAvatar && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setViewingAvatar(null)}
+        >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', padding: 16, position: 'absolute', top: 0, right: 0 }}>
+            <button onClick={() => setViewingAvatar(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: 20, width: 40, height: 40, borderRadius: '50%', cursor: 'pointer' }}>✕</button>
+          </div>
+          <div style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={viewingAvatar} alt="รูปโปรไฟล์" style={{ width: 280, height: 280, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(255,255,255,0.3)', display: 'block' }} />
+            <div style={{ color: '#fff', marginTop: 12, fontSize: 14, fontWeight: 600, opacity: 0.8 }}>{userData?.fullName}</div>
+          </div>
+        </div>
+      )}
+
+      {/* CERT IMAGE VIEWER */}
+      {viewingCertImage && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 2000, display: 'flex', flexDirection: 'column' }}
+          onClick={() => setViewingCertImage(null)}
+        >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 16 }}>
+            <button onClick={() => setViewingCertImage(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontSize: 20, width: 40, height: 40, borderRadius: '50%', cursor: 'pointer' }}>✕</button>
+          </div>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px 16px', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={viewingCertImage} alt="ใบรับรอง" style={{ width: '100%', maxWidth: 500, borderRadius: 12, objectFit: 'contain' }} />
+          </div>
+        </div>
+      )}
+
       {/* ===================== BLOCK 1: PROFILE HEADER ===================== */}
       <div style={{ background: 'var(--primary)', padding: '16px 20px 60px', borderRadius: '0 0 24px 24px', textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
@@ -202,11 +244,17 @@ function TechProfileInner() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D2C00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
           </button>
         </div>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-dark)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, overflow: 'hidden', border: '3px solid rgba(255,255,255,0.5)' }}>
+        <div
+          onClick={() => userData?.avatarUrl && setViewingAvatar(userData.avatarUrl)}
+          style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-dark)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, overflow: 'hidden', border: '3px solid rgba(255,255,255,0.5)', cursor: userData?.avatarUrl ? 'zoom-in' : 'default', position: 'relative' }}
+        >
           {userData?.avatarUrl ? (
             <img src={userData.avatarUrl} alt={userData?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <span>{userData?.fullName?.charAt(0) || '?'}</span>
+          )}
+          {userData?.avatarUrl && (
+            <div style={{ position: 'absolute', bottom: 0, right: 0, background: 'rgba(255,255,255,0.85)', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, border: '1.5px solid white' }}>🔍</div>
           )}
         </div>
         <div style={{ fontSize: 20, fontWeight: 700, color: '#3D2C00' }}>{userData?.fullName}</div>
@@ -251,7 +299,7 @@ function TechProfileInner() {
           )}
         </div>
 
-        {/* ===================== BLOCK 3: SERVICES (Shopee-style grid) ===================== */}
+        {/* ===================== BLOCK 3: SERVICES ===================== */}
         {tech.services && tech.services.length > 0 && (
           <>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>🔧 บริการ ({tech.services.length})</div>
@@ -262,7 +310,6 @@ function TechProfileInner() {
                   onClick={() => setSelectedService(svc)}
                   style={{ background: 'white', borderRadius: 12, overflow: 'hidden', border: '1.5px solid var(--border)', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
                 >
-                  {/* Service image */}
                   {svc.images && svc.images.length > 0 ? (
                     <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden' }}>
                       <img src={svc.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -298,12 +345,10 @@ function TechProfileInner() {
                   onClick={e => e.stopPropagation()}
                   style={{ background: 'white', width: '100%', borderRadius: '20px 20px 0 0', maxHeight: '90vh', overflowY: 'auto', padding: '0 0 max(16px, env(safe-area-inset-bottom))' }}
                 >
-                  {/* Handle */}
                   <div style={{ display: 'flex', justifyContent: 'center', padding: 12 }}>
                     <div style={{ width: 36, height: 4, background: '#E0D5C0', borderRadius: 2 }} />
                   </div>
 
-                  {/* Image carousel */}
                   {selectedService.images && selectedService.images.length > 0 ? (
                     <div style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '0 16px 12px', scrollSnapType: 'x mandatory' }}>
                       {selectedService.images.map((img: string, i: number) => (
@@ -318,7 +363,6 @@ function TechProfileInner() {
                   )}
 
                   <div style={{ padding: '0 16px' }}>
-                    {/* Service name + price */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div style={{ fontSize: 16, fontWeight: 800 }}>{selectedService.subCategory?.name}</div>
                       {selectedService.basePrice != null && (
@@ -326,14 +370,12 @@ function TechProfileInner() {
                       )}
                     </div>
 
-                    {/* Description */}
                     {selectedService.description && (
                       <div style={{ fontSize: 13, color: 'var(--text-light)', lineHeight: 1.6, marginBottom: 16 }}>
                         {selectedService.description}
                       </div>
                     )}
 
-                    {/* Quick description chip */}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
                       {selectedService.subCategory?.category && (
                         <span style={{ background: 'var(--primary-light)', color: '#8B6914', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
@@ -342,9 +384,11 @@ function TechProfileInner() {
                       )}
                     </div>
 
-                    {/* Tech info in sheet */}
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', background: 'var(--bg)', padding: '10px 12px', borderRadius: 12, marginBottom: 16 }}>
-                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, overflow: 'hidden' }}>
+                      <div
+                        onClick={() => userData?.avatarUrl && setViewingAvatar(userData.avatarUrl)}
+                        style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, overflow: 'hidden', cursor: userData?.avatarUrl ? 'zoom-in' : 'default' }}
+                      >
                         {userData?.avatarUrl ? <img src={userData.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (userData?.fullName || '?').charAt(0)}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -352,33 +396,14 @@ function TechProfileInner() {
                         <div style={{ fontSize: 11, color: 'var(--text-light)' }}>⭐ {Number(tech.ratingAvg || 0).toFixed(1)} ({tech.ratingCount || 0} รีวิว) · {tech.yearsExperience || 0} ปีประสบการณ์</div>
                       </div>
                     </div>
-
-                    {/* Chat input */}
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>💬 ส่งข้อความถามช่าง</div>
-                    <textarea
-                      value={chatMsg}
-                      onChange={e => setChatMsg(e.target.value)}
-                      placeholder={`สวัสดีครับ สนใจใช้บริการ${selectedService.subCategory?.name}...`}
-                      style={{ width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 12, border: '1.5px solid var(--border)', fontSize: 13, resize: 'none', outline: 'none', fontFamily: 'inherit', marginBottom: 12, boxSizing: 'border-box' }}
-                    />
                   </div>
 
-                  {/* Action buttons */}
                   <div style={{ display: 'flex', gap: 10, padding: '0 16px 0', position: 'sticky', bottom: 0, background: 'white', paddingTop: 8 }}>
                     <button
                       onClick={() => {
-                        setChatMsg(`สวัสดีครับ สนใจใช้บริการ "${selectedService.subCategory?.name}" ครับ`)
+                        const svc = selectedService
                         setSelectedService(null)
-                        router.push(`/chat/${techId}?service=${selectedService.subCategory?.id}&serviceName=${encodeURIComponent(selectedService.subCategory?.name || '')}`)
-                      }}
-                      style={{ flex: 1, padding: '14px 0', borderRadius: 30, border: '2px solid var(--primary)', background: 'white', color: 'var(--primary)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Prompt, sans-serif' }}
-                    >
-                      💬 แชทเลย
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedService(null)
-                        router.push(`/chat/${techId}?service=${selectedService.subCategory?.id}&serviceName=${encodeURIComponent(selectedService.subCategory?.name || '')}`)
+                        router.push(`/quotations/new?techId=${techId}&subCategoryId=${svc?.subCategoryId || ''}&subCategoryName=${encodeURIComponent(svc?.subCategory?.name || '')}`)
                       }}
                       style={{ flex: 1, padding: '14px 0', borderRadius: 30, border: 'none', background: 'var(--primary)', color: '#3D2C00', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,184,0,0.4)', fontFamily: 'Prompt, sans-serif' }}
                     >
@@ -391,15 +416,17 @@ function TechProfileInner() {
           </>
         )}
 
-        {/* ===================== BLOCK 4: PORTFOLIO (Facebook-style) ===================== */}
+        {/* ===================== BLOCK 4: PORTFOLIO ===================== */}
         {portfolio.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             {portfolio.map((item: PortfolioItem) => (
               <div key={item.id} className="card-shadow" style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', background: 'white' }}>
 
-                {/* Post Header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px 8px' }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, overflow: 'hidden', flexShrink: 0 }}>
+                  <div
+                    onClick={() => userData?.avatarUrl && setViewingAvatar(userData.avatarUrl)}
+                    style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, overflow: 'hidden', flexShrink: 0, cursor: userData?.avatarUrl ? 'zoom-in' : 'default' }}
+                  >
                     {userData?.avatarUrl ? (
                       <img src={userData.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
@@ -414,14 +441,12 @@ function TechProfileInner() {
                   </div>
                 </div>
 
-                {/* Caption */}
                 {item.caption && (
                   <div style={{ padding: '0 14px 8px', fontSize: 13, lineHeight: 1.55, color: 'var(--text)' }}>
                     {item.caption}
                   </div>
                 )}
 
-                {/* Images */}
                 {item.images && item.images.length > 0 && (
                   <div style={{
                     display: 'grid',
@@ -442,7 +467,6 @@ function TechProfileInner() {
 
                 {/* Action bar */}
                 <div style={{ display: 'flex', alignItems: 'center', padding: '6px 8px', borderBottom: '1px solid var(--border)' }}>
-                  {/* Like */}
                   <button
                     onClick={() => handleLike(item)}
                     disabled={likingId === item.id}
@@ -457,7 +481,6 @@ function TechProfileInner() {
                     <span>{item.likeCount > 0 ? item.likeCount : 'ถูกใจ'}</span>
                   </button>
 
-                  {/* Comment */}
                   <button
                     onClick={() => toggleComments(item.id)}
                     style={{
@@ -471,7 +494,6 @@ function TechProfileInner() {
                     <span>{item.commentCount > 0 ? item.commentCount : 'แสดงความคิดเห็น'}</span>
                   </button>
 
-                  {/* Share */}
                   <button
                     onClick={() => handleShare(item)}
                     style={{
@@ -488,7 +510,6 @@ function TechProfileInner() {
                 {/* Comments Section */}
                 {showComments === item.id && (
                   <div>
-                    {/* Comment list */}
                     {(comments[item.id] || []).length > 0 && (
                       <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {comments[item.id].map((c: Comment) => (
@@ -509,7 +530,6 @@ function TechProfileInner() {
                       </div>
                     )}
 
-                    {/* Comment input */}
                     <div style={{ display: 'flex', gap: 8, padding: '8px 14px', alignItems: 'center', borderTop: '1px solid var(--border)' }}>
                       <input
                         ref={commentInputRef}
@@ -549,24 +569,51 @@ function TechProfileInner() {
               🛡️ ผ่านการยืนยันจาก Beefix.app
             </div>
 
+            {/* Categories as image tiles */}
             {tech.categories && tech.categories.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
                 {tech.categories.map((cat: any) => (
-                  <span key={cat.id} style={{ background: 'var(--primary-light)', color: '#8B6914', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
-                    {cat.category?.name}
-                  </span>
+                  <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    {cat.category?.icon && (
+                      <div style={{
+                        width: 60, height: 60, borderRadius: 14,
+                        background: 'var(--primary-light)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 30,
+                        border: '1.5px solid var(--border)',
+                      }}>
+                        {cat.category.icon}
+                      </div>
+                    )}
+                    <span style={{ fontSize: 10, color: 'var(--text-light)', textAlign: 'center', maxWidth: 70 }}>{cat.category?.name}</span>
+                  </div>
                 ))}
               </div>
             )}
+
+            {/* Certifications as clickable images */}
             {tech.certifications?.map((cert: any, i: number) => (
               <div key={i} style={{ background: 'var(--bg)', borderRadius: 10, padding: '10px 12px', marginBottom: 6 }}>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>🏅 {cert.name}</div>
                 {cert.issuer && <div style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 2 }}>{cert.issuer}{cert.year ? ` · ปี ${cert.year}` : ''}</div>}
                 {cert.fileUrl && (
-                  <a href={cert.fileUrl} target="_blank" rel="noreferrer">
+                  <div
+                    onClick={() => setViewingCertImage(cert.fileUrl)}
+                    style={{
+                      marginTop: 8, width: '100%', maxWidth: 300,
+                      borderRadius: 8, border: '1px solid var(--border)',
+                      display: 'block', cursor: 'zoom-in', overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={cert.fileUrl} alt={cert.name} style={{ marginTop: 8, width: '100%', maxWidth: 300, borderRadius: 8, border: '1px solid var(--border)', display: 'block' }} />
-                  </a>
+                    <img src={cert.fileUrl} alt={cert.name} style={{ width: '100%', borderRadius: 8, display: 'block' }} />
+                    <div style={{
+                      position: 'absolute', bottom: 6, right: 6,
+                      background: 'rgba(0,0,0,0.5)', color: '#fff',
+                      fontSize: 10, padding: '2px 6px', borderRadius: 8,
+                    }}>🔍 ดูเต็ม</div>
+                  </div>
                 )}
               </div>
             ))}
@@ -576,7 +623,7 @@ function TechProfileInner() {
         {/* BOOK BUTTON */}
         <div style={{ position: 'fixed', bottom: 80, left: 16, right: 16, zIndex: 100 }}>
           <button
-            onClick={() => router.push(`/booking?tech=${techId}`)}
+            onClick={() => router.push(`/quotations/new?techId=${techId}`)}
             style={{
               width: '100%', padding: '16px 0',
               background: 'var(--primary)', color: '#3D2C00',
@@ -587,7 +634,7 @@ function TechProfileInner() {
               fontFamily: 'Prompt, sans-serif',
             }}
           >
-            จองช่างนี้ 💪
+            📋 ขอใบเสนอราคา
           </button>
         </div>
 
@@ -601,8 +648,8 @@ function TechProfileInner() {
         <Link href="/orders" className="nav-item">
           <span className="nav-icon">📋</span>รายการ
         </Link>
-        <Link href="/booking" className="nav-item">
-          <span className="nav-icon">💬</span>จอง
+        <Link href="/chat" className="nav-item">
+          <span className="nav-icon">💬</span>แชท
         </Link>
         <Link href="/wallet" className="nav-item">
           <span className="nav-icon">💳</span>กระเป๋า

@@ -5,7 +5,7 @@ import { authGuard } from '@/lib/auth/guard'
 import { sendPushToUser } from '@/lib/push'
 
 const updateOrderSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']).optional(),
+  status: z.enum(['pending', 'confirmed', 'in_progress', 'customer_pending', 'completed', 'cancelled']).optional(),
   cancelReason: z.string().optional(),
   laborCost: z.number().optional(),
   travelCost: z.number().optional(),
@@ -164,6 +164,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           updateData.technicianRespondedAt = new Date()
         } else if (data.status === 'in_progress') {
           updateData.startedAt = new Date()
+        } else if (data.status === 'customer_pending') {
+          updateData.status = 'customer_pending'
         } else if (data.status === 'completed') {
           updateData.completedAt = new Date()
         } else if (data.status === 'cancelled') {
