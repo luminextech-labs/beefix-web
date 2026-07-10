@@ -2213,7 +2213,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#1a1d2e] flex">
       {/* Sidebar */}
       {/* Sidebar — flex, always visible on desktop, hidden on mobile */}
-      <aside className="w-[240px] flex-shrink-0 bg-[#15172a] border-r border-[#2a2f4a] flex flex-col overflow-y-auto">
+      <aside className="w-[240px] flex-shrink-0 bg-[#15172a] border-l border-[#2a2f4a] border-r border-[#2a2f4a] flex flex-col overflow-y-auto">
   {/* Logo */}
   <div className="flex items-center gap-3 px-5 py-4 border-b border-[#2a2f4a]">
     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">🐝</div>
@@ -2259,7 +2259,7 @@ export default function AdminDashboard() {
 </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0">
+      <main className="flex-1 min-w-0 border-l border-[#2a2f4a] border-r border-[#2a2f4a] border-b border-[#2a2f4a] px-5">
         {/* Top Header */}
         <header className="sticky top-0 z-40 bg-[#1a1d2e] border-b border-[#2a2f4a] px-5 py-3 flex items-center justify-between gap-3">
   <div className="flex items-center gap-3">
