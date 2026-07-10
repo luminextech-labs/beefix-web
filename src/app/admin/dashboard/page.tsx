@@ -2279,8 +2279,8 @@ export default function AdminDashboard() {
 </header>
 
         {/* Page Content */}
-        <div className="bg-[#1a1d2e] p-5 min-h-[calc(100vh-57px)]">
-          <div className="max-w-[1440px] mx-auto">
+        <div className="bg-[#1a1d2e] p-6 min-h-[calc(100vh-57px)]">
+          <div className="max-w-[1440px] mx-auto mt-2">
             {renderSection()}
           </div>
         </div>
